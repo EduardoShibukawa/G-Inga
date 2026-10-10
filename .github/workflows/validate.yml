@@ -1,0 +1,28 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          # The D3 history walk (docs/artifact-contracts.md §7.1) is blocked in a shallow clone.
+          fetch-depth: 0
+      - uses: jdx/mise-action@v5.1.1
+        with:
+          version: 2026.10.7
+      - run: mise run test
+        env:
+          MERMAID_BROWSER: /usr/bin/google-chrome
+      - run: mise run validate
+        env:
+          # Preinstalled on GitHub's Ubuntu runners; Mermaid is rendered in it.
+          MERMAID_BROWSER: /usr/bin/google-chrome

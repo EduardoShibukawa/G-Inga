@@ -1,0 +1,8 @@
+// markdownlint configuration for repository docs (tools/validate/checks/markdownLint.ts).
+{
+  "default": true,
+  // Prose is written one paragraph per line; wrapping would make diffs noisier.
+  "MD013": false,
+  // The docs use compact `|---|` delimiter rows; MD060 would flag every table.
+  "MD060": false
+}
