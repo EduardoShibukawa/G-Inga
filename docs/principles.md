@@ -1,6 +1,6 @@
 # Working principles
 
-**Status:** proposed. These distill the [SDLC brief](briefs/sdlc-harness-brief.md) plus takeaways from Rob Shocks' video *"Pocock vs Pstack vs Osmani: Which Skill Pack Wins?"* (<https://www.youtube.com/watch?v=sU9MW8Ycq2M>). The video notes are a secondhand summary and haven't been checked against the packs' source. Each principle names where it comes from.
+**Status:** proposed. These distill the [SDLC brief](briefs/sdlc-harness-brief.md) plus takeaways from Rob Shocks' video *"Pocock vs Pstack vs Osmani: Which Skill Pack Wins?"* (<https://www.youtube.com/watch?v=sU9MW8Ycq2M>). The video notes are a secondhand summary. The pack attributions were checked against the packs' source on 2026-10-10 ([evidence](research/d2-routing-evidence.md) §6): §3, §4 and §5 are confirmed, and §1 and §2 need the corrections noted there. Each principle names where it comes from.
 
 ## 1. Ceremony matches stakes
 
@@ -14,11 +14,11 @@ A button color change shouldn't load a spec, a grill session and an adversarial 
 | `standard` | Normal feature or bug | Short task file, then a plan if needed, implementation, targeted verification. |
 | `heavy` | Ambiguous, cross-cutting, risky | Grill, then spec approval, plan, implementation, adversarial review, full verification. |
 
-The routing criteria and what each tier loads are open decision **D2**.
+The routing criteria and what each tier loads are proposed in [ADR 0002](decisions/0002-ceremony-tiers-and-routing.md) (decision **D2**, `proposed`). No reference pack defines tiers like these, so this is our own synthesis ([evidence](research/d2-routing-evidence.md) §5).
 
 ## 2. Align before building on ambiguity
 
-*Source: Matt Pocock `grilling` (installed); brief §3 "human owns significant decisions".*
+*Source: Matt Pocock `grilling` (installed); brief §3 "human owns significant decisions". Source check: current `grilling` asks the whole frontier of answerable questions per round, each with a recommended answer. "One question at a time" comes from Osmani's `interview-me`. Which style to adopt is still open.*
 
 When requirements or domain terms are ambiguous, interrogate until shared understanding exists. Ask one focused question at a time. Don't invent behavior.
 
