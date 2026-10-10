@@ -1,6 +1,6 @@
 # Artifact contracts
 
-**Status:** proposed (decision D3, [ADR 0003](decisions/0003-minimum-artifact-schemas.md)). Nothing here is implemented. No validator exists yet, so every "deterministic check" below is a specification for M1, not an enforced rule.
+**Status:** accepted (decision D3, approved by the owner on 2026-10-10, [ADR 0003](decisions/0003-minimum-artifact-schemas.md)). Nothing here is implemented. No validator exists yet, so every "deterministic check" below is a specification for M1, not an enforced rule.
 
 This document is the field-level contract. The rationale and the alternatives are in ADR 0003. The tiers and routing rules come from [ADR 0002](decisions/0002-ceremony-tiers-and-routing.md) (`accepted`) and aren't restated here.
 

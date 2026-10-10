@@ -1,12 +1,12 @@
 # 0003 — Minimum artifact schemas
 
-- **Status:** proposed (2026-10-10). Awaiting the owner's approval.
+- **Status:** accepted (2026-10-10)
 - **Date:** 2026-10-10
-- **Deciders:** project owner
+- **Deciders:** project owner (approved 2026-10-10, as written, including the review revision)
 - **Depends on:** [ADR 0001](0001-product-boundary.md) and [ADR 0002](0002-ceremony-tiers-and-routing.md), both `accepted`.
 - **Contract:** [artifact contracts](../artifact-contracts.md) has the field-level detail, the state machine and the examples. This record holds the decisions and the rationale.
 - **Evidence:** [D3 evidence](../research/d3-artifact-evidence.md) (codes `A1`–`A8`) and [D2 evidence](../research/d2-routing-evidence.md).
-- **Revision (2026-10-10, still proposed):** review corrections.
+- **Revision (2026-10-10, before acceptance):** review corrections.
   - The `heavy` parent can be `active` while the spec is `draft`.
   - All open children are blocked when the spec is reopened.
   - Exact `verified_at` and baseline semantics.
@@ -44,7 +44,7 @@ Define the least persisted information that lets a task be executed, resumed and
 - be validated mostly by a small deterministic script;
 - evolve without silently rewriting user-owned or approved files.
 
-## Decision (proposed)
+## Decision
 
 1. **Three artifact kinds, not five.** Task record, spec and ADR are files. The routing record, the checkpoint and the evidence record are sections of the task record. ADRs keep this repository's existing format.
 2. **One routing and approvals log for every tier** ([contract](../artifact-contracts.md) §2.3). It's one keyword-prefixed bullet per event: tier, escalation, downgrade, override, `heavy` confirmation, approval, owner decision, divergence and acceptance. In `light` it's the first lines of the report. In `standard` and `heavy` it's the task record's `## Routing and approvals` section. Budget and constraints live in their own section and aren't repeated in the log.
