@@ -75,7 +75,7 @@ For each name there are three kinds of statement:
   - New evidence can change the implementation strategy.
   - When a task can't be finished safely, the agent stops, preserves state and explains the blocker.
 
-  This is the idea behind [principles](principles.md) §1 and the tiers proposed in [ADR 0002](decisions/0002-ceremony-tiers-and-routing.md). Don't reduce ginga to a generic synonym for "agility".
+  This is the idea behind [principles](principles.md) §1 and the tiers in [ADR 0002](decisions/0002-ceremony-tiers-and-routing.md). Don't reduce ginga to a generic synonym for "agility".
 - **Possible association:** the first stable milestone, or the product's core adaptive philosophy.
 - **Notes:**
   - As a release name, "G-Ingá Ginga" repeats the root. Using Ginga for the philosophy avoids that.

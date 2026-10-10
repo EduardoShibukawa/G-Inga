@@ -1,8 +1,8 @@
 # 0002 — Ceremony tiers and routing
 
-- **Status:** proposed (2026-10-10). Becomes `accepted` only with the owner's explicit approval.
+- **Status:** accepted (2026-10-10)
 - **Date:** 2026-10-10
-- **Deciders:** project owner (pending)
+- **Deciders:** project owner (approved 2026-10-10, as written). The owner hasn't done the table-top labelling of R01–R17 yet; it stays a calibration input (§7).
 - **Evidence:** [D2 routing evidence](../research/d2-routing-evidence.md). Codes like `C1`, `P3` and `X4` below refer to that note.
 
 ## Context
@@ -217,13 +217,15 @@ Measure per task before fixing any limit (D4 decides how to capture these): init
 | E. Task-type playbooks as the primary axis (pstack) | rich per-type procedure | type doesn't determine stakes. Twenty-plus playbooks conflict with token economy and growing from friction | adopt only "type picks the verification technique" |
 | F. More tiers (`trivial` below, `critical` above) | finer control | more boundaries mean more misroutes. `critical` is covered by `heavy` plus platform permissions. No friction asks for it | rejected for now |
 
-## Consequences if accepted
+## Consequences
 
 - D3 defines minimal fields only for what this ADR requires: the routing line, the `standard` task record, and the `heavy` spec and evidence.
 - D5 has to keep the fixed routing cost small and use deterministic mechanisms only for floors that can be checked.
 - The R01–R17 scenarios become the first entries of the D7 regression set.
 
-## Open questions for the owner
+## Follow-ups (open, not blocking)
+
+The rules above apply as written, including H6, until a follow-up changes them through a new or superseding record.
 
 1. Do these signals match how your work workflow decides between "just do it" and "plan first"? Where does it differ?
 2. Should an urgent fix (hotfix) get an expedited `heavy` path, or wait until a friction asks for one?

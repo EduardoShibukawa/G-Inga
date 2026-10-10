@@ -14,7 +14,7 @@ A button color change shouldn't load a spec, a grill session and an adversarial 
 | `standard` | Normal feature or bug | Short task file, then a plan if needed, implementation, targeted verification. |
 | `heavy` | Ambiguous, cross-cutting, risky | Grill, then spec approval, plan, implementation, adversarial review, full verification. |
 
-The routing criteria and what each tier loads are proposed in [ADR 0002](decisions/0002-ceremony-tiers-and-routing.md) (decision **D2**, `proposed`). No reference pack defines tiers like these, so this is our own synthesis ([evidence](research/d2-routing-evidence.md) §5).
+The routing criteria and what each tier loads are decided in [ADR 0002](decisions/0002-ceremony-tiers-and-routing.md) (decision **D2**, `accepted`). No reference pack defines tiers like these, so this is our own synthesis ([evidence](research/d2-routing-evidence.md) §5).
 
 ## 2. Align before building on ambiguity
 
