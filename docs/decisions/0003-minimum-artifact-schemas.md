@@ -6,6 +6,13 @@
 - **Depends on:** [ADR 0001](0001-product-boundary.md) and [ADR 0002](0002-ceremony-tiers-and-routing.md), both `accepted`.
 - **Contract:** [artifact contracts](../artifact-contracts.md) has the field-level detail, the state machine and the examples. This record holds the decisions and the rationale.
 - **Evidence:** [D3 evidence](../research/d3-artifact-evidence.md) (codes `A1`–`A8`) and [D2 evidence](../research/d2-routing-evidence.md).
+- **Revision (2026-10-10, still proposed):** review corrections.
+  - The `heavy` parent can be `active` while the spec is `draft`.
+  - All open children are blocked when the spec is reopened.
+  - Exact `verified_at` and baseline semantics.
+  - What happens to an existing record on a `standard → light` downgrade.
+  - A Git history walk for spec integrity.
+  - A freeze check for retired schema versions.
 
 ## Context
 
@@ -44,23 +51,33 @@ Define the least persisted information that lets a task be executed, resumed and
 3. **The task record serves `standard`, the `heavy` parent and the `heavy` children.** It has seven frontmatter keys at most and four always-required sections: routing log, objective with scope, acceptance criteria, verification. Plan, blockers, checkpoint, review, outcome and budget overrides appear only when their condition holds ([contract](../artifact-contracts.md) §3.2).
 4. **Eight task states.** They are `todo`, `active`, `blocked`, `completed`, `verified`, `accepted`, `partial` and `cancelled`, with guarded transitions.
    - `completed` means implemented but not fully verified.
-   - `verified` means every required row is `pass` on one recorded commit (`verified_at`).
+   - `verified` means every post-change row ran on one recorded commit (`verified_at`) and met its requirement.
    - `accepted` needs the owner.
    - `standard` work ends at `verified`, and the `heavy` parent ends at `accepted` (ADR 0002 §5).
-5. **One verification table plans the checks and records the evidence.** It has rows for criteria (`AC`, `SC`), baseline (`B`), regression (`R`) and self-review (`V`), each with a result and the commit it ran on. A failing `R` row counts only when a `B` row shows the same failure before the change.
+   - A confirmed `heavy` parent enters `active` while its spec is still `draft`, to run the question rounds and write the spec (ADR 0002 §4).
+   - Children are created only after the spec's first approval. They can't be `todo`, `active` or `completed` unless the spec is `approved` at exactly their version.
+   - On a `standard → light` downgrade, an existing record the agent just created and never committed is deleted, and the report says so. A committed record is closed as `cancelled` with the `downgraded:` entry, never deleted ([contract](../artifact-contracts.md) §6.1).
+5. **One verification table plans the checks and records the evidence.** It has rows for criteria (`AC`, `SC`), baseline (`B`), regression (`R`) and self-review (`V`), each with a result and the commit it ran on.
+   - `AC`, `SC`, `R` and `V` rows must run at `verified_at`.
+   - `B` rows keep their own pre-change commit, which must be a strict ancestor of `verified_at`.
+   - A failing `R` row stays `fail`. It can be attributed to a `B` row with the same failure, but attribution is never reported as a pass, and `AC`, `SC` and `V` rows can't be attributed.
 6. **The `heavy` evidence record is the parent task record:** integrated `SC`, `R` and `B` rows plus a `## Review` section. Children keep their own rows and aren't copied. `accepted` never authorizes release, deploy or migration; each needs its own `approved:` entry.
 7. **The spec is separate from execution state and frozen by a body hash.**
    - While `approved`, the body must hash to `approved_hash`.
    - Changing an approved spec means reopening it (`draft`, `version + 1`, a `## Revisions` line) and getting it reapproved.
-   - Children on the old version that depend on the change go to `blocked`.
+   - On reopening, every open child goes to `blocked`, without sorting affected from unaffected.
+   - After reapproval, each child moves to the new version through a `spec-version:` log entry. The entry either names the rows it reran or records why the child is unaffected.
+   - The validator resolves versions by comparing integers in the current files. It never reads old spec text.
+   - A Git history walk checks each committed transition of the spec ([contract](../artifact-contracts.md) §7.1). A body and hash changed together without a version bump and a new `approved:` entry fail. A shallow clone makes that check `blocked`, not `pass`.
    - An owner-approved exception is the alternative to changing the spec.
    - Approvals are logged in the parent task, not in the spec, so the hash stays stable.
 8. **Serialization:** Markdown with a small YAML frontmatter (only keys a script reads), plus fixed `##` sections. There is no separate JSON Schema, database or runtime. The contract document is the schema. An M1 script will implement the deterministic checks ([contract](../artifact-contracts.md) §7).
 9. **Evolution:**
    - `schema: task/1` and `spec/1` carry a major version only.
    - Additive optional changes need no bump. Readers tolerate unknown keys and sections.
-   - Terminal records are never migrated.
-   - Open records migrate only in an explicit, reviewable commit.
+   - The validator checks content for the current and previous majors.
+   - Records on older, retired majors are never migrated. They must be terminal and unchanged in Git since their status last changed. The validator reports them as `frozen`, not `pass`, and it keeps a permanent one-line registry entry per schema to do so.
+   - Open records migrate only in an explicit, reviewable commit that doesn't change status or evidence.
    - A body migration of an approved spec requires reapproval.
    - Missing values are never invented. An invalid state is fixed by moving the status back, never by editing evidence.
 10. **Budgets carry an enforcement label** (`hard` or `guideline`). Today only platform permissions are `hard`. Numeric token and time limits wait for D4.
@@ -107,7 +124,8 @@ flowchart LR
 | C2. One `heavy` file holding spec and execution state | Fewer files | Every status update edits the approved file, so silent changes can't be told apart. Brief §6 says a spec mustn't become a diary | rejected |
 | C3. A new immutable file per spec version | Trivially immutable | Files multiply and references break, while Git already keeps history | rejected |
 | C4. Living spec, edited freely (A6) | Least friction | Breaks the brief's approval rule | rejected |
-| C5. Record the approval commit SHA and diff against it | No hash | Needs full history (fails in shallow clones). A file can't contain its own commit SHA | rejected |
+| C5. Record the approval commit SHA and diff against it, instead of a hash | No hash | Needs full history even for the basic check. A file can't contain its own commit SHA | rejected as the only mechanism. The hash checks each state without history, and the history walk (decision 7) adds transition checks where history exists |
+| C7. On reopening, block only the children affected by the change, using Git history to compare versions | Unaffected work continues | Sorting is judgment against a draft that can still change. The validator would need to read old spec text from history | rejected for V1. Revisit after a logged friction |
 | C6. A separate evidence file for `heavy` | Literal reading of ADR 0002 §4 | Duplicates the parent's verification table | rejected for the parent record (decision 6) |
 
 ### D. Serialization and validation
@@ -129,6 +147,7 @@ flowchart LR
 | E2. Semantic version per schema | Finer signal | Overkill for a few personal files | rejected |
 | E3. No version; fix files when rules change | Simplest | Silent rewrites. Old terminal records fail validation | rejected |
 | E4. Automatic migration script | Convenient | Rewrites user and approved files without review (compare A8) | rejected |
+| E5. Keep full validation rules for every major forever | Every record gets fully revalidated | Validator cost grows with each version | rejected for the freeze check (decision 9) |
 
 ## Consequences
 
@@ -137,6 +156,8 @@ flowchart LR
 - `heavy` adds one spec file and an extra parent record. The rest of the ceremony runs inside `standard` children, as ADR 0002 intends.
 - Until M1 builds the validator, every "det" check is a checklist the agent follows, not an enforced control. Reports must say so.
 - Approvals are recorded by the agent from the owner's explicit words. The validator can prove they exist, not who wrote them.
+- The history and freeze checks need full Git history. In shallow clones they report `blocked`.
+- A spec change blocks all of its open children until reapproval, even the ones it doesn't affect. That's the price of a check the validator can make without history lookups.
 - D5 decides where `tasks/` and `specs/` live in a target repository. It also decides how the records relate to Claude Code's session task list, and whether the validator runs as a hook, a script or a skill step.
 - D7 can use the routing log, `verified_at` and the state history as per-task data. `light` tasks leave no file, so their data must come from transcripts or the report (D4).
 
