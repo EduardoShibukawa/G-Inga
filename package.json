@@ -4,10 +4,10 @@
   "description": "Development-only validation tooling for the G-Ingá repository. Not the product runtime.",
   "type": "module",
   "scripts": {
-    "validate": "bun tools/validate/main.ts",
-    "validate:external": "bun tools/validate/main.ts --external-only",
-    "test": "bun test tools/validate",
-    "typecheck": "tsc --noEmit -p tools/validate"
+    "validate": "bun tools/validate/preflight.ts && bun tools/validate/main.ts",
+    "validate:external": "bun tools/validate/preflight.ts && bun tools/validate/main.ts --external-only",
+    "test": "bun tools/validate/preflight.ts && bun test tools/validate",
+    "typecheck": "bun tools/validate/preflight.ts && tsc --noEmit -p tools/validate"
   },
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^12.0.0",
