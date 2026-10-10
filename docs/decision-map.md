@@ -19,10 +19,10 @@ flowchart TD
 |---|---|---|---|---|
 | D1 | Product boundary: personal SDLC harness first, context map deferred | accepted | none | [ADR 0001](decisions/0001-product-boundary.md) |
 | D2 | Ceremony tiers (`light` / `standard` / `heavy`): routing criteria and what each tier loads | accepted | D1 | [ADR 0002](decisions/0002-ceremony-tiers-and-routing.md), evidence in [research note](research/d2-routing-evidence.md). Follow-ups in the ADR are open but don't block |
-| D3 | Minimal schemas and state transitions for task, spec, checkpoint and evidence | open | D2 | **Next.** Draft only what ADR 0002 requires: routing line, `standard` task record, `heavy` spec and evidence |
-| D4 | Which token/cost signals Claude Code exposes locally (`/cost`, session transcripts, OpenTelemetry, statusline input) | open | none | Research against current official docs. Can run now, in parallel. |
-| D5 | Which parts are skills, hooks, scripts, subagents or `CLAUDE.md` | open | D2, D3, D6 | Waits on D3 and D6. Smallest mechanism per need. Keep the fixed per-turn routing cost small (ADR 0002 §8) |
-| D6 | Reuse of Matt Pocock skills: depend on the installed plugin, vendor copies, or write our own | open | D1 | Compare against token cost and the owner's customizations |
+| D3 | Minimal schemas and state transitions for task, spec, checkpoint and evidence | proposed | D2 | [ADR 0003](decisions/0003-minimum-artifact-schemas.md), field-level [artifact contracts](artifact-contracts.md), evidence in [research note](research/d3-artifact-evidence.md). **Awaiting owner approval.** Follow-ups in the ADR don't block |
+| D4 | Which token/cost signals Claude Code exposes locally (`/cost`, session transcripts, OpenTelemetry, statusline input) | open | none | Research against current official docs. Can run now, in parallel. Its answer sets the numeric budget limits that ADR 0003 leaves unset |
+| D5 | Which parts are skills, hooks, scripts, subagents or `CLAUDE.md` | open | D2, D3, D6 | Waits on D3 approval and D6. Smallest mechanism per need. Keep the fixed per-turn routing cost small (ADR 0002 §8). Also decides where `tasks/` and `specs/` live in a target repo and how the ADR 0003 validator runs |
+| D6 | Reuse of Matt Pocock skills: depend on the installed plugin, vendor copies, or write our own | open | D1 | **Next blocking** (gates D5 together with D3). Compare against token cost and the owner's customizations, and against the ADR 0003 contracts: Pocock's `to-spec` and `to-tickets` write formats that lack states, versions and evidence |
 | D7 | Evaluation: friction log plus matched before/after comparisons; PetClinic optional | open | D4 | Define the smallest repeatable comparison |
 
 ## Not on the V1 path
