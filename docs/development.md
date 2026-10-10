@@ -4,7 +4,7 @@
 
 ## Setup
 
-The toolchain is [mise](https://mise.jdx.dev/) plus [Bun](https://bun.sh/). Node.js, npm, pnpm and Yarn aren't used.
+The toolchain is [mise](https://mise.jdx.dev/) plus [Bun](https://bun.sh/). Node.js, npm, pnpm and Yarn aren't used. Git is also needed: the artifact checks read history.
 
 | File | Pins |
 |---|---|
@@ -14,18 +14,55 @@ The toolchain is [mise](https://mise.jdx.dev/) plus [Bun](https://bun.sh/). Node
 
 Mermaid diagrams are rendered in a headless Chromium or Chrome, which mise doesn't manage. The validator looks for `MERMAID_BROWSER` (or `PUPPETEER_EXECUTABLE_PATH`), then `PLAYWRIGHT_BROWSERS_PATH`, then the usual system paths. Without a browser the Mermaid check is `blocked`, never `pass`. Bun trusts Puppeteer's install script by default, which would download about 670 MB of Chrome; `.puppeteerrc.json` (`skipDownload: true`) turns that off for every `bun install`.
 
-## Commands
+### Platforms and shells
+
+| Platform | Status |
+|---|---|
+| Linux x64 (glibc) | verified: CI on `ubuntu-24.04`, mise 2026.10.7 |
+| macOS (x64, arm64), other Linux (arm64, musl) | not verified. `mise.lock` pins a Bun build for them and the browser lookup knows macOS's Chrome path |
+| Windows | not verified. `mise.lock` pins a Windows Bun build, but the browser lookup has no Windows paths (set `MERMAID_BROWSER`), and these docs assume a POSIX shell |
+
+Commands below are for a POSIX shell (bash, zsh); they also work in fish. `mise run` and `mise install` don't need shell activation.
+
+### Install mise
+
+Follow the [official installation guide](https://mise.jdx.dev/installing-mise.html) for your platform. CI uses mise 2026.10.7; check yours with `mise --version`.
+
+Its recommended script installs the executable at `~/.local/bin/mise`, which isn't on `PATH` on every system. If `command -v mise` prints nothing afterwards, see [Troubleshooting](#troubleshooting). [Shell activation](https://mise.jdx.dev/shell-setup.html) is optional here: it only puts the pinned `bun` on your interactive `PATH`.
+
+### Install the pinned tools
+
+From the repository root:
 
 ```sh
 mise install                 # Bun, as pinned in mise.lock
+```
+
+The first `mise` command in the repository may ask you to trust `mise.toml`, because it has `[settings]`. Read the file (and its tasks), then accept, or run `mise trust`. `mise run` installs the npm dependencies itself through its `setup` task.
+
+## Commands
+
+```sh
 mise run validate            # every applicable deterministic check
 mise run test                # type-check and test the validators
 mise run validate:external   # external URL availability (network)
+mise run setup               # only install dependencies (bun install --frozen-lockfile)
 ```
 
-`mise run validate` runs `bun install --frozen-lockfile` first, then `bun run validate`. With dependencies already installed, `bun run validate` is the direct equivalent. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run validate` in `.github/workflows/validate.yml`.
+`mise run validate` is the canonical entry point. It runs `bun install --frozen-lockfile` first, then `bun run validate`. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run validate` in `.github/workflows/validate.yml`, after installing the pinned mise with `jdx/mise-action`; it doesn't rely on a Bun or mise already on the runner.
 
-Exit codes: `0` every check passed or was `not run`; `1` a check failed; `2` nothing failed but a check was `blocked`.
+Exit codes: `0` every check passed or was `not run`; `1` a check failed; `2` nothing failed but a check was `blocked`, or a prerequisite is missing (below).
+
+Every `bun run` script starts with `tools/validate/preflight.ts`. If `node_modules` lacks a declared dependency, it prints `blocked:` with the setup command and exits `2` before any check runs. If the running Bun differs from the `mise.toml` pin, it prints a warning and goes on. It installs nothing.
+
+### Without mise
+
+`bun run validate`, `bun run test` and `bun run validate:external` run the same scripts, checks and exit codes as the `mise run` tasks, because those tasks call them. They aren't an equivalent toolchain, so use them only to troubleshoot:
+
+- the Bun on your `PATH` is used, not the version and checksum `mise.lock` pins. The preflight warns when the version differs;
+- dependencies aren't installed for you. Run `bun install --frozen-lockfile` first, or the preflight stops with exit `2`.
+
+A result from this route is evidence only when it ran on the pinned Bun. CI is the reference.
 
 No check edits a document. A failure is fixed in the document or, if the rule is wrong, in the validator, never by the validator.
 
@@ -102,3 +139,19 @@ Discovery uses fixed paths, relative to the validated directory. They follow thi
 Where the contract is ambiguous, the validator reports `blocked` with the conflicting sections instead of picking a meaning. Known cases are in [artifact contract validator findings](research/artifact-contract-validator-findings.md).
 
 These checks test the contract during development. They aren't the product's artifact validator, whose mechanism is D5's call.
+
+## Troubleshooting
+
+`mise doctor` reports how mise is installed, activated and configured. The mise [troubleshooting guide](https://mise.jdx.dev/troubleshooting.html) covers its own failures.
+
+| Symptom | Cause and fix |
+|---|---|
+| `mise: command not found` | mise isn't installed, or isn't on `PATH`. Run `~/.local/bin/mise --version`: if that works, the installer's default location isn't on `PATH`. Add `~/.local/bin` to `PATH` in your shell's startup file, or call `~/.local/bin/mise` directly, then open a new terminal. If it doesn't work, [install mise](#install-mise) |
+| `mise` works in one terminal but not in an editor, script or login shell | That program doesn't read the startup file where `PATH` or activation was set. See mise's [shell activation and PATH](https://mise.jdx.dev/troubleshooting.html#shell-activation-and-path) |
+| `bun: command not found` after `mise install` | Tools are on `PATH` only in an [activated](https://mise.jdx.dev/shell-setup.html) shell. Use `mise run ...` or `mise exec -- bun ...`, or activate mise |
+| mise asks to trust `mise.toml`, or says it isn't trusted | Read `mise.toml`, then accept or run `mise trust` |
+| `blocked: dependencies not installed` (exit `2`) | Run `mise run setup`, or `bun install --frozen-lockfile` |
+| `warning: Bun X is running, mise.toml pins Y` | You called `bun` directly with another version. Use `mise run ...` |
+| `bun install --frozen-lockfile` fails | `bun.lock` doesn't match `package.json`. Update the lockfile in the change that edits `package.json` |
+| `mermaid` is `blocked` | No browser found. Set `MERMAID_BROWSER` to a Chromium or Chrome executable |
+| `artifact-records` is `blocked` in a shallow clone | Run `git fetch --unshallow` |

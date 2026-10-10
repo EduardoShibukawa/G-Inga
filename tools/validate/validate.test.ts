@@ -4,6 +4,7 @@
  */
 import { afterAll, describe, expect, test } from "bun:test";
 import { listMarkdown } from "./lib/markdown.ts";
+import { preflight } from "./preflight.ts";
 import { cleanupFixtures, DECISION_MAP, fixtureDir, git, hasBrowser, NO_BROWSER, REPO, status, validate } from "./testkit.ts";
 import { externalLinks } from "./universal/externalLinks.ts";
 
@@ -153,4 +154,23 @@ describe("this repository", () => {
     expect(r.out).not.toMatch(/^\s+d\d-/m);
     expect(porcelain()).toBe(before);
   }, 120000);
+});
+
+describe("preflight", () => {
+  const PKG = JSON.stringify({ devDependencies: { yaml: "^2.9.1" } });
+  const MISE = '[tools]\nbun = "1.4.2"\n';
+
+  test("missing dependencies are reported with the setup command", () => {
+    const r = preflight(fixtureDir({ "package.json": PKG, "mise.toml": MISE }), "1.4.2");
+    expect(r.missing.join()).toContain("bun install --frozen-lockfile");
+    expect(r.warnings).toEqual([]);
+  });
+
+  test("installed dependencies and the pinned Bun pass; another Bun only warns", () => {
+    const dir = fixtureDir({ "package.json": PKG, "mise.toml": MISE, "node_modules/yaml/package.json": "{}" });
+    expect(preflight(dir, "1.4.2")).toEqual({ missing: [], warnings: [] });
+    const r = preflight(dir, "1.3.0");
+    expect(r.missing).toEqual([]);
+    expect(r.warnings.join()).toContain("mise.toml pins 1.4.2");
+  });
 });
