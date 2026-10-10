@@ -1,8 +1,8 @@
 {
-  "$comment": "Machine-readable copy of the D3 transition rules. docs/artifact-contracts.md stays the authority; `bun run validate` fails if this file's status differs from ADR 0003 or if its edges drift from the §3.3 stateDiagram.",
-  "decision": "D3",
-  "status": "accepted",
+  "$comment": "Machine-readable copy of the task/spec artifact contract's state machine. `source` stays the authority; `mise run validate` fails if `status` differs from the record in `defined_by` or if the edges drift from the source's state diagram.",
   "source": "docs/artifact-contracts.md",
+  "defined_by": "docs/decisions/0003-minimum-artifact-schemas.md",
+  "status": "accepted",
   "task": {
     "schema": "task/1",
     "states": ["todo", "active", "blocked", "completed", "verified", "accepted", "partial", "cancelled"],

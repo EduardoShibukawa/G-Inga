@@ -1,5 +1,5 @@
 /**
- * Isolated fixtures for the D3 contract: the §7.2 test table (T1–T19) plus cases from the D3 review.
+ * Isolated fixtures for the task/spec artifact contract (docs/artifact-contracts.md): the §7.2 test table (T1–T19) plus review cases.
  * State fixtures live in memory; history fixtures build a throwaway Git repository in the OS temp dir.
  * Nothing here reads or writes the canonical project files.
  */
@@ -178,7 +178,7 @@ function historyCase(id: string, title: string, expect: Outcome, steps: Step[], 
     title,
     expect,
     run: () => {
-      const dir = mkdtempSync(join(tmpdir(), "g-inga-d3-"));
+      const dir = mkdtempSync(join(tmpdir(), "g-inga-artifacts-"));
       try {
         const g = (...args: string[]) => {
           const r = git(dir, args);

@@ -1,10 +1,10 @@
 /**
- * Git history rules of the D3 contract (docs/artifact-contracts.md §7.1 and §8).
+ * Git history rules of the task/spec artifact contract (docs/artifact-contracts.md §7.1 and §8).
  * Reads only committed states plus the working tree. Never writes to the repository.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import contract from "./transitions.json" with { type: "json" };
+import contract from "./contract.json" with { type: "json" };
 import { bodyHash, parseRecord, specRef, str, type Artifact } from "./records.ts";
 import { checkSnapshot, loadSnapshot, schemaStanding, type Ancestry, type Finding, type Options } from "./rules.ts";
 
@@ -23,6 +23,20 @@ export function git(root: string, args: string[]): { ok: boolean; out: string } 
 
 export function isGitRepo(root: string): boolean {
   return git(root, ["rev-parse", "--is-inside-work-tree"]).out.trim() === "true";
+}
+
+export type RecordHistory = { kind: "none" } | { kind: "some"; commit: string } | { kind: "unknown"; reason: "not-git" | "shallow" };
+
+/**
+ * Whether HEAD's history ever committed a task or spec record: a commit that added or removed a
+ * `schema: task/N` or `schema: spec/N` line under `tasks/` or `specs/`. Needs full history.
+ */
+export function recordHistory(root: string): RecordHistory {
+  if (!isGitRepo(root)) return { kind: "unknown", reason: "not-git" };
+  if (!git(root, ["rev-parse", "--verify", "--quiet", "HEAD"]).ok) return { kind: "none" };
+  if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true") return { kind: "unknown", reason: "shallow" };
+  const hit = git(root, ["log", "-E", "-G", "^schema:[[:space:]]*[\"']?(task|spec)/[0-9]+", "--format=%h", "-1", "HEAD", "--", "tasks", "specs"]).out.trim();
+  return hit ? { kind: "some", commit: hit } : { kind: "none" };
 }
 
 export function gitAncestry(root: string): Ancestry {
@@ -66,7 +80,7 @@ export function reachable(from: string, to: string): boolean {
 
 export function checkHistory(root: string, opts: Options = {}): HistoryResult | { blocked: string } {
   if (!isGitRepo(root)) return { blocked: "not a Git repository" };
-  if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true") return { blocked: "shallow clone: the history walk needs full history (§7.1)" };
+  if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true") return { blocked: "shallow clone: the history walk and deleted-record detection need full history (§7.1)" };
   const hasHead = git(root, ["rev-parse", "--verify", "--quiet", "HEAD"]).ok;
   const commits = hasHead ? git(root, ["rev-list", "--reverse", "HEAD", "--", "tasks", "specs"]).out.split("\n").filter(Boolean) : [];
   const revs = [...commits, WT];

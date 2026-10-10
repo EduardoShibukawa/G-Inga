@@ -1,4 +1,4 @@
-# D3 validator findings
+# Artifact contract validator findings
 
 **Status:** open findings from encoding the accepted [artifact contracts](../artifact-contracts.md) ([ADR 0003](../decisions/0003-minimum-artifact-schemas.md)) as checks. None changes the contract. Each needs an owner decision before the validator can treat it as settled.
 
@@ -8,7 +8,7 @@ Recorded 2026-10-10 while building `tools/validate/` ([development](../developme
 
 | ID | Sections | Finding | What the validator does now |
 |---|---|---|---|
-| F1 | §3.3, §4.4 | A `heavy` parent becomes `verified` only if "every child that isn't `cancelled` is `verified` or `accepted`" (§3.3). §4.4 says a `partial` child "doesn't count toward the parent" | reports `blocked` when a parent is `verified` or `accepted` with a `partial` child (fixture X6) |
+| F1 | §3.3, §4.4 | A `heavy` parent becomes `verified` only if "every child that isn't `cancelled` is `verified` or `accepted`" (§3.3). §4.4 says a `partial` child "doesn't count toward the parent" | reports `blocked` when a parent is `verified` or `accepted` with a `partial` child (fixture X6 in `tools/validate/artifacts/fixtures.ts`) |
 | F2 | §3.3, §8 | "The owner can cancel from any state that isn't terminal", but §3.3 doesn't define terminal. §8 lists `verified`, `accepted`, `partial` and `cancelled` as terminal for `task/1` | adds one edge from prose, `completed → cancelled`, listed in `transitions_from_prose` |
 | F3 | §3.4, §3.6, §9.3 | A `B` row "keeps the commit it ran on; it isn't refreshed" (§3.4), yet the checkpoint examples say "rerun it if main moved". It isn't defined whether a rerun replaces the row's `Ref` or adds a new `B` row | checks only that each `B` commit is a strict ancestor of `verified_at`, not that a `B` row's `Ref` never changes |
 | F4 | §3.4 | `Ref` is "the short commit SHA … plus a log path", with no separator or SHA length. Comparisons with `verified_at` are exact | takes the first whitespace-separated token; different abbreviations of one commit don't match |

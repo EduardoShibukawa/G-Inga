@@ -8,6 +8,8 @@ export interface CheckResult {
   findings: string[];
   /** Sub-checks that were skipped and why. Never counted as a pass. */
   notRun: string[];
+  /** Validation layer, used to group the summary. */
+  layer?: string;
 }
 
 export function result(
@@ -30,7 +32,11 @@ export function printReport(results: CheckResult[], out: (line: string) => void 
   }
   out("\nSummary");
   const width = Math.max(...results.map((r) => r.name.length));
-  for (const r of results) out(`  ${r.name.padEnd(width)}  ${r.status.padEnd(7)}  ${r.summary}`);
+  const layers = [...new Set(results.map((r) => r.layer ?? "universal"))];
+  for (const layer of layers) {
+    out(`  ${layer}`);
+    for (const r of results.filter((x) => (x.layer ?? "universal") === layer)) out(`    ${r.name.padEnd(width)}  ${r.status.padEnd(7)}  ${r.summary}`);
+  }
   out(`\nOverall: ${overall(results)}`);
 }
 

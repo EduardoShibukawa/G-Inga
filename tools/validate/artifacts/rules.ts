@@ -1,9 +1,9 @@
 /**
- * State checks for the D3 contract (docs/artifact-contracts.md §3–§4, §6.1, §8).
+ * State checks for the task/spec artifact contract (docs/artifact-contracts.md §3–§4, §6.1, §8).
  * They check one snapshot of `tasks/` and `specs/`. History rules are in history.ts.
  * Where the contract is ambiguous the finding is `ambiguous`, reported as `blocked`, never as pass or fail.
  */
-import contract from "./transitions.json" with { type: "json" };
+import contract from "./contract.json" with { type: "json" };
 import { bodyHash, parseRecord, RESULTS, specRef, str, tierOf, type Artifact } from "./records.ts";
 
 export type Level = "fail" | "blocked" | "ambiguous";
@@ -23,7 +23,7 @@ export type Ancestry = (a: string, b: string) => boolean | undefined;
 
 export interface Options {
   ancestry?: Ancestry;
-  /** Current major per schema family; defaults to transitions.json. Tests override it for §8. */
+  /** Current major per schema family; defaults to contract.json. Tests override it for §8. */
   currentMajor?: { task: number; spec: number };
 }
 

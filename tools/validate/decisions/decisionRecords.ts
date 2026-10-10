@@ -1,3 +1,4 @@
+import type { Check } from "../lib/check.ts";
 import { fences, links, type MdFile } from "../lib/markdown.ts";
 import { result, type CheckResult } from "../lib/report.ts";
 
@@ -79,3 +80,13 @@ export function decisions(files: MdFile[]): CheckResult {
 function parseDeps(cell: string): string[] {
   return cell === "none" ? [] : cell.split(",").map((s) => s.trim()).filter(Boolean);
 }
+
+/** Applies when the target has a decision map or decision records. ADRs without a map are `blocked`. */
+export const decisionChecks: Check[] = [
+  {
+    name: "decision-records",
+    layer: "decision records",
+    applies: (ctx) => ctx.files.some((f) => f.path === MAP || ADR_RE.test(f.path)) || `no ${MAP} or docs/decisions/NNNN-*.md`,
+    run: (ctx) => decisions(ctx.files),
+  },
+];

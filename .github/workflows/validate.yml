@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
         with:
-          # The D3 history walk (docs/artifact-contracts.md §7.1) is blocked in a shallow clone.
+          # The task/spec record history walk (docs/artifact-contracts.md §7.1) is blocked in a shallow clone.
           fetch-depth: 0
       - uses: jdx/mise-action@v5.1.1
         with:

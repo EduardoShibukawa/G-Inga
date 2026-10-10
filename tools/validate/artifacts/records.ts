@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { parse as parseYaml } from "yaml";
-import contract from "./transitions.json" with { type: "json" };
+import contract from "./contract.json" with { type: "json" };
 
 export type Kind = "task" | "spec";
 

@@ -5,36 +5,31 @@
  *   bun tools/validate/main.ts --external-only  external URL availability only (network)
  *   bun tools/validate/main.ts --root <dir>     validate another directory (used by tests)
  *
+ * Checks come in layers: universal ones for any Markdown, then type-specific ones that run
+ * only when the target contains what they validate (see docs/development.md).
  * Exit codes: 0 pass, 1 a check failed, 2 nothing failed but a check was blocked.
  * Read-only: no check edits any file.
  */
 import { resolve } from "node:path";
-import { d3Contract, d3Examples, d3Fixtures, d3Records } from "./checks/d3.ts";
-import { decisions } from "./checks/decisions.ts";
-import { externalLinks } from "./checks/externalLinks.ts";
-import { localLinks } from "./checks/localLinks.ts";
-import { markdownLint } from "./checks/markdownLint.ts";
-import { mermaid } from "./checks/mermaid.ts";
+import { artifactChecks } from "./artifacts/checks.ts";
+import { decisionChecks } from "./decisions/decisionRecords.ts";
+import { runChecks, type Context } from "./lib/check.ts";
 import { listMarkdown } from "./lib/markdown.ts";
 import { exitCode, printReport, type CheckResult } from "./lib/report.ts";
+import { externalLinks } from "./universal/externalLinks.ts";
+import { universalChecks } from "./universal/index.ts";
 
 const args = process.argv.slice(2);
 const rootArg = args.indexOf("--root");
 const root = resolve(rootArg >= 0 ? args[rootArg + 1] : resolve(import.meta.dir, "../.."));
-const files = listMarkdown(root);
+const ctx: Context = { root, files: listMarkdown(root) };
 
 let results: CheckResult[];
 if (args.includes("--external-only")) {
-  results = [await externalLinks(files)];
+  results = [await externalLinks(ctx.files)];
 } else {
-  const isRepo = files.some((f) => f.path === "docs/artifact-contracts.md");
   results = [
-    await markdownLint(root, files),
-    localLinks(root, files),
-    await mermaid(files),
-    decisions(files),
-    ...(isRepo ? [d3Contract(files), d3Examples(files), d3Fixtures()] : []),
-    d3Records(root),
+    ...(await runChecks([...universalChecks, ...decisionChecks, ...artifactChecks], ctx)),
     { name: "external-links", status: "not run", summary: "network check; run `mise run validate:external`", findings: [], notRun: [] },
   ];
 }
