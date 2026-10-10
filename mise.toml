@@ -1,0 +1,30 @@
+# Development tooling for this repository only (not the G-Ingá product runtime).
+# Bun is the only managed runtime. Mermaid rendering also needs a Chromium or
+# Chrome binary on the machine; see docs/development.md.
+
+[tools]
+bun = "1.4.2"
+
+[settings]
+lockfile = true
+# Install only what mise.lock pins (URL and checksum).
+locked = true
+
+[tasks.setup]
+description = "Install dev dependencies exactly as locked in bun.lock"
+run = "bun install --frozen-lockfile"
+
+[tasks.validate]
+description = "Run every required deterministic repository check"
+depends = ["setup"]
+run = "bun run validate"
+
+[tasks."validate:external"]
+description = "Check external URL availability (network; separate from validate)"
+depends = ["setup"]
+run = "bun run validate:external"
+
+[tasks.test]
+description = "Type-check and test the validators themselves"
+depends = ["setup"]
+run = ["bun run typecheck", "bun run test"]

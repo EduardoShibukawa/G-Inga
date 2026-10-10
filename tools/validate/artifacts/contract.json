@@ -1,0 +1,55 @@
+{
+  "$comment": "Machine-readable copy of the task/spec artifact contract's state machine. `source` stays the authority; `mise run validate` fails if `status` differs from the record in `defined_by` or if the edges drift from the source's state diagram.",
+  "source": "docs/artifact-contracts.md",
+  "defined_by": "docs/decisions/0003-minimum-artifact-schemas.md",
+  "status": "accepted",
+  "task": {
+    "schema": "task/1",
+    "states": ["todo", "active", "blocked", "completed", "verified", "accepted", "partial", "cancelled"],
+    "initial": ["todo", "active"],
+    "final": ["verified", "accepted", "cancelled"],
+    "transitions": [
+      ["todo", "active"],
+      ["todo", "blocked"],
+      ["active", "blocked"],
+      ["blocked", "active"],
+      ["active", "completed"],
+      ["completed", "blocked"],
+      ["completed", "active"],
+      ["completed", "verified"],
+      ["verified", "active"],
+      ["verified", "accepted"],
+      ["active", "partial"],
+      ["blocked", "partial"],
+      ["completed", "partial"],
+      ["partial", "active"],
+      ["todo", "cancelled"],
+      ["active", "cancelled"],
+      ["blocked", "cancelled"]
+    ],
+    "transitions_from_prose": [
+      {
+        "edge": ["completed", "cancelled"],
+        "source": "§3.3: 'The owner can cancel from any state that isn't terminal. The diagram shows only the common cases.' Non-terminal is read from the §8 registry (terminal: verified, accepted, partial, cancelled), so the only edge missing from the diagram is completed → cancelled."
+      }
+    ],
+    "not_current_spec_states": ["blocked", "verified", "accepted", "partial", "cancelled"]
+  },
+  "spec": {
+    "schema": "spec/1",
+    "states": ["draft", "approved", "superseded"]
+  },
+  "schema_registry": [
+    { "schema": "task/1", "terminal": ["verified", "accepted", "partial", "cancelled"] },
+    { "schema": "spec/1", "terminal": ["superseded"] }
+  ],
+  "current_major": { "task": 1, "spec": 1 },
+  "results": ["pass", "fail", "blocked", "not run"],
+  "verification_row_kinds": {
+    "B": { "runs_on": "strict ancestor of verified_at", "result_for_verified": "any" },
+    "AC": { "runs_on": "verified_at", "result_for_verified": "pass" },
+    "SC": { "runs_on": "verified_at", "result_for_verified": "pass" },
+    "R": { "runs_on": "verified_at", "result_for_verified": "pass or attributed fail" },
+    "V": { "runs_on": "verified_at", "result_for_verified": "pass" }
+  }
+}
