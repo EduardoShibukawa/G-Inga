@@ -1,8 +1,8 @@
 # 0006 — Usage, context and cost observability
 
-- **Status:** proposed (not accepted; prepared for project owner review post-spike D4; see "What needs the owner")
-- **Date:** 2026-10-10 (revised 2026-10-11 post-spike D4)
-- **Deciders:** project owner (pending)
+- **Status:** accepted (accepted by project owner 2026-10-11; covers multi-host local telemetry for Claude Code and Antigravity CLI)
+- **Date:** 2026-10-10 (revised and accepted 2026-10-11)
+- **Deciders:** project owner
 - **Depends on:** nothing on the decision map. Constrained by [ADR 0001](0001-product-boundary.md) (personal SDLC harness scoped to Claude Code in V1), [ADR 0002](0002-ceremony-tiers-and-routing.md) §8 (what to measure) and [ADR 0003](0003-minimum-artifact-schemas.md) decision item 10 (`hard` and `guideline` budgets), all `accepted`, and by [ADR 0005](0005-native-primitive-mapping.md) (`proposed`), which leaves the fixed per-turn cost limit to D4 (U7). This record changes none of them.
 - **Evidence:** [D4 evidence](../research/d4-observability-evidence.md), [D4 spike results](../research/d4-spike-results.md), and [D4 spike review](../research/d4-spike-review.md). Codes `T`, `G` and `K` below refer to the evidence note.
 - **Correction of an earlier label:** until this record, the decision map's D4 row named `/cost` as a Claude Code signal. In the current commands reference `/cost` is an alias of `/usage`, as is `/stats` (T13). The row now names `/usage`; Git keeps the old wording.
