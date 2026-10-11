@@ -59,7 +59,7 @@ Rows below reran at 9b7ebb5 unless their Ref says otherwise. The integrated rows
 | R1 | repository test suite | pass | 9b7ebb5 | `G_INGA_REQUIRE_RUNTIMES=1 mise run test` locally: type-check clean, 107 pass, 0 fail |
 | R2 | repository validation suite | pass | 9b7ebb5 | `mise run validate` exit 0 |
 | R3 | external links | blocked | 9b7ebb5 | `mise run validate:external` exit 2: 87 URLs, 0 broken, 53 unreachable through this session's egress proxy |
-| R4 | remote CI (`validate` workflow) on the pushed head | not run | 9b7ebb5 | recorded after the push |
+| R4 | remote CI (`validate` workflow) on the pushed head | pass | 9b7ebb5 | run 38143974269 on head 26304e4 (merge ref 9406774, tree of 9b7ebb5 plus `tasks/` records): `mise run test` 107 pass with Node v22.23.3 and Bun matrices executed, none skipped; `mise run validate` pass. The runner refused `unshare`, so the network-namespace isolation of child 02 AC1 ran only locally |
 | V1 | diff review against V1 specification | pass | 9b7ebb5 | self-review by the remediating session of 5d38ae3..9b7ebb5; spec body hash still `sha256:09ff9d3d…bc5bab`; no spec or ADR change |
 | V2 | fresh-context review of the remediation | not run | 9b7ebb5 | not yet run (plan step 8) |
 
@@ -102,8 +102,8 @@ No child task was managed by `/work` from inception. The next remediation step s
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 52c549e, worktree clean; PR #12 is a draft
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 26304e4, worktree clean; PR #12 is a draft; CI run 38143974269 green on 26304e4
 - done: CI failure root-caused (type-check of tools/validate/standalone.ts) and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun; children 02 and 03 verified at 9b7ebb5
 - open: A7 (owner decision on delivering the contract text), A8, A9, A10, G1; SC1 blocked, SC2 and SC8 not run, V2 not run
-- next: push, record the remote CI result in R4; then the owner decides A7 and G1, and a Claude Code session with `/work` loaded reruns SC2/SC8 and the fresh-context review
+- next: the owner decides A7 and G1, and a Claude Code session with `/work` loaded reruns SC2/SC8 and the fresh-context review
 - revalidate: rows at 9b7ebb5 stay current only while later commits change nothing but `tasks/`
