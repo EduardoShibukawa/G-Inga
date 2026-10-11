@@ -11,6 +11,7 @@ spec: 2026-10-11-minimal-v1-specification@1
 
 - tier: heavy (H1: cross-session SDLC harness specification, H2: deterministic quality gates and distribution bundle architecture)
 - confirmed: heavy by owner (2026-10-11, "autorização formal para elaboração e aprovação da especificação V1")
+- approved: spec v1 by owner (2026-10-11, "especificação mínima V1 aprovada formalmente")
 
 ## Objective
 
@@ -52,6 +53,6 @@ skip: specification phase; review subagent runs upon children implementation
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch docs/approve-v1-spec-consolidate-pending-work, head 9036fb5, worktree dirty
-- done: minimal V1 specification drafted, D5 accepted, pending decisions consolidated
-- next: formalize spec approval and create draft PR
+- as of: 2026-10-11, branch docs/approve-v1-spec-consolidate-pending-work, head a6eb341, worktree dirty
+- done: minimal V1 specification drafted and approved by owner (approved_version: 1, approved_hash: sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab)
+- next: commit approval, run final validations, create draft PR
