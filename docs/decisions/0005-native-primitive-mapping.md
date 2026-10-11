@@ -1,20 +1,26 @@
 # 0005 — Native primitive mapping
 
-- **Status:** proposed (not accepted. It waits for the owner's decision; see "What needs the owner")
-- **Date:** 2026-10-10
-- **Deciders:** project owner (pending)
+- **Status:** accepted (2026-10-11)
+- **Date:** 2026-10-10 (approved 2026-10-11)
+- **Deciders:** project owner (approved 2026-10-11: FU1–FU4 pinned bundle distribution, H-1 no commit hook in V1 with CI merge enforcement condition, FU6 coexistence with Pocock plugin, and authorization to author the minimal V1 specification)
 - **Depends on:** [ADR 0001](0001-product-boundary.md), [ADR 0002](0002-ceremony-tiers-and-routing.md) and [ADR 0003](0003-minimum-artifact-schemas.md), all `accepted`. D6 is `accepted` in [ADR 0004](0004-reuse-strategy-for-existing-skills.md). This record doesn't change it.
 - **Evidence:** [D5 evidence](../research/d5-native-primitive-evidence.md) (codes `N`, `W`, `L`), [D2 evidence](../research/d2-routing-evidence.md) (codes `C`, `P`, `O`), and the [D6 evidence](../research/d6-reuse-evidence.md) (codes `S`, `M`, `P7`, and `C10`–`C21`; quoted in backticks here, such as `C15`, to keep them apart from the D2 codes `C1`–`C9`).
 - **Numbering:** first drafted as 0004 and renumbered to 0005 before any commit, because 0004 went to D6.
-- **Revision (2026-10-10, still proposed):** realigned with accepted D6.
+- **Revision (2026-10-10, proposed):** realigned with accepted D6.
   - The cloud-session evidence now separates four channels, instead of treating personal skills and plugins as unavailable everywhere.
   - Where G-Ingá's files live, how target repositories get them, and how they're updated are no longer decided here. They're follow-ups FU1–FU5. FU1–FU4 block the minimal V1 spec.
   - The commit-gate hook is no longer proposed. Whether it's needed is open (H-1).
-- **Revision (2026-10-10, consistency review, still proposed):** one V1 validator path throughout. The skill step always runs it. CI runs it where the owner enables the job. No hook. The matrix, the diagram and the result table now say the same.
-- **Revision (2026-10-10, reconciled onto `main` at `4604ff3`, still proposed):**
+- **Revision (2026-10-10, consistency review, proposed):** one V1 validator path throughout. The skill step always runs it. CI runs it where the owner enables the job. No hook. The matrix, the diagram and the result table now say the same.
+- **Revision (2026-10-10, reconciled onto `main` at `4604ff3`, proposed):**
   - D6 references are links.
   - FU1–FU4 compare concrete alternatives and carry recommendations. They stay unresolved until the owner decides.
   - H-1 and FU6 have proposals.
+- **Revision (2026-10-11, accepted):** approved by project owner.
+  - FU1–FU4 settled: G-Ingá repository is canonical; delivery via committed pinned bundle (Alternative A); update by atomic replacement with SHA-256 integrity manifest for accidental drift detection; validator co-located in bundle.
+  - H-1 settled for V1: Alternative I (no commit hook in V1). CI validator execution provides merge enforcement only where required status checks / branch protection are configured. Without required checks, no deterministic gate exists and no equivalence may be claimed.
+  - FU6 settled: Matt Pocock plugin remains installed and unreferenced during transition, with no runtime dependency.
+  - Authoring of the minimal V1 specification document is authorized (does not authorize product implementation).
+  - Unresolved questions U2–U8 documented as non-blocking implementation details or deferred follow-ups.
 
 ## Context
 
@@ -207,24 +213,24 @@ flowchart TD
 - No mechanism here relaxes an ADR 0003 rule or writes an approval. CI and the validator only refuse.
 - Whether the validator's rules and the instruction text come from one source is FU4. It's a drift risk, not an authority question: the contract is the authority either way.
 
-## Follow-ups that depend on D6 (open)
+## Follow-ups that depend on D6 (settled by owner approval on 2026-10-11)
 
-D6 decides who owns the workflow, not how G-Ingá's own files reach a repository. These questions stay open in D5. FU1–FU4 are unresolved, and the minimal V1 spec can't be written until the owner answers them. The next section compares alternatives and recommends one per question. A recommendation isn't a resolution.
+D6 decides who owns the workflow, not how G-Ingá's own files reach a repository. On 2026-10-11, the project owner approved the distribution architecture (FU1–FU4), the V1 hook policy (H-1), and the transitional coexistence policy (FU6). These decisions unblock the minimal V1 specification document.
 
-| ID | Question | Options seen so far | Constraints | Blocks |
+| ID | Question | Settled Decision (Alternative A) | Rationale & Constraints | Blocks |
 |---|---|---|---|---|
-| FU1 | Where G-Ingá's canonical instruction source lives, and which channel delivers it to a session | (a) committed per target repository; (b) personal install on the owner's machine; (c) skills enabled on the claude.ai account; (d) G-Ingá's own plugin, which ADR 0001 defers | It has to reach the sessions the owner actually uses. Today only (a) is versioned with the target repository. (b) doesn't reach cloud sessions (N6). (c)'s behavior in local sessions and its versioning weren't verified. G-Ingá's repository stays the place where the text is written | **the minimal V1 spec** |
-| FU2 | Whether target repositories receive project-local copies | yes for (a). No for (b) to (d) | A copy of G-Ingá's own files isn't "vendoring" under ADR 0004 §6, which is about upstream skills. It still forks unless it's updated deliberately (FU3) | **the minimal V1 spec** |
-| FU3 | How copies are updated without unmanaged forks or drift | a version file plus a check that compares the copy with the canonical source at that version; or no copies at all | Updates are explicit and reviewable (brief §7). No drift tracker unless a friction asks for one (ADR 0004, Consequences) | **the minimal V1 spec** |
-| FU4 | Whether the validator and the instructions share one source of truth | same directory and version; or a separate tool | The validator's rules come from the contract. The instructions must cite the same contract version the validator checks. The CI job (item 5) needs the validator reachable from the target repository's checkout, committed or fetched at a pinned version, whatever FU1 picks | **the minimal V1 spec** |
-| FU5 | How the chosen channel behaves in local and cloud sessions | per the channel table above | Mark each answer verified or assumed. Spikes S2 and S5 apply to any channel | V1 acceptance checks; follows FU1 |
-| FU6 | Whether a G-Ingá-managed repository disables the Pocock plugin during the transition | disable per project or local settings; or leave it to the owner | ADR 0004 §7 keeps the plugin usable during the transition. A plugin is enabled or disabled as a whole (`C11`) | no |
+| FU1 | Canonical instruction source & delivery channel | G-Ingá repository is canonical; committed per target repository | Verified to load in local and single-repo cloud sessions (N12). Target repositories receive generated, pinned bundle directories committed to Git. | settled (unblocks V1 spec) |
+| FU2 | Project-local copies | Adopt Alternative A: dedicated committed bundle directory | Self-contained checkouts (`.claude/skills/work/`, `tools/validate/`, `manifest.json`). No external registry or unverified cloud sync. Light tier preserves zero-file task invariant. | settled (unblocks V1 spec) |
+| FU3 | Updates without unmanaged forks or drift | Atomic replacement with SHA-256 integrity manifest | Updates replace the bundle atomically at a new release tag. Manifest hashes detect accidental drift; not cryptographic authentication against deliberate agent tampering. | settled (unblocks V1 spec) |
+| FU4 | Validator distribution & source of truth | Co-located inside pinned bundle | Ships beside instructions at the identical version. Target-repo CI runs offline from checkout (runtime such as Node 22 or Bun required). Zero network risk. | settled (unblocks V1 spec) |
+| FU5 | Local and cloud session parity | Structural delivery & discovery parity (`N12`); behavioral parity unverified | Committed files guarantee identical versioning and host loading. Effective agent behavior parity remains an empirical hypothesis for spikes/pilot. | settled for V1 (empirical check in D7) |
+| FU6 | Pocock plugin during transition | Coexistence: keep installed and unreferenced | Owner's flow remains operational without disruption; no runtime dependency in G-Ingá; replacement verified per ADR 0004 §7 criteria. | settled for V1 |
 
-## FU1–FU4: alternatives and recommendations (proposed, not resolved)
+## FU1–FU4: alternatives and settled decision (Alternative A)
 
 ### Alternatives
 
-- **A. Pinned bundle (candidate).** G-Ingá's repository stays canonical. A release is a tagged, versioned directory: the `work` skill, its supporting files, the validator and a manifest. The owner copies that directory into each target repository and commits it there.
+- **A. Pinned bundle (selected and approved).** G-Ingá's repository stays canonical. A release is a tagged, versioned directory: the `work` skill, its supporting files, the validator and a manifest. The owner copies that directory into each target repository and commits it there.
 - **B. Plugin plus fetched validator.** G-Ingá ships as its own plugin, installed on the owner's machine. Each target's CI fetches the validator from G-Ingá's repository at a pinned tag.
 - **C. Account skill plus fetched validator.** G-Ingá's skill is enabled on the owner's claude.ai account. CI fetches the validator as in B.
 - **D. Git subtree or submodule.** G-Ingá's directory enters each target repository through Git itself.
@@ -240,14 +246,16 @@ D6 decides who owns the workflow, not how G-Ingá's own files reach a repository
 | CI reliability | the validator is in the checkout. No network, no second pin | needs network and a pin kept in step with the installed instructions | same as B | subtree: as A. Submodule: CI must check out submodules |
 | Fixed context overhead | one description, only in repositories that adopt G-Ingá | the plugin's descriptions in every project on that machine | the description in every session on the account | as A |
 
-### Recommendations
+### Approved decisions
 
-| ID | Question | Recommendation (proposed) | Why, and the strongest alternative | Owner approval needed | Safe to defer to the V1 spec |
-|---|---|---|---|---|---|
-| FU1 | Canonical source | G-Ingá's repository is the only place the instructions and the validator are written. Target repositories hold generated copies, never edited in place | It follows ADR 0004 §1 and §2. No alternative moves authorship elsewhere. They only change delivery | yes | release naming and tagging scheme |
-| FU2 | Project-local copies | **A**: each target commits one pinned bundle directory | Only A and D give local and cloud parity from documented behavior (N12). A is simpler than a subtree and doesn't depend on unverified submodule cloning. C is the strongest alternative, if the owner prefers zero files per repository, but its versioning is unverified | yes | directory name and layout. The `CLAUDE.md` pointer block's exact text |
-| FU3 | Updates without drift | Update = one explicit commit that replaces the whole bundle and its manifest at a new version. A deterministic integrity check fails when bundle files don't match the manifest, so a local edit can't silently become a fork. A change a target needs goes upstream to G-Ingá first | Without the check, a hand edit to a copy is invisible. The check covers G-Ingá's own files only; it isn't the upstream drift tracker ADR 0004 rules out | yes: that local edits fail and changes go upstream | manifest format and hash, an optional update script, the release notes format |
-| FU4 | Validator distribution | The validator ships inside the bundle, beside the instructions, at the same version. CI runs it from the checkout | CI gets exactly the validator version the instructions cite, with no network and no second pin. Under B or C the two pins can disagree | yes | runtime and build (U2), the CI job definition, the job's history depth |
+| ID | Question | Settled Decision | Status |
+|---|---|---|---|
+| FU1 | Canonical source | G-Ingá's repository is the sole canonical authoring source. Target repositories hold generated, pinned bundle copies, committed to Git | approved by owner |
+| FU2 | Project-local copies | **Alternative A**: each target commits one pinned bundle directory (`.claude/skills/work/`, `tools/validate/`, `manifest.json`) | approved by owner |
+| FU3 | Updates without drift | Update = one explicit commit that replaces the whole bundle and manifest at a new version. SHA-256 manifest detects accidental drift | approved by owner |
+| FU4 | Validator distribution | Validator ships co-located inside the bundle at identical version. CI runs offline from checkout (compatible runtime required) | approved by owner |
+
+FU5 follows FU2: file delivery and host discovery are verified (`N12`), while behavioral parity is deferred to empirical validation in spikes and D7.
 
 FU5 follows FU2. Under A, the local and cloud rows in the channel table are documented behavior, not assumptions. Spikes S2 and S5 still apply.
 
@@ -339,12 +347,13 @@ Earlier drafts proposed a `PreToolUse` hook on `git commit` that runs the valida
 - **Small fixed cost against reliable triggering.** One description per turn buys automatic loading that is still stochastic (O5).
 - **Distribution left open.** Deciding mechanisms without the channel keeps the record honest, but the minimal V1 spec can't be written until FU1–FU4 are answered.
 
-## What needs the owner
+## Owner approval recorded (2026-10-11)
 
-1. **Accepting D5 at all.** It stays `proposed` until then.
-2. **FU1–FU4**, the distribution model. Unresolved. These block the minimal V1 spec. The proposed answer is the pinned bundle (A): canonical source in G-Ingá, one committed copy per target, update by explicit commit with an integrity check, validator inside the bundle. The owner approves or picks another column.
-3. **H-1**: confirm the proposal to keep V1 without the commit hook (alternative I), with the hook as an open follow-up. Whether it ever comes back depends on F8, the merge strategy, and a logged friction or spike S3.
-4. **FU6**: confirm the proposal to keep the plugin installed and unreferenced until each role is covered.
+1. **D5 accepted.** Approved as native primitive mapping and distribution architecture.
+2. **FU1–FU4 approved.** Alternative A (Pinned Bundle): G-Ingá repository canonical, target repositories commit pinned bundle, update by atomic replacement with SHA-256 integrity manifest for accidental drift detection, validator co-located in bundle.
+3. **H-1 confirmed for V1.** Alternative I (no commit hook in V1). Validator runs as skill step (guidance) and in target-repo CI at merge (deterministic enforcement contingent on required status checks / branch protection). Without required checks, no deterministic gate exists and no equivalence may be claimed. Pre-tool hook remains an open follow-up.
+4. **FU6 confirmed.** Matt Pocock plugin remains installed and unreferenced during transition until ADR 0004 §7 replacement criteria are demonstrated on real tasks.
+5. **Authorization to author minimal V1 specification.** Authorized drafting the V1 spec document. Does not authorize product implementation.
 
 ## Unresolved questions
 
