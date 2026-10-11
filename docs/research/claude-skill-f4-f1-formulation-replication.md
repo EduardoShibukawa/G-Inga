@@ -118,3 +118,11 @@ Per pair F4 − F1, reported separately: M1 (and its cache split), REQ, CUM, CUM
 - **Fit rule.** c = 1.25 × mean smoke session cost. If 20 · c > 2.50 − smoke spend, reduce to 8 pairs, then 6 (`--pairs`), keeping, in execution order, the first half of each order stratum, so the design stays balanced. If 6 pairs don't fit, the matrix isn't run. Any reduction is published as an amendment before the first matrix session.
 - **Stop rules:** 2 consecutive sessions with a non-zero exit or fewer than 5 `result` events; a fixture cleanup problem; the budget stop. Nothing is added or rerun after the matrix; definitions and thresholds aren't changed after the data are seen.
 - **Privacy:** raw `stream-json`, raw request bodies and `summary.json` (answers, request ids, session metadata) stay outside the repository. The report holds only prompts written for these tasks, aggregates and structural counts.
+
+## 5. Amendments
+
+### Amendment 1 (after the smoke test, before the matrix)
+
+**Smoke test** (2026-10-11, about 13:06–13:07 UTC): 2 sessions on `SMK-R1`, both exit 0 with 5 `result` events, 5/5 correct turns, CLI `2.1.296`, model `claude-sonnet-5-5`, `work` listed, tools `Read` and `Skill`. F4 (position 1): `JOINT_OR_PARALLEL`, 6 requests, US$0.0484. F1 (position 2): `SEQUENTIAL`, 7 requests, US$0.0473. Total **US$0.0957**, mean US$0.04786. Every request carried a message id and an API request id in the stream. The smoke categories are not pooled with the matrix.
+
+**Fit rule applied as registered:** c = 1.25 × 0.04786 = 0.05982; 20 · c = US$1.20 ≤ 2.50 − 0.0957 = US$2.40. **No reduction.** The full 20-session matrix runs with a runner budget of US$2.9043 (3.00 − smoke spend). Nothing else changes.
