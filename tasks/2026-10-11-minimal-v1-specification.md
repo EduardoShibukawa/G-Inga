@@ -56,11 +56,11 @@ Rows below reran at 9b7ebb5 unless their Ref says otherwise. The integrated rows
 | SC6 | non-destructive update (V1 spec SC6) | pass | 9b7ebb5 | child 03 AC3, AC5, AC6: validated staging, journaled replacement with rollback, failure at every step restores the tree, killed run detected and recovered |
 | SC7 | honest CI enforcement gate (V1 spec SC7) | pass | 9b7ebb5 | inspection of ci-template.yml and docs/bundle.md; the template has not run in a real target's GitHub Actions (A8) |
 | SC8 | transitional coexistence (V1 spec SC8) | not run | 9b7ebb5 | needs a Claude Code session with the Pocock plugin enabled; the earlier pass at e270370 was session-reported with no artifact |
-| R1 | repository test suite | pass | 59602e8 | `G_INGA_REQUIRE_RUNTIMES=1 mise run test` locally: type-check clean, 114 pass, 0 fail |
-| R2 | repository validation suite | pass | 59602e8 | `mise run validate` exit 0 |
+| R1 | repository test suite | pass | 83d1ebb | `G_INGA_REQUIRE_RUNTIMES=1 mise run test` locally: type-check clean, 115 pass, 0 fail |
+| R2 | repository validation suite | pass | 83d1ebb | `mise run validate` exit 0 |
 | R3 | external links | blocked | 59602e8 | `mise run validate:external` exit 1: 87 URLs, 1 broken (wikipedia in brand doc on main), 2 unreachable/blocked |
-| R4 | remote CI (`validate` workflow) on the pushed head | pass | 59602e8 | run 38145948189 on head 59602e8: `mise run test` 114 pass with Node v22.23.3 and Bun matrices executed, none skipped; `mise run validate` pass |
-| V1 | diff review against V1 specification | pass | 59602e8 | self-review by the remediating session of 5d38ae3..HEAD; spec body hash still `sha256:09ff9d3d…bc5bab`; no spec or ADR change |
+| R4 | remote CI (`validate` workflow) on the pushed head | pass | a987ff1 | run 38150086020 on head a987ff1: `mise run test` (114 pass) and `mise run validate` pass |
+| V1 | diff review against V1 specification | pass | 83d1ebb | self-review of 5d38ae3..HEAD; spec body hash still `sha256:09ff9d3d…bc5bab`; no spec or ADR change |
 | V2 | fresh-context review of the remediation | pass | 59602e8 | independent review in Antigravity recorded in `docs/research/2026-10-11-minimal-v1-remediation-review.md` |
 
 ## Review
@@ -105,8 +105,8 @@ No child task was managed by `/work` from inception. The next remediation step s
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 59602e8, worktree dirty (review doc & parent record); PR #12 is a draft; CI run 38145948189 green on 59602e8
-- done: CI failure root-caused (type-check of tools/validate/standalone.ts) and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun (114 tests passing); child task 04 verified; independent fresh-context review documented in docs/research/2026-10-11-minimal-v1-remediation-review.md
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 01d44e9, worktree dirty (parent record only); PR #12 is a draft; CI run 38150086020 green on a987ff1
+- done: CI failure root-caused and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun; child 04 verified at 0d4f497; independent fresh-context review documented; child 05 multi-host Antigravity bundle support verified at 83d1ebb (115 tests passing)
 - open: A7 (owner decision between copy and self-contained text), A8, A9, A10, G1, AGY-1, AGY-2; SC1 blocked, SC2 and SC8 not run
-- next: owner decides A7, integration merge strategy (AGY-1), and Claude Code session with `/work` loaded executes SC2/SC8 handoff
-- revalidate: rows at 59602e8 stay current only while later commits change nothing but `tasks/` and review docs
+- next: push multi-host bundle commits to PR #12, dogfood /work in Antigravity or execute Claude Code runtime tests
+- revalidate: rows at 83d1ebb stay current only while later commits change nothing but `tasks/`
