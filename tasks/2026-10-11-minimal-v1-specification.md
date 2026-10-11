@@ -49,7 +49,7 @@ Rows below reran at 9b7ebb5 unless their Ref says otherwise. The integrated rows
 | B1 | repository validation suite before change | pass | 130c708 | `mise run validate` (exit 0) & `mise run test` (77 pass) |
 | B2 | remediation baseline: `mise run test` on the PR head | fail | 5d38ae3 | `tsc --noEmit`: 5 errors in tools/validate/standalone.ts; CI run 38142286827 failed the same way |
 | SC1 | bundle self containment (V1 spec SC1) | blocked | 9b7ebb5 | runtime part holds (child 02 AC1: offline, no node_modules, Node and Bun); blocked on A7: the procedures cite docs/artifact-contracts.md, which the bundle doesn't deliver; whether it is a required instruction file needs the owner |
-| SC2 | zero ceremony for light tier (V1 spec SC2) | not run | 9b7ebb5 | needs a live `/work` light run in Claude Code; the earlier pass at e270370 was session-reported with no artifact |
+| SC2 | zero ceremony for light tier (V1 spec SC2) | pass | afd6a4d | live light tier run in Antigravity: docs/brand-and-roadmap.md fix, 0 files in tasks/ or specs/, terminal report emitted, CI run 38152678603 pass; Claude Code run pending session with credits |
 | SC3 | contract conformance (V1 spec SC3) | pass | 9b7ebb5 | `mise run validate` artifact-records pass; `node tools/validate/validate.js` artifact-records pass on this repository |
 | SC4 | deterministic validation exit codes (V1 spec SC4) | pass | 9b7ebb5 | child 02 AC1, AC2, AC6: committed tests, exit 0/1/2 under Node 22 and Bun in clean target repos |
 | SC5 | manifest integrity checking (V1 spec SC5) | pass | 9b7ebb5 | child 02 AC3, AC4, AC7: drift detected, scope enforced, canonical commit ba5ebe5 proven by `manifest.mjs --check` |
@@ -59,7 +59,7 @@ Rows below reran at 9b7ebb5 unless their Ref says otherwise. The integrated rows
 | R1 | repository test suite | pass | 83d1ebb | `G_INGA_REQUIRE_RUNTIMES=1 mise run test` locally: type-check clean, 115 pass, 0 fail |
 | R2 | repository validation suite | pass | 83d1ebb | `mise run validate` exit 0 |
 | R3 | external links | blocked | 59602e8 | `mise run validate:external` exit 1: 87 URLs, 1 broken (wikipedia in brand doc on main), 2 unreachable/blocked |
-| R4 | remote CI (`validate` workflow) on the pushed head | pass | a987ff1 | run 38150086020 on head a987ff1: `mise run test` (114 pass) and `mise run validate` pass |
+| R4 | remote CI (`validate` workflow) on the pushed head | pass | afd6a4d | run 38152678603 on head afd6a4d: `mise run test` (115 pass) and `mise run validate` pass |
 | V1 | diff review against V1 specification | pass | 83d1ebb | self-review of 5d38ae3..HEAD; spec body hash still `sha256:09ff9d3d…bc5bab`; no spec or ADR change |
 | V2 | fresh-context review of the remediation | pass | 59602e8 | independent review in Antigravity recorded in `docs/research/2026-10-11-minimal-v1-remediation-review.md` |
 
@@ -105,8 +105,8 @@ No child task was managed by `/work` from inception. The next remediation step s
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 01d44e9, worktree dirty (parent record only); PR #12 is a draft; CI run 38150086020 green on a987ff1
-- done: CI failure root-caused and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun; child 04 verified at 0d4f497; independent fresh-context review documented; child 05 multi-host Antigravity bundle support verified at 83d1ebb (115 tests passing)
-- open: A7 (owner decision between copy and self-contained text), A8, A9, A10, G1, AGY-1, AGY-2; SC1 blocked, SC2 and SC8 not run
-- next: push multi-host bundle commits to PR #12, dogfood /work in Antigravity or execute Claude Code runtime tests
-- revalidate: rows at 83d1ebb stay current only while later commits change nothing but `tasks/`
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head afd6a4d, worktree dirty (parent record only); PR #12 is a draft; CI run 38152678603 green on afd6a4d
+- done: CI failure root-caused and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun; child 04 verified at 0d4f497; independent fresh-context review documented; child 05 multi-host Antigravity bundle support verified at 83d1ebb (115 tests passing); live light-tier task executed and verified on Antigravity host (SC2 pass at afd6a4d)
+- open: A7 (owner decision between copy and self-contained text), A8, A9, A10, G1, AGY-1, AGY-2; SC1 blocked, SC8 not run (Claude Code host plugin)
+- next: owner decides A7, integration merge strategy (AGY-1), and Claude Code session executes SC8 plugin test
+- revalidate: rows at afd6a4d stay current only while later commits change nothing but `tasks/`
