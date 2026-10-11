@@ -79,7 +79,7 @@ flowchart TD
     T --> C{"Artifact contract present?"}
     T --> R{"Task or spec records present?"}
     D -->|"yes"| DR["decision-records"]
-    C -->|"yes"| AC["artifact-contract-sync, artifact-contract-examples, artifact-rule-fixtures"]
+    C -->|"yes"| AC["artifact-contract-sync, artifact-contract-copy, artifact-contract-examples, artifact-rule-fixtures"]
     R -->|"yes"| AR["artifact-records"]
 ```
 
@@ -107,7 +107,8 @@ The rules come from the [artifact contracts](artifact-contracts.md). `contract.j
 | Check | Applies when | What it proves |
 |---|---|---|
 | `artifact-contract-sync` | `docs/artifact-contracts.md` exists | `contract.json` has its defining record's status and the same edges as the contract's state diagram |
-| `artifact-contract-examples` | same | The contract's §9 example records satisfy its state rules |
+| `artifact-contract-copy` | `docs/artifact-contracts.md` and `.claude/skills/work/` exist | `.claude/skills/work/references/artifact-contracts.md`, the copy the bundle delivers, is byte for byte the transform `tools/validate/contract-copy.mjs` documents (a header comment plus a link prefix). After editing the contract, run `bun tools/validate/contract-copy.mjs` |
+| `artifact-contract-examples` | `docs/artifact-contracts.md` exists | The contract's §9 example records satisfy its state rules |
 | `artifact-rule-fixtures` | same | The §7.2 test table and review cases give the expected `pass`, `fail`, `blocked` or `frozen` |
 | `artifact-records` | a record exists now, or Git history shows one was ever committed, or the clone is shallow (see below) | Every record there, with the Git history walk (§7.1) and the frozen-record check (§8). Deleted records fail (§6.1). A schema-less file next to real records is `blocked` (§8) |
 

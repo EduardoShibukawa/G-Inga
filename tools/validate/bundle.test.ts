@@ -12,6 +12,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { task } from "./artifacts/fixtures.ts";
 import bundle from "./bundle.json" with { type: "json" };
+import { CONTRACT_COPY } from "./contract-copy.mjs";
 import { checkManifest } from "./manifest.mjs";
 import { REPO } from "./testkit.ts";
 import { updateBundle, UpdateError, WORK_DIR } from "./update.mjs";
@@ -112,6 +113,15 @@ describe("committed bundle in this repository", () => {
     const network = specifiers.filter((s) => /^(node:)?(http|https|http2|net|tls|dns|dgram)$/.test(s));
     expect(network).toEqual([]);
     expect(js).not.toMatch(/\bfetch\s*\(/);
+  });
+
+  test("the /work procedures cite the delivered contract copy, never docs/artifact-contracts.md", () => {
+    expect(bundle.assets).toContain(CONTRACT_COPY);
+    const skill = bundle.assets.filter((p) => p.startsWith(".claude/skills/work/") && p !== CONTRACT_COPY);
+    expect(skill.length).toBeGreaterThan(0);
+    for (const p of skill) expect(`${p}: ${readFileSync(join(REPO, p), "utf8")}`).not.toContain("docs/artifact-contracts.md");
+    const cited = skill.filter((p) => readFileSync(join(REPO, p), "utf8").includes(CONTRACT_COPY));
+    expect(cited).toEqual(expect.arrayContaining([".claude/skills/work/SKILL.md", ".claude/skills/work/standard.md", ".claude/skills/work/resume.md"]));
   });
 
   test("every documented validator CLI path exists in the bundle", () => {
@@ -239,6 +249,18 @@ describe("update procedure (SC6)", () => {
     expect(readFileSync(join(dir, "manifest.json"), "utf8")).toBe(readFileSync(join(REPO, "manifest.json"), "utf8"));
     expect(r.installed.at(-1)).toBe("manifest.json");
     expect(existsSync(join(dir, WORK_DIR))).toBe(false);
+  });
+
+  test("the contract copy installs under .claude/skills/work/references/; a target's docs/artifact-contracts.md is untouched", () => {
+    const own = "# Our own artifact contracts\n\nUser content, not G-Ingá's.\n";
+    const dir = gitRepo({ ...USER_FILES, "docs/artifact-contracts.md": own });
+    const r = updateBundle(REPO, dir);
+    expect(r.installed).toContain(CONTRACT_COPY);
+    expect(readFileSync(join(dir, CONTRACT_COPY))).toEqual(readFileSync(join(REPO, CONTRACT_COPY)));
+    expect(readFileSync(join(dir, "docs/artifact-contracts.md"), "utf8")).toBe(own);
+    expect(git(dir, "status", "--porcelain", "--", "docs").out).toBe("");
+    updateBundle(sourceV2(), dir);
+    expect(readFileSync(join(dir, "docs/artifact-contracts.md"), "utf8")).toBe(own);
   });
 
   test("repeated update is idempotent: nothing replaced, state identical", () => {

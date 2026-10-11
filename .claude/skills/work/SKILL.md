@@ -12,7 +12,7 @@ The single entry point for changes to deliverables in G-Ingá. Dispatches reques
 
 1. Every task execution begins by evaluating routing signals and printing a formatted routing line: `tier: <tier> (<signals>)`.
 2. `light` tasks persist ZERO files under `tasks/` or `specs/`. They produce only a concise terminal report with the routing line and verification evidence.
-3. `standard` and `heavy` tasks persist contract-compliant artifacts under `tasks/` and `specs/` adhering to `docs/artifact-contracts.md`.
+3. `standard` and `heavy` tasks persist contract-compliant artifacts under `tasks/` and `specs/` adhering to the artifact contract, `.claude/skills/work/references/artifact-contracts.md` (delivered with this skill; a generated copy of G-Ingá's canonical contract).
 4. Guarded transitions (`verified`, `accepted`, spec approvals) and task record commits require running the bundled validator (`node tools/validate/validate.js` or `bun tools/validate/validate.ts`).
 5. Mandatory check failures (`fail` exit 1, `blocked` exit 2) prevent transition to `verified` or `accepted`.
 
@@ -69,7 +69,7 @@ If invoked with `resume <task-id>`:
 2. **Inspect:** Check relevant baseline tests or linters.
 3. **Execute:** Make minimal required edits.
 4. **Verify:** Run cheap relevant check and read diff (`git diff`).
-5. **Report Format (contract §6):**
+5. **Report Format (`.claude/skills/work/references/artifact-contracts.md` §6):**
 
    ```text
    tier: light (<deciding signals>)

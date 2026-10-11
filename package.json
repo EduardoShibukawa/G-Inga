@@ -9,6 +9,7 @@
     "test": "bun tools/validate/preflight.ts && bun test tools/validate",
     "typecheck": "bun tools/validate/preflight.ts && tsc --noEmit -p tools/validate",
     "build:validator": "bun build tools/validate/standalone.ts --target=node --outfile tools/validate/validate.js",
+    "build:contract-copy": "bun tools/validate/contract-copy.mjs",
     "manifest": "bun tools/validate/manifest.mjs"
   },
   "devDependencies": {

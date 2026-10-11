@@ -25,7 +25,7 @@ Called via `/work resume <task-id>` or when resuming work referenced in `tasks/<
 4. **Verify Spec Alignment (Heavy Children):**
    - If task has `spec: <spec-id>@<version>`, inspect `specs/<spec-id>.md`.
    - Verify that spec is `status: approved` at that version.
-   - If spec has been reopened or superseded, handle per `docs/artifact-contracts.md` §4.4.
+   - If spec has been reopened or superseded, handle per `.claude/skills/work/references/artifact-contracts.md` §4.4.
 
 5. **Resume Execution:**
    - Remove or update blocker in `## Blockers`.

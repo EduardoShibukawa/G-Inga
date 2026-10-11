@@ -7,6 +7,7 @@ import { join } from "node:path";
 import type { Check, Context } from "../lib/check.ts";
 import { fences, type MdFile } from "../lib/markdown.ts";
 import { result, type CheckResult } from "../lib/report.ts";
+import { checkContractCopy, CONTRACT_COPY } from "../contract-copy.mjs";
 import contract from "./contract.json" with { type: "json" };
 import { allCases } from "./fixtures.ts";
 import { checkHistory, isGitRepo, recordHistory } from "./history.ts";
@@ -77,6 +78,21 @@ export function contractSync(files: MdFile[]): CheckResult {
   });
 }
 
+/**
+ * The bundle's copy of the contract (.claude/skills/work/references/) is the documented transform of the canonical
+ * document, byte for byte. Applies where the contract and the `/work` skill are both present, so deleting the copy
+ * fails instead of turning the check off.
+ */
+function contractCopyApplies(ctx: Context): true | string {
+  const present = contractPresent(ctx);
+  if (present !== true) return present;
+  return existsSync(join(ctx.root, ".claude/skills/work")) || "no .claude/skills/work/ to deliver the contract copy";
+}
+
+export function contractCopy(root: string): CheckResult {
+  return result("artifact-contract-copy", checkContractCopy(root), `${CONTRACT_COPY} matches the transform of ${CONTRACT}`);
+}
+
 /** The record examples in the contract (§9) satisfy the contract's own state rules. */
 export function contractExamples(files: MdFile[]): CheckResult {
   const doc = files.find((f) => f.path === CONTRACT)!;
@@ -121,6 +137,7 @@ export function records(root: string): CheckResult {
 
 export const artifactChecks: Check[] = [
   { name: "artifact-contract-sync", layer: "task/spec artifacts", applies: contractPresent, run: (ctx) => contractSync(ctx.files) },
+  { name: "artifact-contract-copy", layer: "task/spec artifacts", applies: contractCopyApplies, run: (ctx) => contractCopy(ctx.root) },
   { name: "artifact-contract-examples", layer: "task/spec artifacts", applies: contractPresent, run: (ctx) => contractExamples(ctx.files) },
   { name: "artifact-rule-fixtures", layer: "task/spec artifacts", applies: contractPresent, run: () => ruleFixtures() },
   { name: "artifact-records", layer: "task/spec artifacts", applies: recordsPresent, run: (ctx) => records(ctx.root) },

@@ -33,7 +33,7 @@ When both H1 and H5 hold and the destination cannot yet be captured in a single 
    - Run validator to verify decomposition invariants (spec approved, valid dependency graph, no cycles).
    - Execute each child following `standard.md`.
 
-4. **Specification Reopening (Contract §4.3, §4.4):**
+4. **Specification Reopening (`.claude/skills/work/references/artifact-contracts.md` §4.3, §4.4):**
    - If requirements change: increment `version` to `v<N+1>`, set `status: draft`, append to `## Revisions`.
    - Reopening immediately blocks active children until owner reapproval.
    - Upon reapproval, update children with `spec-version: v<N> → v<N+1>; rerun: ...` or `...; unaffected: <reason>`.

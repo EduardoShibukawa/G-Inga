@@ -7664,6 +7664,7 @@ var bundle_default = {
     ".claude/skills/work/resume.md",
     ".claude/skills/work/review.md",
     ".claude/skills/work/standard.md",
+    ".claude/skills/work/references/artifact-contracts.md",
     "tools/validate/ci-template.yml",
     "tools/validate/validate.js",
     "tools/validate/validate.ts"

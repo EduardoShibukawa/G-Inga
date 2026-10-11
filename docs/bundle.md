@@ -9,6 +9,7 @@ The bundle is what a target repository commits (FU2). `tools/validate/bundle.jso
 | Path in the target | Role | Delivered | In `manifest.json` |
 |---|---|---|---|
 | `.claude/skills/work/SKILL.md`, `standard.md`, `heavy.md`, `resume.md`, `review.md` | `/work` skill and its procedures | yes | yes |
+| `.claude/skills/work/references/artifact-contracts.md` | the artifact contract the procedures cite: a generated copy of G-Ingá's canonical `docs/artifact-contracts.md` | yes | yes |
 | `tools/validate/validate.js` | standalone validator, `node tools/validate/validate.js` | yes | yes |
 | `tools/validate/validate.ts` | Bun entry of the same validator, `bun tools/validate/validate.ts` | yes | yes |
 | `tools/validate/ci-template.yml` | CI merge-gate template (SC7) | yes | yes |
@@ -21,7 +22,10 @@ Not delivered (`proposed` classification, source-repository utilities that run f
 | `tools/validate/update.mjs` | installs a release from a G-Ingá checkout into a target; a copy in the target would have no source to read from |
 | `tools/validate/manifest.mjs` | generates and checks the manifest against G-Ingá's own history |
 | `tools/validate/standalone.ts`, `bundle.json` | sources of `validate.js` (`bun run build:validator`) |
+| `tools/validate/contract-copy.mjs` | builds the contract copy from `docs/artifact-contracts.md` (`bun run build:contract-copy`) and checks it (`--check`) |
 | the rest of `tools/validate/` | this repository's development validator ([development](development.md)) |
+
+`docs/artifact-contracts.md` stays the canonical contract in G-Ingá (owner decision on review finding A7, 2026-10-11). The bundle delivers a copy so the `/work` procedures cite a file the target has. The copy is the canonical text with one header comment added and every relative link target prefixed with `../../../../docs/`; those links resolve in a G-Ingá checkout only. `mise run validate` fails (`artifact-contract-copy`) when the copy isn't that exact transform, so the contract can't change without the copy and the manifest following it. The update procedure installs the copy under `.claude/skills/work/references/` and never writes a target's own `docs/`.
 
 `validate.js` is built with `bun build --target=node`. It imports only `node:` built-ins, so it runs offline on Node 22 or later or Bun without `node_modules` (SC1, SC4). `tools/validate/bundle.test.ts` checks that the committed file is the current build and runs it in clean target repositories under both runtimes.
 
@@ -92,4 +96,3 @@ What it doesn't guarantee: a single filesystem operation can't swap two director
 ## Open
 
 - Release tags for `release` values (owner action).
-- `.claude/skills/work/` procedures cite `docs/artifact-contracts.md`, which isn't in the bundle, so a target has the rules (inside `validate.js`) but not the contract text. Delivering it, or making the procedures self-contained, changes the bundle's contents and needs an owner decision.

@@ -9,7 +9,7 @@ Procedure for `standard` tasks in G-Ingá.
 
 2. **Initialize or Read Task Record (`tasks/<id>.md`):**
    - File naming: `tasks/<YYYY-MM-DD>-<slug>.md` (or decomposed `tasks/<parent-id>-<NN>-<slug>.md`).
-   - Schema: `task/1`.
+   - Schema: `task/1`, as defined in `.claude/skills/work/references/artifact-contracts.md` §3.
    - Frontmatter keys: `schema: task/1`, `tier: standard`, `status: active` (plus `parent`, `spec`, `depends_on` if decomposed).
    - Sections required:
      - `## Routing and approvals`
@@ -27,7 +27,7 @@ Procedure for `standard` tasks in G-Ingá.
    - Make small, focused changes.
    - If blocked or stopping, write `## Checkpoint` with branch, commit, dirty status, completed items, and next steps. Set `status: blocked` or leave `active`.
 
-5. **Verification & Guarded Transition (Contract §3.4):**
+5. **Verification & Guarded Transition (`.claude/skills/work/references/artifact-contracts.md` §3.4):**
    - Execute each acceptance criterion check.
    - Record results using only `pass`, `fail`, `blocked`, `not run`.
    - Commit code changes so a concrete commit SHA exists for `verified_at`.
