@@ -97,7 +97,16 @@ Per session: **M1** (request-1 prompt = input + cache creation + cache read, wit
 
 ## 4. Smoke test
 
-*Pending.*
+Run on 2026-10-11 after the pre-registration commit `3d74c07`. Both sessions exited 0 with a `result` event and were correct. CLI `2.1.296`, model `claude-sonnet-5-5`, permission mode `acceptEdits`, the 7 tools, `work` listed among 36 skills (user-level and plugin skills included, constant across routes), 0 hook events, 0 subagent requests.
+
+| Session | Path | REQ | M1 (input / creation / read) | CUM | USD | Correct | Notes |
+|---|---|---|---|---|---|---|---|
+| `SMK-L` E | `EXPLICIT` | 3 | 16,308 (2 / 16,306 / 0) | 50,379 | 0.0794 | yes | skill body and `<command-name>` in request 1; `tier: light` line; nothing under `tasks/`/`specs/`; no commit |
+| `SMK-R` N | `SKILL_TOOL` | 10 | 14,519 (2 / 8,117 / 6,400) | 190,102 | 0.1149 | yes | `Skill(work)` in request 1, skill body in request 2, `resume.md` in request 3; 1 Bash denial; record left `active`, no commit |
+
+**Total US$0.1943.** Amendment check: 0.1943 + 10 × 0.0794 + 10 × 0.1149 = **US$2.137 ≤ 3.00**, so no amendment. The matrix keeps 5 pairs per class.
+
+Observed, not a protocol change: `acceptEdits` also let `sed -i` (not in the allow-list) run inside the fixture. The edit stayed inside the clone. The R session answered in Portuguese, because the fixture's `CLAUDE.md` says to.
 
 ## 5. Results
 
