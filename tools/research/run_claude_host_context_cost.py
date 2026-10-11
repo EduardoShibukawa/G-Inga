@@ -9,7 +9,12 @@ directory and records the per-request usage that Claude Code emits in
 which makes no model call.
 
 Usage:
-    python3 run_claude_host_context_cost.py FIXTURE_DIR OUTPUT_DIR [--only COND ...] [--dry-run]
+    python3 run_claude_host_context_cost.py FIXTURE_DIR OUTPUT_DIR [--schedule baseline|invocation]
+        [--only COND ...] [--dry-run]
+
+`--schedule baseline` (default) is CLAUDE-HOST-CONTEXT-COST-BASELINE.
+`--schedule invocation` is CLAUDE-SKILL-INVOCATION-MARGINAL-COST
+(report: docs/research/claude-skill-invocation-cost-results.md).
 
 FIXTURE_DIR must already exist, be empty, and have no CLAUDE.md, CLAUDE.local.md,
 AGENTS.md or .claude in it or in any ancestor directory. OUTPUT_DIR receives raw
@@ -74,10 +79,15 @@ When invoked via /work, perform the following steps:
 2. Report the single word: COMPLETED.
 """
 
+# Same skill, but hidden from the model's skill listing; only `/work` loads it.
+SKILL_MANUAL_MD = SKILL_MD.replace(
+    "context testing.\n---", "context testing.\ndisable-model-invocation: true\n---")
+
 FIXTURES = {
     "pointer": {"CLAUDE.md": POINTER_CLAUDE_MD, DOC_PATH: TEST_DOC},
     "import": {"CLAUDE.md": IMPORT_CLAUDE_MD, DOC_PATH: TEST_DOC},
     "skill": {".claude/skills/work/SKILL.md": SKILL_MD},
+    "skill_manual": {".claude/skills/work/SKILL.md": SKILL_MANUAL_MD},
     "none": {},
 }
 
@@ -85,6 +95,8 @@ PROMPT_NEUTRAL = "Respond with exactly the word READY and do not invoke any tool
 PROMPT_READ = f"Read the file {DOC_PATH} and output its verification token."
 PROMPT_VERIFY = "Verify the test instructions."
 PROMPT_SKILL = "/work execute test"
+PROMPT_SKILL_NOSLASH = "work execute test"  # same text without the slash: no expansion
+PROMPT_NATURAL = "Execute the synthetic verification protocol for AGY-S1 context testing."
 
 # name -> (fixture, prompt, extra CLI args)
 CONDITIONS = {
@@ -98,6 +110,23 @@ CONDITIONS = {
     "E": ("skill", PROMPT_SKILL, []),
     "E_NOSLASH": ("skill", PROMPT_SKILL, ["--disable-slash-commands"]),
 }
+
+INVOCATION_CONDITIONS = {
+    "I_A": ("none", PROMPT_NEUTRAL, []),
+    "I_D": ("skill", PROMPT_NEUTRAL, []),
+    "I_DM": ("skill_manual", PROMPT_NEUTRAL, []),
+    "I_Q": ("skill", PROMPT_SKILL_NOSLASH, []),
+    "I_X": ("skill", PROMPT_SKILL, []),
+    "I_XM": ("skill_manual", PROMPT_SKILL, []),
+    "I_N": ("skill", PROMPT_NATURAL, []),
+    "I_NM": ("skill_manual", PROMPT_NATURAL, []),
+}
+CONDITIONS.update(INVOCATION_CONDITIONS)
+
+# Three rounds of rotated order; round 2 is reversed so that the key pairs
+# (I_Q/I_X, I_A/I_D, I_N/I_NM) swap order at least once.
+_INV = list(INVOCATION_CONDITIONS)
+INVOCATION_SCHEDULE = [_INV, list(reversed(_INV[3:] + _INV[:3])), _INV[6:] + _INV[:6]]
 
 # Fixed schedule. Rounds alternate the order of the main pairs A/B and A/D.
 SCHEDULE = [
@@ -240,12 +269,14 @@ def main():
     ap.add_argument("fixture_dir", type=Path)
     ap.add_argument("output_dir", type=Path)
     ap.add_argument("--only", nargs="*", help="run only these conditions, once each")
+    ap.add_argument("--schedule", choices=["baseline", "invocation"], default="baseline")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     fx, out = a.fixture_dir.resolve(), a.output_dir.resolve()
     check_fixture_dir(fx)
     out.mkdir(parents=True, exist_ok=True)
-    plan = [[c] for c in a.only] if a.only else SCHEDULE
+    schedule = INVOCATION_SCHEDULE if a.schedule == "invocation" else SCHEDULE
+    plan = [[c] for c in a.only] if a.only else schedule
     summary_path = out / "summary.json"
     summary = json.loads(summary_path.read_text()) if summary_path.exists() else []
     seq = len(summary)
