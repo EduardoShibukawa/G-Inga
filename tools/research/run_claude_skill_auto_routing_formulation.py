@@ -378,14 +378,15 @@ def analyze(summary):
                   f"CUM {stats([cum(r) for r in rs])}; USD {stats([usd(r) for r in rs], 4)}")
     if len(forms) > 1:
         by = {f: path_counts[(f, "N")][0][0] / max(1, path_counts[(f, "N")][1]) for f in forms}
-        hi_f, lo_f = max(by, key=by.get), min(by, key=by.get)
-        his = [r for r in rows if r["route"] == "N" and r["form"] == hi_f]
-        los = [r for r in rows if r["route"] == "N" and r["form"] == lo_f]
-        print(f"H3 highest seq share {hi_f} ({by[hi_f]:.2f}) vs lowest {lo_f} ({by[lo_f]:.2f}): "
+        # Ties at either extreme are pooled (report §3, H3).
+        hi_set = [f for f in forms if by[f] == max(by.values())]
+        lo_set = [f for f in forms if by[f] == min(by.values())]
+        his = [r for r in rows if r["route"] == "N" and r["form"] in hi_set]
+        los = [r for r in rows if r["route"] == "N" and r["form"] in lo_set]
+        print(f"H3 highest seq share {hi_set} ({max(by.values()):.2f}, n={len(his)}) vs lowest "
+              f"{lo_set} ({min(by.values()):.2f}, n={len(los)}): "
               f"median N CUM {st.median([cum(r) for r in his]) - st.median([cum(r) for r in los]):+g}; "
               f"median N USD {st.median([usd(r) for r in his]) - st.median([usd(r) for r in los]):+.4f}")
-        ties = [f for f in forms if by[f] in (by[hi_f], by[lo_f])]
-        print(f"  formulations tied at the extremes: {ties}")
 
     print("\n## E route: tool shape after /work")
     for f in forms:
