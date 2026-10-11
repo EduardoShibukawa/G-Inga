@@ -4,17 +4,16 @@ import { spawnSync } from "node:child_process";
 
 describe("Autonomous Verification Gate", () => {
   test("Gate 1: fails when touched files exceed allowed scope", () => {
-    // Current untracked or modified files in repo include .agents/skills/orchestrate/
-    const res = evaluateScope(["docs/non-existent-scope/"]);
+    const res = evaluateScope(["docs/non-existent-scope/"], ["src/unexpected-file.ts"]);
     expect(res.pass).toBe(false);
     expect(res.violations.length).toBeGreaterThan(0);
   });
 
   test("Gate 1: passes when touched files are strictly within allowed scope", () => {
-    const res = evaluateScope([
-      ".agents/skills/orchestrate/",
-      "tools/gate/",
-    ]);
+    const res = evaluateScope(
+      [".agents/skills/orchestrate/", "tools/gate/"],
+      [".agents/skills/orchestrate/SKILL.md", "tools/gate/verify-gate.ts"]
+    );
     expect(res.pass).toBe(true);
     expect(res.violations).toEqual([]);
   });
@@ -23,7 +22,8 @@ describe("Autonomous Verification Gate", () => {
     const proc = spawnSync("bun", [
       "tools/gate/verify-gate.ts",
       "--cmd", "bash -c 'exit 1'",
-      "--scope", ".agents/skills/orchestrate/,tools/gate/",
+      "--scope", "tools/gate/",
+      "--files", "tools/gate/verify-gate.ts",
     ], { encoding: "utf8" });
     expect(proc.status).toBe(1);
     expect(proc.stderr).toContain("FAIL: Command exited with code 1");
@@ -42,7 +42,8 @@ describe("Autonomous Verification Gate", () => {
   test("Gate Pass: CLI returns exit code 0 when all layers pass", () => {
     const proc = spawnSync("bun", [
       "tools/gate/verify-gate.ts",
-      "--scope", ".agents/skills/orchestrate/,tools/gate/",
+      "--scope", "tools/gate/",
+      "--files", "tools/gate/verify-gate.ts",
       "--cmd", "bash -c 'exit 0'",
       "--attempt", "1",
     ], { encoding: "utf8" });
