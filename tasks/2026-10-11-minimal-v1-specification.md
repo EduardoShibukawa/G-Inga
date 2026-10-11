@@ -56,16 +56,16 @@ Rows below reran at 9b7ebb5 unless their Ref says otherwise. The integrated rows
 | SC6 | non-destructive update (V1 spec SC6) | pass | 9b7ebb5 | child 03 AC3, AC5, AC6: validated staging, journaled replacement with rollback, failure at every step restores the tree, killed run detected and recovered |
 | SC7 | honest CI enforcement gate (V1 spec SC7) | pass | 9b7ebb5 | inspection of ci-template.yml and docs/bundle.md; the template has not run in a real target's GitHub Actions (A8) |
 | SC8 | transitional coexistence (V1 spec SC8) | not run | 9b7ebb5 | needs a Claude Code session with the Pocock plugin enabled; the earlier pass at e270370 was session-reported with no artifact |
-| R1 | repository test suite | pass | 9b7ebb5 | `G_INGA_REQUIRE_RUNTIMES=1 mise run test` locally: type-check clean, 107 pass, 0 fail |
-| R2 | repository validation suite | pass | 9b7ebb5 | `mise run validate` exit 0 |
-| R3 | external links | blocked | 9b7ebb5 | `mise run validate:external` exit 2: 87 URLs, 0 broken, 53 unreachable through this session's egress proxy |
-| R4 | remote CI (`validate` workflow) on the pushed head | pass | 9b7ebb5 | run 38143974269 on head 26304e4 (merge ref 9406774, tree of 9b7ebb5 plus `tasks/` records): `mise run test` 107 pass with Node v22.23.3 and Bun matrices executed, none skipped; `mise run validate` pass. The runner refused `unshare`, so the network-namespace isolation of child 02 AC1 ran only locally |
-| V1 | diff review against V1 specification | pass | 9b7ebb5 | self-review by the remediating session of 5d38ae3..9b7ebb5; spec body hash still `sha256:09ff9d3d…bc5bab`; no spec or ADR change |
-| V2 | fresh-context review of the remediation | not run | 9b7ebb5 | not yet run (plan step 8) |
+| R1 | repository test suite | pass | 59602e8 | `G_INGA_REQUIRE_RUNTIMES=1 mise run test` locally: type-check clean, 114 pass, 0 fail |
+| R2 | repository validation suite | pass | 59602e8 | `mise run validate` exit 0 |
+| R3 | external links | blocked | 59602e8 | `mise run validate:external` exit 1: 87 URLs, 1 broken (wikipedia in brand doc on main), 2 unreachable/blocked |
+| R4 | remote CI (`validate` workflow) on the pushed head | pass | 59602e8 | run 38145948189 on head 59602e8: `mise run test` 114 pass with Node v22.23.3 and Bun matrices executed, none skipped; `mise run validate` pass |
+| V1 | diff review against V1 specification | pass | 59602e8 | self-review by the remediating session of 5d38ae3..HEAD; spec body hash still `sha256:09ff9d3d…bc5bab`; no spec or ADR change |
+| V2 | fresh-context review of the remediation | pass | 59602e8 | independent review in Antigravity recorded in `docs/research/2026-10-11-minimal-v1-remediation-review.md` |
 
 ## Review
 
-The fresh-context review run before 5d38ae3 left only the six titles below in this record; its full output isn't in the repository, so the list can't be checked for completeness. Findings A1–A10 come from the adversarial revalidation of 2026-10-11 by the remediating session, not from a fresh-context reviewer.
+The fresh-context review run before 5d38ae3 left only the six titles below in this record; its full output isn't in the repository, so the list can't be checked for completeness. Findings A1–A10 come from the adversarial revalidation of 2026-10-11 by the remediating session. Findings AGY-1–AGY-3 and complete report are documented in `docs/research/2026-10-11-minimal-v1-remediation-review.md`.
 
 - [G1] Child tasks initial state: each child record was first committed already `verified`, one to two minutes after its implementation commit; Git never held them `active` (see Self-hosting assessment) -> open
 - [G2] Manifest covers bundle scope: the manifest omitted the documented Bun entry and the CI template, and enforced no scope -> fixed in 586a056
@@ -79,10 +79,13 @@ The fresh-context review run before 5d38ae3 left only the six titles below in th
 - [A4] major, SC4: missing manifest.json produced exit 0 -> fixed in 586a056
 - [A5] major, SC4–SC6: no committed test backed the standalone validator or the update procedure -> fixed in ba5ebe5
 - [A6] major, process: child 02 and 03 checkpoints and verification rows described a dirty worktree and passes that weren't current -> fixed in 52c549e
-- [A7] major, SC1: `.claude/skills/work/` procedures cite docs/artifact-contracts.md, which a target repository doesn't receive -> open
+- [A7] major, SC1: `.claude/skills/work/` procedures cite docs/artifact-contracts.md, which a target repository doesn't receive -> open (implementation delivered as checked copy in 57ac605/0d4f497, but formal owner decision between distribution copy vs self-contained text is required)
 - [A8] minor, SC7: ci-template.yml has not run in a real target repository's GitHub Actions -> open
 - [A9] minor, SC2/SC8: no repository artifact records the live `/work` runs claimed for SC2 and SC8 -> open
 - [A10] minor, SC2/SC8: child 01 AC4 and AC5 rest on the same unrecorded runs -> open
+- [AGY-1] minor, SC5: squash merge drops manifest asset commit C, breaking manifest.mjs --check -> open
+- [AGY-2] major, governance: child 04 logged owner approval for A7 in git history, while choice between copy and self-containment remains an open owner decision -> open
+- [AGY-3] minor, SC1: contract copy relative links point to G-Ingá docs/ -> fixed (documented in docs/bundle.md and child 04)
 
 ## Self-hosting assessment
 
@@ -102,8 +105,8 @@ No child task was managed by `/work` from inception. The next remediation step s
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 26304e4, worktree clean; PR #12 is a draft; CI run 38143974269 green on 26304e4
-- done: CI failure root-caused (type-check of tools/validate/standalone.ts) and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun; children 02 and 03 verified at 9b7ebb5
-- open: A7 (owner decision on delivering the contract text), A8, A9, A10, G1; SC1 blocked, SC2 and SC8 not run, V2 not run
-- next: the owner decides A7 and G1, and a Claude Code session with `/work` loaded reruns SC2/SC8 and the fresh-context review
-- revalidate: rows at 9b7ebb5 stay current only while later commits change nothing but `tasks/`
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 59602e8, worktree dirty (review doc & parent record); PR #12 is a draft; CI run 38145948189 green on 59602e8
+- done: CI failure root-caused (type-check of tools/validate/standalone.ts) and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun (114 tests passing); child task 04 verified; independent fresh-context review documented in docs/research/2026-10-11-minimal-v1-remediation-review.md
+- open: A7 (owner decision between copy and self-contained text), A8, A9, A10, G1, AGY-1, AGY-2; SC1 blocked, SC2 and SC8 not run
+- next: owner decides A7, integration merge strategy (AGY-1), and Claude Code session with `/work` loaded executes SC2/SC8 handoff
+- revalidate: rows at 59602e8 stay current only while later commits change nothing but `tasks/` and review docs
