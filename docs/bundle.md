@@ -8,8 +8,10 @@ The bundle is what a target repository commits (FU2). `tools/validate/bundle.jso
 
 | Path in the target | Role | Delivered | In `manifest.json` |
 |---|---|---|---|
-| `.claude/skills/work/SKILL.md`, `standard.md`, `heavy.md`, `resume.md`, `review.md` | `/work` skill and its procedures | yes | yes |
-| `.claude/skills/work/references/artifact-contracts.md` | the artifact contract the procedures cite: a generated copy of G-Ingá's canonical `docs/artifact-contracts.md` | yes | yes |
+| `.claude/skills/work/SKILL.md`, `standard.md`, `heavy.md`, `resume.md`, `review.md` | `/work` skill and procedures for Claude Code | yes | yes |
+| `.claude/skills/work/references/artifact-contracts.md` | artifact contract copy for Claude Code | yes | yes |
+| `.agents/skills/work/SKILL.md`, `standard.md`, `heavy.md`, `resume.md`, `review.md` | `/work` skill and procedures for Google Antigravity | yes | yes |
+| `.agents/skills/work/references/artifact-contracts.md` | artifact contract copy for Google Antigravity | yes | yes |
 | `tools/validate/validate.js` | standalone validator, `node tools/validate/validate.js` | yes | yes |
 | `tools/validate/validate.ts` | Bun entry of the same validator, `bun tools/validate/validate.ts` | yes | yes |
 | `tools/validate/ci-template.yml` | CI merge-gate template (SC7) | yes | yes |
@@ -68,7 +70,7 @@ node tools/validate/update.mjs /path/to/target      # or: bun tools/validate/upd
 Then, in the target:
 
 1. Copy `tools/validate/ci-template.yml` to `.github/workflows/g-inga.yml`. That copy belongs to the target; the update procedure never writes it. Re-copy it when a release changes the template.
-2. Add the delimited pointer to the target's `CLAUDE.md` (spec "Host Interfaces"), leaving content outside the block untouched:
+2. Add the delimited pointer to the target's `CLAUDE.md` (for Claude Code) or `GEMINI.md` / `AGENTS.md` (for Google Antigravity), leaving content outside the block untouched:
 
    ```markdown
    <!-- g-inga:pointer -->

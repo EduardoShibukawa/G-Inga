@@ -7656,6 +7656,7 @@ var bundle_default = {
   release: "1.0.0",
   scope: [
     ".claude/skills/work/",
+    ".agents/skills/work/",
     "tools/validate/"
   ],
   assets: [
@@ -7665,6 +7666,12 @@ var bundle_default = {
     ".claude/skills/work/review.md",
     ".claude/skills/work/standard.md",
     ".claude/skills/work/references/artifact-contracts.md",
+    ".agents/skills/work/SKILL.md",
+    ".agents/skills/work/heavy.md",
+    ".agents/skills/work/resume.md",
+    ".agents/skills/work/review.md",
+    ".agents/skills/work/standard.md",
+    ".agents/skills/work/references/artifact-contracts.md",
     "tools/validate/ci-template.yml",
     "tools/validate/validate.js",
     "tools/validate/validate.ts"

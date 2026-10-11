@@ -20,6 +20,8 @@ import { fileURLToPath } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const CONTRACT_SOURCE = "docs/artifact-contracts.md";
 export const CONTRACT_COPY = ".claude/skills/work/references/artifact-contracts.md";
+export const CONTRACT_COPY_AGENTS = ".agents/skills/work/references/artifact-contracts.md";
+export const CONTRACT_COPIES = [CONTRACT_COPY, CONTRACT_COPY_AGENTS];
 export const LINK_PREFIX = "../../../../docs/";
 export const HEADER =
   `<!-- Generated copy of ${CONTRACT_SOURCE} from G-Ingá, delivered in the /work bundle. Do not edit: ` +
@@ -35,23 +37,35 @@ export function renderContractCopy(canonical) {
 /** Compares the committed copy with the transform of the canonical file. Returns findings; empty means current. */
 export function checkContractCopy(root = resolve(HERE, "../..")) {
   const src = join(root, CONTRACT_SOURCE);
-  const copy = join(root, CONTRACT_COPY);
   if (!existsSync(src)) return [`${CONTRACT_SOURCE} is missing`];
-  if (!existsSync(copy)) return [`${CONTRACT_COPY} is missing; run \`bun tools/validate/contract-copy.mjs\``];
   const expected = renderContractCopy(readFileSync(src, "utf8"));
-  const actual = readFileSync(copy, "utf8");
-  if (actual === expected) return [];
-  const a = actual.split("\n");
-  const e = expected.split("\n");
-  let line = 0;
-  while (line < a.length && line < e.length && a[line] === e[line]) line++;
-  return [`${CONTRACT_COPY}:${line + 1} differs from the transform of ${CONTRACT_SOURCE}; run \`bun tools/validate/contract-copy.mjs\``];
+  const findings = [];
+  for (const copyRel of CONTRACT_COPIES) {
+    const copy = join(root, copyRel);
+    // If the parent skill directory exists, the contract copy must exist and match
+    if (!existsSync(dirname(dirname(copy)))) continue;
+    if (!existsSync(copy)) {
+      findings.push(`${copyRel} is missing; run \`bun tools/validate/contract-copy.mjs\``);
+      continue;
+    }
+    const actual = readFileSync(copy, "utf8");
+    if (actual === expected) continue;
+    const a = actual.split("\n");
+    const e = expected.split("\n");
+    let line = 0;
+    while (line < a.length && line < e.length && a[line] === e[line]) line++;
+    findings.push(`${copyRel}:${line + 1} differs from the transform of ${CONTRACT_SOURCE}; run \`bun tools/validate/contract-copy.mjs\``);
+  }
+  return findings;
 }
 
 export function writeContractCopy(root = resolve(HERE, "../..")) {
-  const out = join(root, CONTRACT_COPY);
-  mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, renderContractCopy(readFileSync(join(root, CONTRACT_SOURCE), "utf8")));
+  const text = renderContractCopy(readFileSync(join(root, CONTRACT_SOURCE), "utf8"));
+  for (const copyRel of CONTRACT_COPIES) {
+    const out = join(root, copyRel);
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, text);
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
