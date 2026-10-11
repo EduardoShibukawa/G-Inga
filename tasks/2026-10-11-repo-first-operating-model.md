@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: accepted
+verified_at: "dd84a5a"
 ---
 
 # Repository-First Operating Model and V1 Readiness
@@ -9,6 +10,7 @@ status: active
 ## Routing and approvals
 
 - tier: standard (documentation, governance reconciliation, repository-first protocol, and implementation-readiness analysis)
+- accepted: by owner (2026-10-11, PR #11 merged into main at 130c708)
 
 ## Objective
 
@@ -44,15 +46,16 @@ Establish the G-Ingá repository as the sole source of truth for project state, 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation suite on main | pass | 9cec3e6 | `mise run validate` (77 pass, 0 fail) |
-| AC1 | PR #10 integration check | pass | 9cec3e6 | gh pr view 10 confirmed MERGED into 9cec3e6 |
-| AC2 | spec hash verification | pass | 9cec3e6 | sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab |
+| B2 | external link baseline on main | fail | 9cec3e6 | `mise run validate:external` (exit 1: pre-existing broken Wikipedia URL in brand-and-roadmap.md:82) |
+| AC1 | PR #10 integration check | pass | dd84a5a | gh pr view 10 confirmed MERGED into 9cec3e6; ancestor of dd84a5a |
+| AC2 | spec hash verification | pass | dd84a5a | sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab verified unchanged |
 | AC3 | documentation audit & status reconciliation | pass | dd84a5a | README, CLAUDE, decision-map, ADR 0005, parent task updated |
 | AC4 | repository-first protocol definition | pass | dd84a5a | CLAUDE.md & README.md |
 | AC5 | docs/README.md navigation index | pass | dd84a5a | created, 626 local links verified |
 | AC6 | validator coexistence architecture analysis | pass | dd84a5a | documented in section below |
 | AC7 | repository validation suite | pass | dd84a5a | `mise run validate` (exit 0) & `mise run test` (77 pass, 0 fail) |
 | R1 | local link integrity check | pass | dd84a5a | 626 local references in 32 files pass |
-| R2 | external link verification | fail | dd84a5a | `mise run validate:external` (exit 1: 1 broken pre-existing Wikipedia URL in brand-and-roadmap.md:82, 2 unreachable) |
+| R2 | external link verification | fail | dd84a5a | baseline: B2 (exit 1: 1 broken pre-existing Wikipedia URL in brand-and-roadmap.md:82, 2 unreachable) |
 | V1 | diff review against governance constraints | pass | dd84a5a | diff verified; no product code; spec hash unchanged |
 
 ## Validator Path Investigation (AC6)
@@ -81,6 +84,11 @@ To prevent conflation or overwriting between development tooling and the bundled
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch docs/repo-first-operating-model, head dd84a5a, worktree dirty
-- done: baseline verified (main at 9cec3e6, PR #10 merged), spec hash verified (sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab), documentation and task records reconciled, docs/README.md navigation map created, repository-first protocol defined in CLAUDE.md/README.md, validator coexistence architecture investigated, validation and test suite passing cleanly (77 pass, exit 0)
-- next: amend or commit updated task record, push branch to origin, and create Draft PR to main
+- as of: 2026-10-11, branch main, head 7a0ad1a, worktree clean
+- done: baseline verified (main at 9cec3e6, PR #10 merged), spec hash verified (sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab), documentation and task records reconciled, docs/README.md navigation map created, repository-first protocol defined in CLAUDE.md/README.md, validator coexistence architecture investigated, validation and test suite passing cleanly (77 pass, exit 0), merged into main via PR #11 at 130c708
+- open: none
+- next: none (task complete)
+
+## Outcome
+
+Established the repository-first operating model for G-Ingá. Documented session entry, state recording, validation, and handoff rules in README.md and CLAUDE.md. Created docs/README.md navigation index with 626 local references verified. Reconciled decision-map.md, ADR 0005, and Minimal V1 task records. Investigated validator dual-role coexistence architecture. Integrated into main via PR #11 at 130c708. All acceptance criteria verified.
