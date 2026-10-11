@@ -51,9 +51,10 @@ Formalize and complete the `.claude/skills/work/` skill definition (`SKILL.md`, 
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head c8067d8, worktree dirty
-- done: task completed and verified on commit c8067d8bf0ebeb86963f42eff9f53a7986ee7368
-- next: commit child task record and proceed to child task 02
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head aa9e38c, worktree clean
+- done: record committed in d19205f (it was first committed already `verified`); no change to the skill files since c8067d8
+- open: AC4 and AC5 rest on session-reported runs (a live `/work` light run, `claude -p`) with no artifact in the repository; not rerun since (parent review A10)
+- next: none for this child unless the parent's review reopens it
 
 ## Outcome
 
