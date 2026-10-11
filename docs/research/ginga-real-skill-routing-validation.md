@@ -13,6 +13,7 @@ Nothing here changes a decision, ADR, contract, validator or the skill under tes
 - **Previous task.** `CLAUDE-SKILL-F4-F1-FORMULATION-REPLICATION` is complete at `c5fc539` (on `claude/dazzling-albattani-cy6uh2`). It is not rerun, and its files are not changed.
 - **Overlap.** Every earlier skill study used a **synthetic** `work` skill written into an empty directory (253 B to about 8 KB, with marker tokens or an inert appendix). No claim or branch covers G-Ingá's real skill. No overlap blocks this task.
 - **Claim.** `539540d`, parent `c5fc539`, created with a lease that expects the ref to be absent. The push created it.
+- **Claim release (after the results commit `12f7db0`).** `git push --force-with-lease=refs/heads/task-claims/GINGA-REAL-SKILL-ROUTING-VALIDATION:539540d… origin :refs/heads/task-claims/GINGA-REAL-SKILL-ROUTING-VALIDATION` failed 5 times (13:43:24–13:43:57 UTC: immediately, then after 2, 4, 8 and 16 s) with `fatal: the remote end hung up unexpectedly`, as the earlier tasks' releases did. Pushes to the task branch worked in the same minutes. The claim is **still present at `539540d`** and needs removal by the owner. No other claim was touched, and no other route was tried.
 - **Work tree.** A separate `git worktree` at `/home/user/G-Inga-real-skill` holds this branch. The session's original checkout was detached (no work of its own on it). No other branch, work tree or claim is touched.
 
 ## 2. Inventory of real skills
