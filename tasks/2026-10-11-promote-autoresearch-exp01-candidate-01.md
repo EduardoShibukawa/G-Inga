@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "4da2510"
 ---
 
 # Promote Autoresearch EXP-01 Candidate 01 to V1 Bundle
@@ -47,16 +48,18 @@ Promote the verified compact routing prompt formulation from Autoresearch EXP-01
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation suite | pass | df53501 | `mise run validate` (exit 0) & `mise run test` (115 pass) on main |
-| AC1 | compact prompt in bundle skills | not run | - | pending edit |
-| AC2 | ledger decision updated | not run | - | pending edit |
-| AC3 | manifest regenerated & proven | not run | - | pending generation |
-| AC4 | validation & test suites | not run | - | pending test |
-| V1 | diff review against V1 governance | not run | - | pending review |
+| AC1 | compact prompt in bundle skills | pass | 4da2510 | applied to .claude/skills/work/SKILL.md and .agents/skills/work/SKILL.md |
+| AC2 | ledger decision updated | pass | 4da2510 | EXP-01-C01 recorded as accepted in records/autoresearch-ledger.tsv |
+| AC3 | manifest regenerated & proven | pass | 4da2510 | manifest.mjs --check passes; bundle.test.ts passes |
+| AC4 | validation & test suites | pass | 4da2510 | `mise run validate` (exit 0) & `mise run test` (115 pass) |
+| V1 | diff review against V1 governance | pass | 4da2510 | bundle skills, manifest, ledger, and task record |
 
 ## Outcome
 
+Autoresearch EXP-01 Candidate 01 has been promoted to the V1 product bundle. The compact routing prompt formulation (saving ~210 tokens per `/work` invocation) is now installed in `.claude/skills/work/SKILL.md` and `.agents/skills/work/SKILL.md`. The ledger row `EXP-01-C01` is marked `accepted`. `manifest.json` was regenerated following the bundle provenance protocol and proven with `manifest.mjs --check`. Canonical validation and test suites pass with 115 tests.
+
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/promote-autoresearch-exp01-candidate-01, head df53501, task active
-- done: branch created; baseline verified (B1 pass); task record authored
-- next: apply compact formulation to .claude and .agents bundle skills
+- as of: 2026-10-11, branch feat/promote-autoresearch-exp01-candidate-01, head 4da2510, task verified
+- done: bundle skills updated; manifest.json regenerated and verified; validation and test suites passed (115 pass); task verified
+- next: commit task verification update, push branch to origin, and submit PR for owner review
