@@ -11,7 +11,7 @@ flowchart TD
     D2 --> D5["D5 Native primitive mapping"]
     D3 --> D5
     D6 --> D5
-    D5 --> V1["Minimal V1 spec ready for approval"]
+    D5 --> V1["Minimal V1 spec approved"]
     D7 --> V1
 ```
 

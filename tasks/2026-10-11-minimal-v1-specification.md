@@ -53,6 +53,6 @@ skip: specification phase; review subagent runs upon children implementation
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch docs/approve-v1-spec-consolidate-pending-work, head a6eb341, worktree dirty
-- done: minimal V1 specification drafted and approved by owner (approved_version: 1, approved_hash: sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab)
-- next: commit approval, run final validations, create draft PR
+- as of: 2026-10-11, branch main, head 9cec3e6, worktree clean
+- done: minimal V1 specification approved by owner and integrated to main via PR #10 (approved_version: 1, approved_hash: sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab)
+- next: establish repository-first operating model and governance readiness (task 2026-10-11-repo-first-operating-model) before decomposing V1 implementation children

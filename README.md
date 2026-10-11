@@ -1,16 +1,54 @@
 # G-Ingá
 
-A personal, incrementally built agentic SDLC harness for Claude Code. It aims to deliver verified work with fewer tokens, and it's also a learning project. The name blends *ginga* (adaptation and movement) with Ingá and Maringá, Paraná, Brazil (see [brand notes](docs/brand-and-roadmap.md), `proposed`).
+A personal, incrementally built agentic SDLC harness for Claude Code that emphasizes **tokens per verified task** and deterministic quality gates. The project name blends *ginga* (adaptability and fluid movement) with Ingá and Maringá, Paraná, Brazil (see [brand notes](docs/brand-and-roadmap.md), `proposed`).
 
-**Status:** discovery (M0). Nothing is implemented yet. See [docs/decision-map.md](docs/decision-map.md).
+## Problem
 
-## Repository checks
+Autonomous AI coding agents frequently suffer from unpredictable autonomy, ceremony mismatch (over-engineering trivial edits or under-verifying risky structural changes), silent context drift across multi-turn sessions, unverified completion claims ("build passed" reported as proof of correctness), and high fixed context overhead from community skill packs.
+
+G-Ingá solves this with:
+
+1. **A single entry skill (`/work`)** featuring progressive disclosure across three ceremony tiers (`light`, `standard`, `heavy`);
+2. **Zero ceremony overhead** and zero persisted files for trivial, local, reversible tasks (`light` tier);
+3. **Deterministic artifact contracts** (`tasks/<id>.md`, `specs/<id>.md`) for complex work (`standard`, `heavy`);
+4. **Self-contained pinned bundle distribution** (`.claude/skills/work/`, `tools/validate/`, `manifest.json`) with offline validation in local sessions and CI merge gates.
+
+## Current Project Status
+
+- **Status:** **Specification Approved (M0 complete); V1 Product Implementation Pending.**
+- **Approved Specification:** The [Minimal V1 Specification](specs/2026-10-11-minimal-v1-specification.md) (`spec/1`, `approved_version: 1`, hash `sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab`) is frozen and approved.
+- **Architectural Decisions Settled:**
+  - Product boundary: Personal SDLC harness first ([ADR 0001](docs/decisions/0001-product-boundary.md)).
+  - Ceremony tiers & routing rules ([ADR 0002](docs/decisions/0002-ceremony-tiers-and-routing.md)).
+  - Artifact schemas and state machine contracts ([ADR 0003](docs/decisions/0003-minimum-artifact-schemas.md), [artifact contracts](docs/artifact-contracts.md)).
+  - Reuse & coexistence strategy ([ADR 0004](docs/decisions/0004-reuse-strategy-for-existing-skills.md)).
+  - Native primitive mapping and pinned bundle distribution ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)).
+  - Evaluation protocol for exploratory pilot ([D7 Evaluation Protocol](docs/research/d7-evaluation-protocol.md)).
+- **What Remains Open / Proposed:**
+  - Usage & token observability ([ADR 0006](docs/decisions/0006-usage-observability.md), `proposed`).
+  - Product implementation of `/work` skill and runtime bundle (to be implemented under V1 implementation tasks).
+
+> [!NOTE]
+> Implementation status is distinct from repository validation tooling: the repository development checks (`mise run validate`, `mise run test`) are fully functional and pass, validating documentation and contracts. Product runtime code has not yet been implemented.
+
+## Documentation Index & Reading Order
+
+For someone starting a new session or exploring the repository, follow this order:
+
+1. **Orientation:** Read this `README.md` and [CLAUDE.md](CLAUDE.md).
+2. **Documentation Map:** Consult [docs/README.md](docs/README.md) for a categorized index of all repository documents.
+3. **Architecture:** Read [docs/decision-map.md](docs/decision-map.md) and accepted ADRs in [docs/decisions/](docs/decisions/).
+4. **Contracts & Specifications:** Read [docs/artifact-contracts.md](docs/artifact-contracts.md) and [Minimal V1 Specification](specs/2026-10-11-minimal-v1-specification.md).
+5. **Active Tasks:** Inspect active task records in [tasks/](tasks/).
+
+## Repository Validation and Development Setup
 
 Install [mise](https://mise.jdx.dev/installing-mise.html) and Git, then from the repository root:
 
 ```sh
-mise install        # the pinned Bun
-mise run validate   # every deterministic check
+mise install        # installs pinned Bun
+mise run validate   # runs all deterministic checks (markdown-lint, links, mermaid, artifact contracts)
+mise run test       # runs contract rule and history test suites (77 tests)
 ```
 
-Platforms, other commands and fixes for errors such as `mise: command not found` are in [development](docs/development.md).
+Additional commands (such as `mise run validate:external` for network checks) and troubleshooting guides are detailed in [docs/development.md](docs/development.md).
