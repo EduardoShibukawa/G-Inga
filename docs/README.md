@@ -35,11 +35,13 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 
 - [docs/briefs/sdlc-harness-brief.md](briefs/sdlc-harness-brief.md): Original prompt brief for the SDLC harness (background input).
 - [docs/research/d2-routing-evidence.md](research/d2-routing-evidence.md): Evidence and evaluation for ceremony tiers and routing.
+- [docs/research/2026-10-11-r01-r17-tabletop-worksheet.md](research/2026-10-11-r01-r17-tabletop-worksheet.md): Table-top routing calibration worksheet for scenarios R01–R17 (ADR 0002).
 - [docs/research/d3-artifact-evidence.md](research/d3-artifact-evidence.md): Evidence for artifact schemas and state transitions.
 - [docs/research/d4-observability-evidence.md](research/d4-observability-evidence.md): Evidence on local CLI observability signals.
 - [docs/research/d5-native-primitive-evidence.md](research/d5-native-primitive-evidence.md): Evidence on Claude Code primitives and delivery channels.
 - [docs/research/d6-reuse-evidence.md](research/d6-reuse-evidence.md): Evidence on upstream skill reuse and context costs.
 - [docs/research/d7-evaluation-protocol.md](research/d7-evaluation-protocol.md) (`accepted`): Evaluation protocol and exploratory pilot on real tasks.
+- [docs/research/autoresearch-program.md](research/autoresearch-program.md) (`proposed`): Bounded, reproducible experimental loop for prompts, routing, and workflows.
 - [docs/research/artifact-contract-validator-findings.md](research/artifact-contract-validator-findings.md): Known validator findings (F1–F14) and contract review cases.
 
 ## 6. Repository Development Tooling
