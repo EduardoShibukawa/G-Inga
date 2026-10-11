@@ -110,4 +110,10 @@ On the E route the skill is injected by `/work`; E sessions are expected in path
 
 ## 5. Amendments
 
-None yet.
+### Amendment 1 (after the smoke test, before the matrix)
+
+**Smoke test** (2026-10-11, about 12:41 UTC): 4 sessions, all exit 0 with 5 `result` events, 5/5 correct turns each, CLI `2.1.296`, model `claude-sonnet-5-5`. Session costs: F3/SMK1 E US$0.0454, N US$0.0456; F6/SMK2 N US$0.0501, E US$0.0458. Total **US$0.1870**, mean US$0.04675. Paths: F3 N par (6 requests), F6 N seq (7 requests); both E sessions made no `Skill` call and one `Read`. The pipeline and the classifier produced the expected records.
+
+**Reduction rule applied as registered:** c = 1.25 × 0.04675 = 0.05844. 36 · c = US$2.10 ≤ 4.50 − 0.1870 = US$4.31. **No reduction step applies.** The full 36-session matrix runs with a runner budget of US$4.8130 (5.00 − smoke spend). Nothing else changes. The smoke paths are not pooled with the matrix.
+
+**Correction to §1 (fact, not design).** At push time `claude/kind-keller-n0rb9r` didn't exist on the remote (the `130c708` seen locally was a stale tracking ref). It was created with a lease expecting the ref to be absent; nothing was overwritten.
