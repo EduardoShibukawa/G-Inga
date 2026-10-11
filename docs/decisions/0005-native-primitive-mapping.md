@@ -96,9 +96,9 @@ Delivery channels for skill and instruction files. "Local" means a session on th
 
 No channel is unavailable everywhere. Repository-committed files are the only channel that is versioned with the target repository. That makes committing a reproducibility choice, not something the cloud forces (FU1).
 
-## Decision (proposed)
+## Decision (accepted 2026-10-11)
 
-The items below choose mechanisms. Where the files live and how they're kept current is left to FU1–FU5.
+The items below choose mechanisms. The distribution architecture and project-local bundle placement are settled under FU1–FU4 below.
 
 1. **One entry point: a skill, provisionally `work`.**
    - It's model-invocable, so its description is in context every turn, and it holds the ADR 0002 routing rule and the `light` floor.
@@ -259,7 +259,7 @@ FU5 follows FU2: file delivery and host discovery are verified (`N12`), while be
 
 FU5 follows FU2. Under A, the local and cloud rows in the channel table are documented behavior, not assumptions. Spikes S2 and S5 still apply.
 
-## FU6: proposal
+## FU6: settled policy (accepted 2026-10-11)
 
 Two options:
 
