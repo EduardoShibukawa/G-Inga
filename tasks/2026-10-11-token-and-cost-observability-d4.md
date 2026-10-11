@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "8d45cd0"
 ---
 
 # Usage, Token and Cost Observability (D4) Reconciled for Multi-Host
@@ -10,6 +11,7 @@ status: active
 
 - tier: standard (S1 holds: clear outcome of reconciling D4/ADR 0006 with multi-host evidence; S2 holds: follow existing ADR and research note pattern; S5 holds: sensitive behavior regarding telemetry privacy and sanitization rules)
 - approved: standard procedure by owner (2026-10-11)
+- accepted: decision D4 (ADR 0006) by owner (2026-10-11, "Aceitar formalmente a Decisão D4 (ADR 0006) como accepted, atualizar decision-map.md e marcar PR #13 como pronto para merge")
 
 ## Objective
 
@@ -48,19 +50,19 @@ Reconcile Decision D4 and ADR 0006 (`docs/decisions/0006-usage-observability.md`
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation suite | pass | fbb53f5 | `mise run validate` (exit 0) & `mise run test` (115 pass) on main |
-| AC1 | Antigravity token semantics documented | pass | ff6fab5 | cumulative vs basal turn 0 semantics, cache excludes in total_tokens documented in ADR 0006 §9 |
-| AC2 | ADR 0006 multi-host update | pass | ff6fab5 | ADR 0006 covers Claude Code (OTel) and Antigravity (headless JSON / transcripts) with privacy gates |
-| AC3 | 6-state taxonomy formalization | pass | ff6fab5 | formal mapping in ADR 0006 §5 table and §Measurement criteria |
-| AC4 | decision map reconciliation | pass | ff6fab5 | row D4 in docs/decision-map.md updated with accurate multi-host scope |
-| AC5 | repository validation and test suite | pass | ff6fab5 | `mise run validate` (exit 0) & `mise run test` (115 pass) |
-| V1 | diff review against V1 governance | pass | ff6fab5 | documentation/decision changes only; spec hash unchanged; no product code drift |
+| AC1 | Antigravity token semantics documented | pass | 8d45cd0 | cumulative vs basal turn 0 semantics, cache excludes in total_tokens documented in ADR 0006 §9 |
+| AC2 | ADR 0006 multi-host update | pass | 8d45cd0 | ADR 0006 covers Claude Code (OTel) and Antigravity (headless JSON / transcripts) with privacy gates |
+| AC3 | 6-state taxonomy formalization | pass | 8d45cd0 | formal mapping in ADR 0006 §5 table and §Measurement criteria |
+| AC4 | decision map reconciliation | pass | 8d45cd0 | row D4 in docs/decision-map.md updated to accepted status |
+| AC5 | repository validation and test suite | pass | 8d45cd0 | `mise run validate` (exit 0) & `mise run test` (115 pass) |
+| V1 | diff review against V1 governance | pass | 8d45cd0 | documentation/decision changes only; spec hash unchanged; no product code drift |
 
 ## Outcome
 
-Decision D4 and ADR 0006 (`docs/decisions/0006-usage-observability.md`) have been reconciled with multi-host empirical evidence. The record now accurately covers both supported V1 hosts (Claude Code via local OpenTelemetry console export and Antigravity CLI via headless JSON envelopes and sanitized transcripts), establishes clear privacy boundaries, and formalizes the 6-state taxonomy without premature or unverified cross-host token comparisons.
+Decision D4 and ADR 0006 (`docs/decisions/0006-usage-observability.md`) have been reconciled with multi-host empirical evidence and formally accepted by the project owner. The record now accurately covers both supported V1 hosts (Claude Code via local OpenTelemetry console export and Antigravity CLI via headless JSON envelopes and sanitized transcripts), establishes clear privacy boundaries, and formalizes the 6-state taxonomy without premature or unverified cross-host token comparisons.
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/d4-token-cost-observability, head 70ba791, worktree clean; Draft PR #13 opened
-- done: subagent research synthesis incorporated; ADR 0006 updated; docs/decision-map.md updated; validation and test suites passing (115 pass, exit 0); branch pushed to remote; Draft PR #13 created
-- next: owner review of PR #13 and formal decision on accepting ADR 0006
+- as of: 2026-10-11, branch feat/d4-token-cost-observability, head 8d45cd0, task verified
+- done: subagent research synthesis incorporated; ADR 0006 updated and accepted; docs/decision-map.md updated; validation and test suites passing (115 pass, exit 0); PR #13 created; owner formally accepted D4
+- next: mark PR #13 ready for review and merge to main
