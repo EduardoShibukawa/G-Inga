@@ -1,8 +1,8 @@
 # 0006 — Usage, context and cost observability
 
-- **Status:** proposed (not accepted; prepared for project owner review post-spike D4; see "What needs the owner")
-- **Date:** 2026-10-10 (revised 2026-10-11 post-spike D4)
-- **Deciders:** project owner (pending)
+- **Status:** accepted (accepted by project owner 2026-10-11; covers multi-host local telemetry for Claude Code and Antigravity CLI)
+- **Date:** 2026-10-10 (revised and accepted 2026-10-11)
+- **Deciders:** project owner
 - **Depends on:** nothing on the decision map. Constrained by [ADR 0001](0001-product-boundary.md) (personal SDLC harness scoped to Claude Code in V1), [ADR 0002](0002-ceremony-tiers-and-routing.md) §8 (what to measure) and [ADR 0003](0003-minimum-artifact-schemas.md) decision item 10 (`hard` and `guideline` budgets), all `accepted`, and by [ADR 0005](0005-native-primitive-mapping.md) (`proposed`), which leaves the fixed per-turn cost limit to D4 (U7). This record changes none of them.
 - **Evidence:** [D4 evidence](../research/d4-observability-evidence.md), [D4 spike results](../research/d4-spike-results.md), and [D4 spike review](../research/d4-spike-review.md). Codes `T`, `G` and `K` below refer to the evidence note.
 - **Correction of an earlier label:** until this record, the decision map's D4 row named `/cost` as a Claude Code signal. In the current commands reference `/cost` is an alias of `/usage`, as is `/stats` (T13). The row now names `/usage`; Git keeps the old wording.
@@ -48,28 +48,28 @@ Choose an observability approach for V1 that:
 3. **Plan utilization comes from structured sources only.** In Claude Code, that is the status line's `rate_limits` (`observed`), providing rolling 5-hour and 7-day window percentages and reset timestamps (T18). Where structured quota data does not exist, plan utilization is `unsupported`.
 4. **Local-only, privacy-minimal configuration.** Telemetry is configured by the owner in user-level settings or the launch environment, never in a committed repository file (which Claude Code ignores anyway, T2), and exported strictly to the local console or a local endpoint.
 
-   | Setting | Claude Code (V1 Target) | Legacy Gemini CLI (Reference only) |
-   |---|---|---|
-   | Turn on | `CLAUDE_CODE_ENABLE_TELEMETRY=1` | `telemetry.enabled: true` |
-   | Destination | `OTEL_METRICS_EXPORTER=console`; `OTEL_LOGS_EXPORTER=console` (or local OTLP) | `target: "local"` with `outfile` |
-   | Prompt and response text | Explicitly set `OTEL_LOG_USER_PROMPTS=0` and `OTEL_LOG_ASSISTANT_RESPONSES=0` | **`logPrompts: false` set explicitly**, because default is `true` |
-   | Tool inputs and content | Explicitly set `OTEL_LOG_TOOL_DETAILS=0` and `OTEL_LOG_TOOL_CONTENT=0` | Covered by `logPrompts: false` (G8) |
-   | Raw API bodies | Explicitly set `OTEL_LOG_RAW_API_BODIES=0` | Traces disabled (`traces: false`) |
-   | Identity metadata | Set `OTEL_METRICS_INCLUDE_ACCOUNT_UUID=false`. Note: `user.email` is still attached to OTel resources (T9) | `user.email` and `installation.id` attached (G3) |
+   | Setting | Claude Code (Supported Host) | Antigravity CLI `agy` (Supported Host) | Legacy Gemini CLI (Superseded Reference) |
+   |---|---|---|---|
+   | Turn on | `CLAUDE_CODE_ENABLE_TELEMETRY=1` | `--output-format json` / `stream-json` or `.agents/hooks.json` | `telemetry.enabled: true` |
+   | Destination | `OTEL_METRICS_EXPORTER=console`; `OTEL_LOGS_EXPORTER=console` (or local OTLP) | stdout (headless JSON envelope) or disk (`~/.gemini/antigravity-cli/brain/<id>/.system_generated/logs/transcript_full.jsonl`) | `target: "local"` with `outfile` |
+   | Prompt and response text | Explicitly set `OTEL_LOG_USER_PROMPTS=0` and `OTEL_LOG_ASSISTANT_RESPONSES=0` | Headless envelope emits response; `transcript_full.jsonl` stores prompts/thoughts. Scrub before export | **`logPrompts: false` set explicitly**, because default is `true` |
+   | Tool inputs and content | Explicitly set `OTEL_LOG_TOOL_DETAILS=0` and `OTEL_LOG_TOOL_CONTENT=0` | Captured in `transcript_full.jsonl` step records; scrub before export | Covered by `logPrompts: false` (G8) |
+   | Raw API bodies | Explicitly set `OTEL_LOG_RAW_API_BODIES=0` | Not exposed directly in headless JSON | Traces disabled (`traces: false`) |
+   | Identity metadata | Set `OTEL_METRICS_INCLUDE_ACCOUNT_UUID=false`. Note: `user.email` is still attached to OTel resources (T9) | Session DB / settings.json may contain auth identities; scrub before sharing | `user.email` and `installation.id` attached (G3) |
 
    **Privacy and Sanitization Boundary:**
-   - Content gates explicitly disabled: Official documentation indicates that `OTEL_LOG_ASSISTANT_RESPONSES`, when unset, inherits the value of `OTEL_LOG_USER_PROMPTS`. G-Ingá's launch configuration explicitly sets all five content gates to `0` (`OTEL_LOG_USER_PROMPTS=0`, `OTEL_LOG_ASSISTANT_RESPONSES=0`, `OTEL_LOG_TOOL_DETAILS=0`, `OTEL_LOG_TOOL_CONTENT=0`, `OTEL_LOG_RAW_API_BODIES=0`). This guarantees prompt text is excluded, assistant responses are redacted as `"<REDACTED>"`, tool parameters/Bash commands are omitted, and conversation histories/raw bodies are not captured, regardless of inheritance or external settings.
+   - Content gates explicitly disabled in Claude Code: G-Ingá's launch configuration explicitly sets all five content gates to `0` (`OTEL_LOG_USER_PROMPTS=0`, `OTEL_LOG_ASSISTANT_RESPONSES=0`, `OTEL_LOG_TOOL_DETAILS=0`, `OTEL_LOG_TOOL_CONTENT=0`, `OTEL_LOG_RAW_API_BODIES=0`). This guarantees prompt text is excluded, assistant responses are redacted as `"<REDACTED>"`, and tool parameters are omitted.
+   - Antigravity CLI sanitization boundary: Unlike Claude Code's environment gates, `agy` headless JSON and transcript files contain full text, tool calls, and model thoughts. Raw session transcripts or JSON envelopes must never be committed to Git or exported without automated or manual scrubbing of user prompts, source code, and credentials.
    - Precedence confirmed: Claude Code ignores telemetry exporter settings in a repository's `.claude/settings.json` (T2). Telemetry configuration in the launch environment takes precedence over user defaults and cannot be subverted by cloned repositories.
-   - Metadata presence vs. redacted content: Redacted content covers prompt/completion texts and tool inputs. In contrast, standard OTel attributes attach identity metadata (`user.email`, `session.id`, `organization.id`). Setting `OTEL_METRICS_INCLUDE_ACCOUNT_UUID=false` removes the account UUID from metrics, but does NOT remove `user.email` from OTel events or resources (where it is attached whenever available under OAuth).
-   - Local containment is not proof of absolute privacy: Local console export prevents network egress, but raw console dumps or files must never leave the workstation or be committed to Git without an explicit sanitization step that strips personal emails and account identifiers. Collection is not expanded and absolute privacy is not claimed.
+   - Local containment is not proof of absolute privacy: Local console export and disk storage prevent network egress, but raw logs must never leave the workstation or be committed to Git without an explicit sanitization step that strips personal emails, session tokens, and account identifiers.
 5. **One common record per observation, without forced equivalence.** A *usage observation* carries:
-   - **source:** CLI, CLI version, signal (`otel-metric`, `otel-log`, `statusline`), authentication kind (`subscription`, `api-key`, `unknown`), and active privacy-flag state;
-   - **scope:** `session_id`, `prompt_id` or `request_id` when available, model, time window;
+   - **source:** CLI, CLI version, signal (`otel-metric`, `otel-log`, `statusline`, `headless-json`, `transcript-log`), authentication kind (`subscription`, `api-key`, `unknown`), and active privacy-flag state;
+   - **scope:** `session_id`, `conversation_id`, `prompt_id` or `request_id` when available, model, time window;
    - **measures:** input, output, cache read, cache write, thinking, tool tokens, tool calls by name, active wall duration, API duration, TTFT, context size, compaction tokens before/after. Each measure retains its native field name;
    - **cost estimate:** amount, currency, basis (`list-price estimate by CLI`), and source. It is never billing;
    - **plan utilization:** rolling window, used percentage, reset time, source.
 
-   **Field State Taxonomy (Proposed):**
+   **Field State Taxonomy:**
    Every measure carries exactly one state:
 
    | State | Meaning |
@@ -81,38 +81,38 @@ Choose an observability approach for V1 that:
    | `unsupported` | The source schema does not expose the field |
    | `collection_error` | Collection failed or was aborted before measurement. Reason is recorded |
 
-   *Separation of execution state and collection state:* The exit status of a CLI process must not be conflated with metric collection states. In Gemini CLI, pre-flight authentication/onboarding failed (`IneligibleTierError` / `UNSUPPORTED_CLIENT`), aborting execution before model inference was invoked. The collector itself did not fail: the file exporter initialized and recorded startup lifecycle events. Because the model was never invoked, no token usage was emitted during the session scope. Under the documented taxonomy, when a field is supported by the source schema but nothing is emitted within the scope, its state is `absent`. It is not zero (which would falsely imply zero tokens consumed during an inference) and not `collection_error` (which is reserved for evidence of actual collector failure).
+   *Separation of execution state and collection state:* The exit status of a CLI process must not be conflated with metric collection states. When a field is supported by the source schema but nothing is emitted within the scope, its state is `absent`. It is not zero (which would falsely imply zero tokens consumed during an inference) and not `collection_error` (which is reserved for evidence of actual collector failure).
 6. **Four separate cost notions, never inferred from one another:**
-   1. *Observed usage:* Physical counts of processed units (`input`, `output`, `cacheRead`, `cacheCreation`, active durations), measured according to provider tokenizers.
+   1. *Observed usage:* Physical counts of processed units (`input`, `output`, `cacheRead`, `cacheCreation`, `thinking`, active durations), measured according to provider tokenizers.
    2. *Estimated monetary cost:* Claude Code's `cost.usage` / `cost_usd` list-price calculation, useful solely as an informative synthetic benchmark.
-   3. *Plan quota and utilization:* Provider-enforced limits (Claude status line 5-hour and 7-day rate limits).
+   3. *Plan quota and utilization:* Provider-enforced limits (Claude status line 5-hour and 7-day rate limits; Antigravity subscription credit limits).
    4. *Effective billing:* Monthly flat-rate subscription fees ($20/month) that do not vary with token volume. G-Ingá never calculates or claims billing.
-7. **Enforcement stays as ADR 0003 sets it.** Token and time limits are `guideline`. Telemetry is emitted after the request and cannot block interactive turns. Plan quotas are enforced by the provider. Platform flags (`--max-budget-usd` in print mode, `maxSessionTurns`) are not G-Ingá token budgets and are not adopted for interactive work.
+7. **Enforcement stays as ADR 0003 sets it.** Token and time limits are `guideline`. Telemetry is emitted after the request and cannot block interactive turns. Plan quotas are enforced by the provider.
 8. **Per-task attribution analysis and boundaries:**
-   Because runtimes key signals by `session.id` rather than task id, linking usage to G-Ingá tasks requires harness association.
-   Comparing attribution options against existing [artifact contracts](../artifact-contracts.md):
-   - *Option 1: Record `session_id` in task `## Checkpoint`:* Checkpoints exist only when work stops or crosses sessions ([artifact contracts](../artifact-contracts.md) §1). Tasks completed within a single session have no checkpoint. Moreover, checkpoints are overwritten on update, losing the history of earlier sessions.
-   - *Option 2: Record `session_id` in `## Routing and approvals`:* The routing log is append-only and exists for all `standard` and `heavy` tasks, but its grammar is restricted to ten closed keywords ([artifact contracts](../artifact-contracts.md) §2.3). Adding a `session:` keyword alters the contract grammar.
-   - *Option 3: Support multiple sessions per task:* Real tasks that are interrupted, resumed, or escalated naturally span multiple sessions. A rigid 1:1 mapping between session and task is fragile.
-
-   *Contract Gap:* The current `task/1` frontmatter does not define a `session_id` field, and existing sections do not accommodate multi-session tracking without contract amendments. Modifying artifact contracts is out of scope for D4.
-   *Resolution for V1:* The contract gap for `session_id` remains open. Documentation may manually record an association between a session and a task as exploratory operational evidence in execution reports, but must not present this association as structured, guaranteed, or automatically processable by the harness. Neither `schema: task/1` nor the routing log grammar is modified. A future schema evolution is required to establish structured attribution.
-9. **Not used:** Full conversation transcripts (they contain prompts, code, and tool outputs, K1), session files, proxy/gateway middleware (conflicts with terms of service, G19), and remote telemetry collectors.
+   Because runtimes key signals by `session.id` or `conversation_id` rather than task id, linking usage to G-Ingá tasks requires harness association.
+   - *Option 1: Record `session_id` in task `## Checkpoint`:* Checkpoints exist only when work stops or crosses sessions ([artifact contracts](../artifact-contracts.md) §1). Checkpoints are overwritten on update, losing the history of earlier sessions.
+   - *Option 2: Record `session_id` in `## Routing and approvals`:* The routing log grammar is restricted to ten closed keywords ([artifact contracts](../artifact-contracts.md) §2.3). Adding a `session:` keyword alters the contract grammar.
+   - *Option 3: Support multiple sessions per task:* Real tasks that are interrupted, resumed, or escalated naturally span multiple sessions.
+   *Resolution for V1:* The contract gap for `session_id` / `conversation_id` remains open. Documentation may manually record an association between a session and a task as exploratory operational evidence in execution reports, but must not present this association as structured, guaranteed, or automatically processable by the harness. Neither `schema: task/1` nor the routing log grammar is modified in V1.
+9. **Cumulative vs. Window Semantics (Critical Antigravity Discovery):**
+   In Antigravity CLI (`agy`), `usage.input_tokens`, `usage.cache_read_tokens`, and `usage.output_tokens` in the headless JSON envelope represent the **session-cumulative sum** across all model calls, NOT the context footprint of the final turn. Furthermore, `usage.total_tokens` equals `input_tokens + output_tokens` and explicitly excludes `cache_read_tokens`. Basal prompt footprint must be inspected at `step_index: 1` in `transcript_full.jsonl`.
+10. **Incomparability of Raw Tokens Across Hosts:**
+    **Raw token counts must never be directly compared between Claude Code and Antigravity CLI.** Antigravity injects an extensive system prompt, tool definitions, and environment rules (~12,000 basal tokens) and utilizes distinct tokenizers (Gemini vs. Claude). Compare only verified task success rates, wall time, human interventions, and ceremony escalations.
 
 ### Measurement criteria (from ADR 0002 §8)
 
-| Measurement | Where it comes from | Claude Code (V1 Host) | Legacy Gemini CLI (Reference) | Antigravity CLI (Future Candidate) |
+| Measurement | Where it comes from | Claude Code (Host) | Antigravity CLI `agy` (Host) | Legacy Gemini CLI (Superseded) |
 |---|---|---|---|---|
 | Tier, escalations, check runs, first-pass result, rework, escaped defects, artifacts read | Task records, Git, friction log | Provider-independent (`observed`) | Provider-independent (`observed`) | Provider-independent (`observed`) |
-| Input and output tokens | OTel metrics | `observed` (`input`, `output`) | `absent` (model invocation blocked by auth) | Not evaluated |
-| Cache tokens | OTel metrics | `observed` (`cacheRead`, `cacheCreation`) | `absent` (model invocation blocked by auth) | Not evaluated |
-| Thinking tokens | OTel metrics | `unsupported` (included in output) | `absent` (model invocation blocked by auth) | Not evaluated |
-| Tool calls | OTel metrics / events | `observed` (names, counts, duration) | `absent` (model invocation blocked by auth) | Not evaluated |
-| Wall and API duration | OTel metrics / events | `observed` (`active_time`, `api_request`) | `observed` (startup only) | Not evaluated |
-| Human interventions | Task records & tool decision sources | Partly `observed` | Partly `observed` | Not evaluated |
-| Context use | Status line / compaction event | `observed` / `estimated` | `absent` (compaction not triggered) | Not evaluated |
-| Estimated cost | OTel metric (`cost.usage`) | `estimated` (list price; not billing) | `unsupported` | Not evaluated |
-| Plan utilization | Status line `rate_limits` | `observed` (5h and 7d percentages) | `unsupported` (structured) | Not evaluated |
+| Input and output tokens | OTel metrics / Headless JSON | `observed` (`input`, `output`) | `observed` (`input_tokens`, `output_tokens`) | `absent` (auth blocked) |
+| Cache tokens | OTel metrics / Headless JSON | `observed` (`cacheRead`, `cacheCreation`) | `observed` (`cache_read_tokens`; `cacheCreation` unsupported) | `absent` (auth blocked) |
+| Thinking tokens | OTel metrics / Headless JSON | `unsupported` (conflated in output) | `observed` (`thinking_tokens` in `usage`) | `absent` (auth blocked) |
+| Tool calls | OTel events / Session transcript | `observed` (names, counts, duration) | `observed` (in `transcript_full.jsonl`) | `absent` (auth blocked) |
+| Wall and API duration | OTel metrics / Headless JSON | `observed` (`active_time`, `api_request`) | `observed` (`duration_seconds`) | `observed` (startup only) |
+| Human interventions | Task records & tool decision sources | Partly `observed` | Partly `observed` | Partly `observed` |
+| Context use | Status line / Transcript step 1 | `observed` / `estimated` | `observed` (`transcript_full.jsonl` step 1) | `absent` |
+| Estimated cost | OTel metric (`cost.usage`) | `estimated` (list price; not billing) | `unsupported` (flat subscription) | `unsupported` |
+| Plan utilization | Status line `rate_limits` | `observed` (5h and 7d percentages) | `unsupported` in headless mode | `unsupported` |
 | Billing | — | Out of scope | Out of scope | Out of scope |
 
 ---
@@ -150,15 +150,15 @@ Spike D4 was executed on 2026-10-10 (`d4-spike-results.md`, `d4-spike-review.md`
 
 ---
 
-## Alternatives considered
+### Alternatives considered
 
 | ID | Option | Pros | Cons | Verdict |
 |---|---|---|---|---|
-| A | **Local OpenTelemetry for Claude Code, 6-state common record (this proposal)** | Structured machine ingestion, no parsing, keeps source semantics, proven in Spike D4 | Off by default, requires local launch configuration; multi-session attribution unresolved | **recommended for V1** |
+| A | **Local OpenTelemetry for Claude Code, 6-state common record (this proposal)** | Structured machine ingestion, no parsing, keeps source semantics, proven in Spike D4 | Off by default, requires local launch configuration; multi-session attribution unresolved | **recommended for Claude Code** |
 | B | Native views only (`/usage`, `/stats`) | Zero configuration, exposes plan bars | Terminal UI format; automation requires brittle terminal scraping | Rejected for automation; kept as human cross-check |
-| C | Conversation transcripts and session files | Already written to disk, message-level granularity | Contains complete prompts, source code, and secrets; format is an unstable internal detail | Rejected |
-| D | Status line as primary collector | Structured; only source of Claude plan utilization | Claude-only, interactive-only, current-window scope | Used exclusively for plan utilization (item 3) |
-| E | Headless JSON `stats` (`-p --output-format json`) | Per-run structured totals | Scripted/headless runs only; does not cover interactive sessions | Deferred to D7 evaluation runner |
+| C | Conversation transcripts and session files | Already written to disk, message-level granularity | Contains complete prompts, source code, and secrets; format is an unstable internal detail | Rejected for production; used under sanitization for deep audit |
+| D | Status line as primary collector | Structured; only source of Claude plan utilization | Claude-only, interactive-only, current-window scope | Used exclusively for Claude plan utilization (item 3) |
+| E | **Headless JSON envelope (`-p --output-format json`)** | Per-run structured totals (`usage.input_tokens`, `output_tokens`, `duration_seconds`) | Scripted/headless runs only; does not cover interactive TUI sessions | **recommended for Antigravity CLI evaluation harness** |
 | F | Proxy or gateway in front of CLIs | Centralized logging point | Operational complexity without logged friction; violates Google terms (G19) | Rejected |
 | G | No measurement; friction log only | Zero setup overhead | Loses ability to evaluate tokens per verified task (principle §6) | Rejected |
 | H | Normalized single schema with mandatory fields | Simplified schema | Forces fake zeros and conflates unlike tokenizers across models | Rejected |
@@ -167,16 +167,16 @@ Spike D4 was executed on 2026-10-10 (`d4-spike-results.md`, `d4-spike-review.md`
 
 ## Consequences
 
-- Automated observability in G-Ingá V1 is explicitly bounded to Claude Code, maintaining fidelity to [ADR 0001](0001-product-boundary.md).
-- The harness avoids premature adapter maintenance for Google developer tools while the upstream ecosystem transitions from Gemini CLI to Antigravity CLI.
-- The owner configures telemetry locally once per workstation via launch environment variables (`CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_*_EXPORTER=console`). Target repositories cannot and do not enable telemetry.
+- Automated observability in G-Ingá covers both supported V1 hosts with tailored local channels: Claude Code via local OpenTelemetry console export, and Google Antigravity CLI via headless JSON envelopes (`--output-format json`) and sanitized transcript inspection.
+- The harness avoids remote telemetry daemons or third-party egress; collection is entirely local to the developer's workstation.
+- Raw token numbers across hosts are explicitly non-comparable; evaluations focus on ceremony escalations, task pass rates, and wall durations.
 - The fixed per-turn context cost limit ([ADR 0005](0005-native-primitive-mapping.md), U7) remains unset until real development tasks are observed under G-Ingá.
 
 ## Risks
 
 - **Semantic and version drift:** Fast-moving CLI releases may alter metric names or attributes. Observations must record CLI version.
 - **Identity leakage in local metadata:** Standard OTel attributes attach `user.email`. Any automated tool that exports or archives telemetry must scrub identity fields.
-- **Insecure defaults in third-party tooling:** If Antigravity CLI or Gemini CLI is explored in future milestones, `logPrompts` defaults to `true` and workspace settings outrank user settings. G-Ingá must enforce explicit disabling before use.
+- **Transcript and envelope leakage:** Antigravity CLI transcripts and JSON output contain prompts and code snippets. Local sanitization is mandatory before committing or sharing experimental records.
 
 ---
 
@@ -187,10 +187,10 @@ Decision **D7** addresses evaluation: defining the smallest repeatable compariso
 ### Disentangling D7 from D4
 
 1. **What D7 requires from D4:**
-   - A verified local mechanism to observe input tokens, output tokens, cache reads/writes, active execution duration, and plan rate-limit utilization on Claude Code at the session level. This requirement is fully satisfied by Claude Code's local OpenTelemetry channel and status line data.
+   - A verified local mechanism to observe input tokens, output tokens, cache reads/writes, active execution duration, and plan rate-limit utilization across supported hosts (Claude Code via OTel / statusline, Antigravity CLI via headless JSON / transcripts).
    - Strict separation of estimated list-price figures from billing.
+   - Non-comparability guidelines preventing naive token-count comparisons across different model tokenizers.
 2. **What D7 does NOT require from D4:**
-   - Observability into Gemini CLI or Antigravity CLI.
    - External telemetry daemons, collector processes, or time-series databases.
    - Synthetic benchmarks (HumanEval, SWE-bench) or mandatory multi-repository labs (PetClinic remains an optional fixture per ADR 0001).
    - Arbitrary numerical token budgets or artificial execution thresholds.
@@ -208,24 +208,24 @@ To prevent contradictions between the open task attribution contract and evaluat
    - Per-session telemetry observations recorded manually as exploratory evidence (e.g., in execution reports), without presenting them as structured, automated per-task metrics.
 2. **D7 that remains limited:**
    - Automated attribution of tokens and active execution duration per task;
-   - Aggregations requiring a structured, machine-verifiable relationship between `session.id` and `task.id`.
+   - Aggregations requiring a structured, machine-verifiable relationship between `session.id` / `conversation_id` and `task.id`.
 
 ### Minimal V1 evaluation definition
 
 The minimal V1 evaluation framework is defined as follows:
 
-- **Workload:** Matched before-and-after comparisons on real development tasks within the owner's personal repositories, comparing unassisted Claude Code against G-Ingá harness guidance.
+- **Workload:** Matched before-and-after comparisons on real development tasks within the owner's personal repositories, comparing unassisted CLI sessions against G-Ingá harness guidance.
 - **Deterministic Quality Gates (Ready):** First-pass verification success rate (criteria verified at `verified_at` without rework/regression loops) and deterministic verification outcomes.
 - **Process Friction (Ready):** Count of ceremony escalations (`light` → `standard` → `heavy`) and friction entries logged in `friction-log.md`.
-- **Usage Signals (Exploratory / Limited):** Session-level token totals (`input + output + cacheCreation + cacheRead`) and active execution wall time observed locally via OTel console export and noted manually as exploratory evidence alongside task execution reports. Automated aggregation per task is excluded pending schema evolution.
+- **Usage Signals (Exploratory / Limited):** Session-level token totals and active execution wall time observed locally (OTel for Claude Code, headless JSON for Antigravity) and noted manually as exploratory evidence alongside task execution reports. Automated aggregation per task is excluded pending schema evolution.
 - **Specification Boundary:**
-  - *Specifiable now:* Task selection criteria, verification evidence requirements, friction logging conventions, and OTel metric capture commands.
-  - *Dependent on future schema evolution:* Automated joining of OTel `session.id` to `task.id`. No contract or schema is altered in V1.
+  - *Specifiable now:* Task selection criteria, verification evidence requirements, friction logging conventions, and host capture commands.
+  - *Dependent on future schema evolution:* Automated joining of host session identifiers to `task.id`. No contract or schema is altered in V1.
 
 ---
 
 ## What needs the owner
 
-1. **Confirm the V1 boundary:** Confirm scoping automated usage observability in V1 exclusively to Claude Code, keeping legacy Gemini CLI unsupported and deferring Antigravity CLI to post-V1.
-2. **Task attribution direction:** When artifact schemas are next revised, decide where `session_id` should be recorded (amendment to `schema: task/1` frontmatter, a new keyword in `## Routing and approvals`, or handled strictly in ephemeral execution reports), without choosing a mechanism silently in V1.
+1. **Confirm the multi-host observability model:** Confirm the dual-channel approach (local OTel for Claude Code; headless JSON / sanitized transcripts for Antigravity CLI) and the 6-state taxonomy for local usage observations.
+2. **Task attribution direction:** When artifact schemas are next revised, decide where `session_id` / `conversation_id` should be recorded (amendment to `schema: task/1` frontmatter, a new keyword in `## Routing and approvals`, or handled strictly in ephemeral execution reports).
 3. **Accept, revise or reject this record:** This record remains `proposed` pending the owner's explicit decision.
