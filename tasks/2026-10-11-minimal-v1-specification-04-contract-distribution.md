@@ -1,12 +1,13 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
 parent: 2026-10-11-minimal-v1-specification
 spec: 2026-10-11-minimal-v1-specification@1
 depends_on:
   - 2026-10-11-minimal-v1-specification-02-validator-and-manifest
   - 2026-10-11-minimal-v1-specification-03-ci-and-update
+verified_at: "0d4f497"
 ---
 
 # Artifact Contract Distribution in the Bundle
@@ -44,18 +45,22 @@ Deliver the artifact contract text to target repositories so the `/work` procedu
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository suites before the change | pass | 74466d9 | `G_INGA_REQUIRE_RUNTIMES=1 mise run test`: 107 pass, 0 fail; `mise run validate`: exit 0 |
-| AC1 | copy present, transform documented, listed and hashed | not run | 74466d9 | |
-| AC2 | drift fails deterministically | not run | 74466d9 | |
-| AC3 | procedures cite the delivered copy | not run | 74466d9 | |
-| AC4 | update installs the copy, target docs untouched | not run | 74466d9 | |
-| AC5 | docs/bundle.md current | not run | 74466d9 | |
-| AC6 | manifest regenerated and proven | not run | 74466d9 | |
-| R1 | repository test suite | not run | 74466d9 | |
-| R2 | repository validation suite | not run | 74466d9 | |
-| V1 | diff read against AC1–AC6 and SC1, SC5, SC6 | not run | 74466d9 | |
+| AC1 | copy present, transform documented, listed and hashed | pass | 0d4f497 | artifacts.test.ts: committed copy equals `renderContractCopy(docs/artifact-contracts.md)`; the copy minus its header and link prefix is the canonical text byte for byte; header names the source and says it's a generated copy. `bundle.json` lists it; manifest.json covers 9 files including it; `node tools/validate/validate.js`: manifest-integrity pass, 9 files |
+| AC2 | drift fails deterministically | pass | 0d4f497 | `mise run validate` check `artifact-contract-copy` pass on this repository. artifacts.test.ts: canonical edited without regeneration → check `fail`, exit 1; copy edited alone → `fail`; copy deleted → `fail` ("is missing"); regenerated → `pass`; no `.claude/skills/work/` → `not run`. Chosen as a `validate` check (a repository-content invariant, like `artifact-contract-sync`, run by the same CI job) with committed tests for the check itself; the manifest additionally pins the copy's hash |
+| AC3 | procedures cite the delivered copy | pass | 0d4f497 | bundle.test.ts: no skill file in the bundle contains `docs/artifact-contracts.md`; SKILL.md, standard.md and resume.md cite `.claude/skills/work/references/artifact-contracts.md` (heavy.md too) |
+| AC4 | update installs the copy, target docs untouched | pass | 0d4f497 | bundle.test.ts: `updateBundle` into a target holding its own `docs/artifact-contracts.md` installs the copy byte-identical under `.claude/skills/work/references/`, leaves the target file byte-identical and `git status -- docs` empty, also after an upgrade |
+| AC5 | docs/bundle.md current | pass | 0d4f497 | inspection: contents table lists the copy; source-only table lists contract-copy.mjs; the A7 item is gone from `## Open`; docs/development.md documents `artifact-contract-copy`. Other `.claude/skills/work/` mentions (README, ADR 0005, spec, research) name the directory, not its file list, and need no change |
+| AC6 | manifest regenerated and proven | pass | 0d4f497 | commit C = 57ac605 (assets), `bun tools/validate/manifest.mjs` at C, commit M = 0d4f497 (manifest.json alone); `bun tools/validate/manifest.mjs --check`: pass |
+| R1 | repository test suite | pass | 0d4f497 | `G_INGA_REQUIRE_RUNTIMES=1 mise run test`: type-check clean, 114 pass, 0 fail. At 57ac605 alone, 23 tests that read the source manifest failed as the two-commit protocol expects |
+| R2 | repository validation suite | pass | 0d4f497 | `mise run validate` exit 0 |
+| V1 | diff read against AC1–AC6 and SC1, SC5, SC6 | pass | 0d4f497 | self-review of 7ddbe07..0d4f497 by the implementing session; limitation: in a target, the copy's relative links point to G-Ingá's `docs/`, which the target doesn't have (stated in the copy's header and docs/bundle.md) |
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 74466d9, worktree dirty (this record only)
-- done: baseline B1
-- next: commit and push this record, then implement plan step 2
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 0d4f497, worktree dirty (this record only)
+- done: rows run at 0d4f497; status verified
+- next: none for this child; the parent records A7 as fixed
+
+## Outcome
+
+Delivered `.claude/skills/work/references/artifact-contracts.md`, a generated copy of the canonical `docs/artifact-contracts.md` (header comment plus relative-link prefix, `tools/validate/contract-copy.mjs`), listed in `bundle.json` and `manifest.json`. `mise run validate` fails on drift (`artifact-contract-copy`). The `/work` procedures cite the delivered copy. Commits: 7ddbe07 (record opened `active`), 57ac605 (implementation, commit C), 0d4f497 (manifest, commit M). Follow-up, not in scope: the copy's links into G-Ingá's `docs/` don't resolve in a target.
