@@ -112,4 +112,14 @@ A **block** is one (size, length, match, repetition) with its E and N runs back 
 
 ## 5. Amendments
 
-None yet.
+### Amendment 1 (after the smoke test, before the matrix)
+
+**Smoke test** (4 sessions, all exit 0, both turns completed): mean session cost US$0.0408 (0.0358, 0.0374, 0.0562, 0.0339; total US$0.1633). Mechanism checks: `/work` sent through `stream-json` input is expanded as in `-p` (command block plus skill block with the body, in request 1). The last `result` event's `total_cost_usd` is cumulative across turns (turn 2 adds a small increment); each `result` event's `usage` is per turn, so session output tokens are summed over turns.
+
+**Reduction rule applied as registered:** c = 1.25 × 0.0408 = 0.0510. 36 · 3 · c = 5.51 and 36 · 2 · c = 3.67, against 4.50 − 0.163 = 4.337. So **r = 2** (72 sessions).
+
+**Change, fixed before any matrix run:**
+
+1. Repetitions 1–2 are shuffled together and run first (seed `20261011`). Then repetition 3 blocks run in their own fixed shuffled order **until the budget stop**, whatever the earlier results. This replaces "all blocks of all repetitions are shuffled together" (§2). It adds data only by a budget-based stop, never by a result-based one.
+2. Thresholds written as "x/6 per size" are read as proportions of the pairs actually run (5/6 → ≥ 83%; 1/6 → ≤ 17%).
+3. Classification follows §3: a hypothesis is *confirmed* only if every cell it uses has 3 repetitions. With fewer, a met criterion is *exploratory*.

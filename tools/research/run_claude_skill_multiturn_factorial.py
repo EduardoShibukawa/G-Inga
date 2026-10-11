@@ -424,22 +424,30 @@ def TURN1_KEY(turn1: str) -> str:
 
 # --- Plans ---------------------------------------------------------------------
 
-def build_plan(kind, seed, reps):
-    """List of blocks; each block is a list of (cell, mode, rep) runs."""
+def build_plan(kind, seed, reps, top_up_to=0):
+    """List of blocks; each block is a list of (cell, mode, rep) runs.
+
+    Repetitions 1..reps are shuffled together. Amendment 1: repetitions
+    reps+1..top_up_to follow, shuffled together, and run in that fixed order
+    until the budget stop, whatever the earlier results."""
     rng = random.Random(seed)
     if kind == "smoke":
         cells = [("S025", "SHORT", "COMPAT"), ("S8K", "LONG", "INCOMPAT")]
-        reps = 1
+        reps, top_up_to = 1, 0
     else:
         cells = list(itertools.product(SIZES, LENGTHS, MATCHES))
-    blocks = []
-    for rep in range(1, reps + 1):
-        for cell in cells:
-            modes = list(MODES)
-            rng.shuffle(modes)
-            blocks.append([(cell, m, rep) for m in modes])
-    rng.shuffle(blocks)
-    return blocks
+
+    def group(rep_range):
+        blocks = []
+        for rep in rep_range:
+            for cell in cells:
+                modes = list(MODES)
+                rng.shuffle(modes)
+                blocks.append([(cell, m, rep) for m in modes])
+        rng.shuffle(blocks)
+        return blocks
+
+    return group(range(1, reps + 1)) + group(range(reps + 1, top_up_to + 1))
 
 
 # --- Analysis -------------------------------------------------------------------
@@ -523,6 +531,8 @@ def main():
     ap.add_argument("output_dir", type=Path)
     ap.add_argument("--plan", choices=["smoke", "matrix"], default="matrix")
     ap.add_argument("--reps", type=int, default=3)
+    ap.add_argument("--top-up-to", type=int, default=0,
+                    help="Amendment 1: extra repetitions run after --reps, in order, until the budget stop")
     ap.add_argument("--seed", type=int, default=20261011)
     ap.add_argument("--budget-usd", type=float, default=DEFAULT_BUDGET_USD)
     ap.add_argument("--raw-bodies", action="store_true")
@@ -539,13 +549,13 @@ def main():
         return
     out.mkdir(parents=True, exist_ok=True)
     check_dirs(fx, out)
-    plan = build_plan(a.plan, a.seed, a.reps)
+    plan = build_plan(a.plan, a.seed, a.reps, a.top_up_to)
     summary_path = out / "summary.json"
     summary = json.loads(summary_path.read_text()) if summary_path.exists() else []
     done = {(r["plan"], r["size"], r["length"], r["match"], r["mode"], r["rep"])
             for r in summary}
     spent = sum(r.get("list_cost_usd_estimate") or 0 for r in summary)
-    print(f"plan={a.plan} reps={a.reps} seed={a.seed} blocks={len(plan)} "
+    print(f"plan={a.plan} reps={a.reps} top_up_to={a.top_up_to} seed={a.seed} blocks={len(plan)} "
           f"spent so far=${spent:.4f} budget=${a.budget_usd:.2f}", flush=True)
     seq = len(summary)
     for blk, runs in enumerate(plan, 1):
