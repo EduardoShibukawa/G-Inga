@@ -20,6 +20,7 @@
 ## 3. Evaluation on Frozen Scenarios R01–R17
 
 When evaluated against `docs/research/scenarios/r01-r17-v1.json`:
+
 - **Agreements:** 17/17 (100.0%)
 - **Critical Under-Routes:** 0
 - **Over-Routes:** 0

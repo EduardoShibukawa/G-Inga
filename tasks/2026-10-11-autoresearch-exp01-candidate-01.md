@@ -62,4 +62,3 @@ Candidate 01 of EXP-01 completed and verified. The compact formulation achieved 
 - as of: 2026-10-11, branch exp/autoresearch-r01-r17-candidate-01, head d94f2c1, task verified
 - done: candidate evaluated; 100% agreement and 0 critical misses verified; ~210 tokens saved; ledger updated; task verified
 - next: push branch and submit PR for owner review and decision
-
