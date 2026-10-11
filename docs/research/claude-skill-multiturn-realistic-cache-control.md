@@ -105,4 +105,8 @@ The reported quantities, kept apart:
 
 ## 5. Amendments
 
-None yet.
+### Amendment 1 (after the smoke test, before the matrix)
+
+**Smoke test** (2026-10-11, about 12:04 UTC): 4 sessions, all exit 0 with 5 `result` events, 5/5 correct turns each. Session costs: S8K N US$0.0585, S8K E US$0.0576, S025 E US$0.0442, S025 N US$0.0480; total **US$0.2082**, mean US$0.05205. N called `Skill` and then `Read` in consecutive requests in both pairs (7 requests against E's 6).
+
+**Reduction rule applied as registered:** c = 1.25 × 0.05205 = 0.0651. 60 · c = US$3.90 ≤ 4.50 − 0.2082 = US$4.29. **No reduction step applies.** The full 60-session matrix runs with a runner budget of US$4.7918 (5.00 − smoke spend). Nothing else changes.
