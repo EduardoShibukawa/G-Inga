@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "d94f2c1"
 ---
 
 # Autoresearch Experiment 01 Candidate 01: Compact Routing Prompt
@@ -46,16 +47,19 @@ Run Candidate 01 of EXP-01: evaluate a condensed, token-frugal formulation of `.
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation suite | pass | 299a6e8 | `mise run validate` (exit 0) & `mise run test` (115 pass) on main |
-| AC1 | compact prompt authoring | not run | - | pending authoring |
-| AC2 | candidate routing evaluation | not run | - | pending eval |
-| AC3 | ledger candidate row | not run | - | pending log |
-| AC4 | validation & test suites | not run | - | pending run |
-| V1 | diff review against V1 governance | not run | - | pending review |
+| AC1 | compact prompt authoring | pass | d94f2c1 | 18.5% char reduction (4453 -> 3630), 20.1% word reduction (591 -> 472) |
+| AC2 | candidate routing evaluation | pass | d94f2c1 | 17/17 (100%) agreement on R01-R17, 0 critical misses on H2/H4 |
+| AC3 | ledger candidate row | pass | d94f2c1 | EXP-01-C01 recorded in records/autoresearch-ledger.tsv |
+| AC4 | validation & test suites | pass | d94f2c1 | `mise run validate` (exit 0) & `mise run test` (115 pass) |
+| V1 | diff review against V1 governance | pass | d94f2c1 | research artifacts, ledger, and candidate spec; no spec hash modified |
 
 ## Outcome
 
+Candidate 01 of EXP-01 completed and verified. The compact formulation achieved an 18.5% character reduction and 20.1% word reduction (~210 tokens saved per invocation) while maintaining 100% agreement (17/17) with zero under-routing on sensitive (H4) or irreversible (H2) scenarios. Candidate evaluation report is preserved in `docs/research/scenarios/candidate-01-evaluation.md` and logged in `records/autoresearch-ledger.tsv`.
+
 ## Checkpoint
 
-- as of: 2026-10-11, branch exp/autoresearch-r01-r17-candidate-01, head 299a6e8, task active
-- done: branch created; baseline verified (B1 pass); task record authored
-- next: edit .claude/skills/work/SKILL.md with compact formulation and evaluate
+- as of: 2026-10-11, branch exp/autoresearch-r01-r17-candidate-01, head d94f2c1, task verified
+- done: candidate evaluated; 100% agreement and 0 critical misses verified; ~210 tokens saved; ledger updated; task verified
+- next: push branch and submit PR for owner review and decision
+
