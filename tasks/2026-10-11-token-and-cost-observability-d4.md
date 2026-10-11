@@ -61,6 +61,6 @@ Decision D4 and ADR 0006 (`docs/decisions/0006-usage-observability.md`) have bee
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/d4-token-cost-observability, head ff6fab5, worktree dirty (task record verification update)
-- done: subagent research synthesis incorporated; ADR 0006 updated; docs/decision-map.md updated; validation and test suites passing (115 pass, exit 0)
-- next: run standalone validator, commit task record, and prepare PR for owner review and decision on D4
+- as of: 2026-10-11, branch feat/d4-token-cost-observability, head 70ba791, worktree clean; Draft PR #13 opened
+- done: subagent research synthesis incorporated; ADR 0006 updated; docs/decision-map.md updated; validation and test suites passing (115 pass, exit 0); branch pushed to remote; Draft PR #13 created
+- next: owner review of PR #13 and formal decision on accepting ADR 0006
