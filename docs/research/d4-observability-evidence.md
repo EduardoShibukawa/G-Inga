@@ -12,7 +12,7 @@ The owner uses two environments (owner statement, 2026-10-10, not inspected):
 
 Research on how G-Ingá would run inside Gemini CLI is happening on a separate branch. This note doesn't read it or depend on it. It covers only what each CLI exposes for observing usage.
 
-Nothing below was exercised: no telemetry was turned on, no exporter ran, and no task was measured. The comparative spike waits for the owner's approval (ADR 0006, "Spike").
+Update (2026-10-10): The comparative spike was executed; see [D4 spike results](d4-spike-results.md). In this initial note, claims reflect upstream documentation and source inspection.
 
 ## Labels
 
@@ -52,8 +52,8 @@ Not read: Claude Code's [data usage](https://code.claude.com/docs/en/data-usage)
 | T6 | Fact (docs) | Event `claude_code.api_request`, one per API call: `model`, `cost_usd` ("Estimated cost in USD"), `cost_usd_micros`, `duration_ms`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_creation_tokens`, `query_source`, `effort`, the attribution fields, and `prompt.id` for correlation | monitoring usage, API request event |
 | T7 | Fact (docs) | Event `claude_code.tool_result`: tool name, `success`, `duration_ms`, `decision_source`. Tool parameters, inputs and full error messages only with `OTEL_LOG_TOOL_DETAILS=1` | monitoring usage, tool result event |
 | T8 | Fact (docs) | Event `claude_code.compaction`: `trigger` (`auto`, `manual`), `success`, `duration_ms`, `pre_tokens` and `post_tokens` ("approximate token count") | monitoring usage, compaction event |
-| T9 | Fact (docs) | Standard attributes include `session.id`, `organization.id`, `user.account_uuid` and `user.account_id` (`OTEL_METRICS_INCLUDE_ACCOUNT_UUID`, default `true`) and `user.email`, "always included when available". With OAuth sign-in, `user.email` is "sent only to the OTel endpoint you configure, never to Anthropic" | monitoring usage, standard attributes; security and privacy |
-| T10 | Fact (docs) | Content gates, all off by default: `OTEL_LOG_USER_PROMPTS` (prompt text; "Only prompt length is recorded" otherwise), `OTEL_LOG_ASSISTANT_RESPONSES`, `OTEL_LOG_TOOL_DETAILS`, `OTEL_LOG_TOOL_CONTENT` (needs tracing), `OTEL_LOG_RAW_API_BODIES` (full request and response bodies, including the conversation history). "Raw file contents and code snippets are not included in metrics or events" | monitoring usage, configuration variables; security and privacy |
+| T9 | Fact (docs) | Standard attributes include `session.id`, `organization.id`, `user.account_uuid` and `user.account_id` (`OTEL_METRICS_INCLUDE_ACCOUNT_UUID`, default `true`) and `user.email`, "always included when available". With OAuth sign-in, `user.email` is "sent only to the OTel endpoint you configure, never to Anthropic". Note: setting `OTEL_METRICS_INCLUDE_ACCOUNT_UUID=false` removes account UUID from metrics, but does NOT remove `user.email` from events or resources | monitoring usage, standard attributes; security and privacy |
+| T10 | Fact (docs) | Content gates: `OTEL_LOG_ASSISTANT_RESPONSES`, when unset, inherits the value of `OTEL_LOG_USER_PROMPTS`. Other content gates default to off (`0`): `OTEL_LOG_TOOL_DETAILS`, `OTEL_LOG_TOOL_CONTENT` (needs tracing), `OTEL_LOG_RAW_API_BODIES` (full request and response bodies, including the conversation history). "Raw file contents and code snippets are not included in metrics or events". Explicitly setting all five to `0` (`OTEL_LOG_USER_PROMPTS=0`, `OTEL_LOG_ASSISTANT_RESPONSES=0`, `OTEL_LOG_TOOL_DETAILS=0`, `OTEL_LOG_TOOL_CONTENT=0`, `OTEL_LOG_RAW_API_BODIES=0`) guarantees that prompt text, assistant responses (redacted as `"<REDACTED>"`), tool parameters/commands, and raw request/response bodies are not captured | monitoring usage, configuration variables; security and privacy |
 | T11 | Fact (docs) | `OTEL_RESOURCE_ATTRIBUTES` adds custom key–value pairs, which `OTEL_METRICS_INCLUDE_RESOURCE_ATTRIBUTES` (default `true`) copies onto metric datapoints | monitoring usage, multi-team attributes |
 | T12 | Open | The monitoring page doesn't condition telemetry on the authentication method or plan. Whether every metric above is emitted under a Claude Pro OAuth sign-in wasn't verified | — |
 
@@ -173,7 +173,7 @@ Kinds: **observed** (the CLI reports a counted value), **estimated** (the CLI la
 | Cost | — | estimate only (T6), not billing on Pro (T14) | unavailable |
 | Plan utilization (not in §8, kept separate) | status line / `/stats` | `rate_limits` (T18) | quota in text only (G13, G17) |
 
-Attribution to a task is the gap in both CLIs: every signal is keyed by session, prompt or request, never by a G-Ingá task (T4, G3). **Inference:** one session per task (the SDLC brief's default) plus the session id recorded with the task would close it; where that id is written is an open question for ADR 0006.
+Attribution to a task is the gap in both CLIs: every signal is keyed by session, prompt or request, never by a G-Ingá task (T4, G3). The session-to-task contract gap remains open: current artifact schemas define no `session_id` field. Recording an association manually in execution reports serves as exploratory operational evidence, but automated per-task attribution remains limited and pending future schema evolution.
 
 ## 6. Hard vs guideline
 
@@ -186,12 +186,12 @@ Attribution to a task is the gap in both CLIs: every signal is keyed by session,
 
 | ID | Question or hypothesis | How to settle |
 |---|---|---|
-| Q1 | Do Claude Code's OTel token and cost metrics emit under Claude Pro OAuth (T12)? | spike |
-| Q2 | Do Gemini CLI's OTel metrics and logs emit under a Google AI Pro login, and with what `auth_type`? | spike |
+| Q1 | Do Claude Code's OTel token and cost metrics emit under Claude Pro OAuth (T12)? | settled in [spike results](d4-spike-results.md) |
+| Q2 | Do Gemini CLI's OTel metrics and logs emit under a Google AI Pro login, and with what `auth_type`? | settled with limitation in [spike results](d4-spike-results.md) |
 | Q3 | Does Gemini `input_token_count` include `cached_content_token_count`? | source reading or spike |
 | Q4 | Field names inside Gemini headless `stats` | spike or source reading |
 | Q5 | Does Gemini merge `OTEL_RESOURCE_ATTRIBUTES` into its resource (G11)? This decides whether a task label can ride along | source reading |
 | Q6 | Does a project `.gemini/settings.json` turn telemetry on or set `logPrompts` (G2)? | spike in a throwaway directory |
 | Q7 | What Gemini's Clearcut Usage Statistics contain (G10) | source reading; owner decides the opt-out |
-| H1 | Hypothesis: within one CLI, OTel totals for a session match the native view (`/usage` or `/stats model`) for the same session | spike |
-| H2 | Hypothesis: a privacy-minimal configuration (ADR 0006) still yields every field §5 needs | spike |
+| H1 | Hypothesis: within one CLI, OTel totals for a session match the native view (`/usage` or `/stats model`) for the same session | settled in [spike results](d4-spike-results.md) |
+| H2 | Hypothesis: a privacy-minimal configuration (ADR 0006) still yields every field §5 needs | settled in [spike results](d4-spike-results.md) |
