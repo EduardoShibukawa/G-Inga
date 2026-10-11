@@ -453,50 +453,139 @@ def build_plan(kind, seed, reps, top_up_to=0):
 # --- Analysis -------------------------------------------------------------------
 
 def analyze(summary):
+    """Per-condition medians and ranges, paired E - N differences, and the
+    pre-registered hypothesis checks (report §3)."""
     import statistics as st
     rows = [r for r in summary if r["plan"] == "matrix" and r["requests"]]
     m1 = lambda r: r["requests"][0]["prompt_total"]
     cum = lambda r: sum(q["prompt_total"] for q in r["requests"])
-    t2first = lambda r: next((q["prompt_total"] for q in r["requests"] if q["turn"] == 2), None)
-    usd = lambda r: r["turns"][-1]["total_cost_usd"] if r["turns"] else None
-    skill_turn = lambda r: next((t["turn"] for t in r["tool_calls"] if t["name"] == "Skill"), None)
-    key = lambda r: (r["size"], r["length"], r["match"], r["rep"])
+    t2r1 = lambda r: next((q["prompt_total"] for q in r["requests"] if q["turn"] == 2), None)
+    usd = lambda r: r["list_cost_usd_estimate"] or 0
+    out_tok = lambda r: sum(t["usage"]["output_tokens"] or 0 for t in r["turns"])
+    ms = lambda r: sum(t["duration_ms"] or 0 for t in r["turns"])
+    skill1 = lambda r: any(t["name"] == "Skill" and t["turn"] == 1 for t in r["tool_calls"])
+    skill_any = lambda r: next((t["turn"] for t in r["tool_calls"] if t["name"] == "Skill"), 0)
+    ntools = lambda r: len(r["tool_calls"])
+    cell = lambda r: (r["size"], r["length"], r["match"])
     pairs = {}
     for r in rows:
-        pairs.setdefault(key(r), {})[r["mode"]] = r
+        pairs.setdefault(cell(r) + (r["rep"],), {})[r["mode"]] = r
+    full = [p for p in pairs.values() if "E" in p and "N" in p]
 
-    def med(v):
+    def md(v):
         v = [x for x in v if x is not None]
-        return (st.median(v), min(v), max(v)) if v else (None, None, None)
+        return st.median(v) if v else None
 
-    print("size length match mode | n | M1 med [min,max] | reqs med | cum med | "
-          "turn2 req1 med | tools med | Skill calls | tag t1/t2 | correct t1/t2 | usd med")
+    def rng(v):
+        v = [x for x in v if x is not None]
+        return f"{min(v)}..{max(v)}" if v else "-"
+
+    bad = [r["seq"] for r in summary if r["plan"] == "matrix" and
+           (r["exit_code"] != 0 or len(r["turns"]) != 2 or
+            any(t["is_error"] or t["permission_denials"] for t in r["turns"]))]
+    print(f"matrix sessions: {len(rows)}; complete pairs: {len(full)}; "
+          f"problem runs: {bad}; spent ${sum(usd(r) for r in summary):.4f}")
+    reps = {}
+    for k in pairs:
+        reps.setdefault(k[:3], set()).add(k[3])
+    print("reps per cell:", sorted({len(v) for v in reps.values()}),
+          "cells with 3:", sum(len(v) == 3 for v in reps.values()))
+
+    print("\n## per condition (median, [min..max])")
+    print("| Size | Length | Match | Mode | n | M1 | M1 range | REQ | CUM | CUM range | "
+          "T2R1 | Tools | Skill turn | Tag t1/t2 | Correct t1/t2 | Output | USD | USD range | duration_ms |")
     for size, length, match, mode in itertools.product(SIZES, LENGTHS, MATCHES, MODES):
-        rs = [r for r in rows if (r["size"], r["length"], r["match"], r["mode"]) ==
-              (size, length, match, mode)]
+        rs = [r for r in rows if cell(r) == (size, length, match) and r["mode"] == mode]
         if not rs:
             continue
-        ok1 = [correct(r, 1) for r in rs]
-        ok2 = [correct(r, 2) for r in rs]
-        print(size, length, match, mode, "|", len(rs), "|", med([m1(r) for r in rs]), "|",
-              st.median([len(r["requests"]) for r in rs]), "|",
-              st.median([cum(r) for r in rs]), "|", med([t2first(r) for r in rs])[0], "|",
-              st.median([len(r["tool_calls"]) for r in rs]), "|",
-              [skill_turn(r) for r in rs], "|",
+        print(f"| {size} | {length} | {match} | {mode} | {len(rs)} | {md([m1(r) for r in rs])} | "
+              f"{rng([m1(r) for r in rs])} | {md([len(r['requests']) for r in rs])} | "
+              f"{md([cum(r) for r in rs])} | {rng([cum(r) for r in rs])} | "
+              f"{md([t2r1(r) for r in rs])} | {md([ntools(r) for r in rs])} | "
+              f"{','.join(str(skill_any(r)) for r in rs)} | "
               f"{sum(r['turns'][0]['has_tag'] for r in rs)}/"
-              f"{sum(len(r['turns']) > 1 and r['turns'][1]['has_tag'] for r in rs)}", "|",
-              f"{sum(ok1)}/{sum(ok2)}", "|", round(st.median([usd(r) or 0 for r in rs]), 4))
-    print("\npaired E - N by cell: M1 | cumulative prompt | requests | usd")
-    for size, length, match in itertools.product(SIZES, LENGTHS, MATCHES):
-        d = [p for k, p in pairs.items() if k[:3] == (size, length, match)
-             and "E" in p and "N" in p]
-        if not d:
+              f"{sum(r['turns'][1]['has_tag'] for r in rs if len(r['turns']) > 1)} | "
+              f"{sum(correct(r, 1) for r in rs)}/{sum(correct(r, 2) for r in rs)} | "
+              f"{md([out_tok(r) for r in rs])} | {md([round(usd(r), 4) for r in rs])} | "
+              f"{rng([round(usd(r), 4) for r in rs])} | {md([ms(r) for r in rs])} |")
+
+    def dif(p, f):
+        a, b = f(p["E"]), f(p["N"])
+        return None if a is None or b is None else a - b
+
+    print("\n## paired E - N per cell (values per pair; median)")
+    print("| Size | Length | Match | n | M1 | CUM | REQ | Tools | T2R1 | USD |")
+    for c in itertools.product(SIZES, LENGTHS, MATCHES):
+        ps = [p for k, p in pairs.items() if k[:3] == c and "E" in p and "N" in p]
+        if not ps:
             continue
-        dm1 = [m1(p["E"]) - m1(p["N"]) for p in d]
-        dcum = [cum(p["E"]) - cum(p["N"]) for p in d]
-        dreq = [len(p["E"]["requests"]) - len(p["N"]["requests"]) for p in d]
-        dusd = [round((usd(p["E"]) or 0) - (usd(p["N"]) or 0), 4) for p in d]
-        print(size, length, match, "| M1", dm1, "| cum", dcum, "| req", dreq, "| usd", dusd)
+        cols = []
+        for f, nd in [(m1, 0), (cum, 0), (lambda r: len(r["requests"]), 0), (ntools, 0),
+                      (t2r1, 0), (usd, 4)]:
+            v = [dif(p, f) for p in ps]
+            v = [round(x, nd) if nd else x for x in v if x is not None]
+            cols.append(f"{v} → {md(v)}")
+        print(f"| {c[0]} | {c[1]} | {c[2]} | {len(ps)} | " + " | ".join(cols) + " |")
+
+    sub = lambda a, b: None if a is None or b is None else a - b
+    sel = lambda **kw: [p for p in full if all(p["E"][k] == v for k, v in kw.items())]
+    print("\n## hypotheses")
+    # H1
+    base = md([dif(p, m1) for p in sel(size="S025")])
+    for s in ["S2K", "S8K"]:
+        print(f"H1 {s}: median E-N M1 {md([dif(p, m1) for p in sel(size=s)])} - S025 {base} = "
+              f"{sub(md([dif(p, m1) for p in sel(size=s)]), base)}")
+    # H2
+    for s, m in itertools.product(SIZES, MATCHES):
+        lo = md([dif(p, m1) for p in sel(size=s, match=m, length="LONG")])
+        sh = md([dif(p, m1) for p in sel(size=s, match=m, length="SHORT")])
+        print(f"H2 {s} {m}: LONG {lo} - SHORT {sh} = {sub(lo, sh)}")
+    cnt = {"E": [], "N": []}
+    for r in rows:
+        if r.get("bodies"):
+            cnt[r["mode"]].append(sum(b["turn1_count"] for b in r["bodies"][0]["blocks"]))
+    print("H2 turn-1 text count in request 1:", {k: sorted(set(v)) for k, v in cnt.items()},
+          {k: len(v) for k, v in cnt.items()})
+    # H3a, H3b
+    for s, m in itertools.product(SIZES, MATCHES):
+        ns = [r for r in rows if r["mode"] == "N" and r["size"] == s and r["match"] == m]
+        print(f"H3a {s} {m}: N Skill in turn 1 {sum(skill1(r) for r in ns)}/{len(ns)}; "
+              f"any turn {sum(bool(skill_any(r)) for r in ns)}/{len(ns)}")
+    for L, m in itertools.product(LENGTHS, MATCHES):
+        v = {s: md([m1(r) for r in rows if r["mode"] == "N" and cell(r) == (s, L, m)])
+             for s in SIZES}
+        print(f"H3b {L} {m}: N M1 by size {v}; S8K - S025 = {sub(v['S8K'], v['S025'])}")
+    # H4, H5
+    for m in ["COMPAT", "AMBIG", "INCOMPAT"]:
+        for s in SIZES:
+            d = [dif(p, cum) for p in sel(size=s, match=m)]
+            print(f"H4/H5 {m} {s}: E-N CUM {d}; E<N {sum(x < 0 for x in d)}/{len(d)}; "
+                  f"E>N {sum(x > 0 for x in d)}/{len(d)}; median {md(d)}")
+    # H6
+    for s in SIZES:
+        d = [dif(p, t2r1) for p in sel(size=s, match="COMPAT") if skill_any(p["N"])]
+        print(f"H6 {s}: COMPAT, N invoked: E-N T2R1 {d} median {md(d)}")
+    # H7
+    for mode, m in itertools.product(MODES, MATCHES):
+        v = {}
+        for s in SIZES:
+            rs = [r for r in rows if r["mode"] == mode and r["size"] == s and r["match"] == m]
+            v[s] = (f"{sum(correct(r, 1) for r in rs)}/{sum(correct(r, 2) for r in rs)}/"
+                    f"{sum(r['turns'][0]['has_tag'] for r in rs)}/"
+                    f"{sum(len(r['turns']) > 1 and r['turns'][1]['has_tag'] for r in rs)} of {len(rs)}")
+        print(f"H7 {mode} {m}: correct t1/correct t2/tag t1/tag t2 by size {v}")
+    # H8
+    for c in itertools.product(SIZES, LENGTHS, MATCHES):
+        d = [round(dif(p, usd), 4) for p in sel(size=c[0], length=c[1], match=c[2])]
+        if d:
+            neg, pos = sum(x < 0 for x in d), sum(x > 0 for x in d)
+            verdict = ("cheaper" if md(d) < 0 and neg >= 2 * len(d) / 3 else
+                       "more expensive" if md(d) > 0 and pos >= 2 * len(d) / 3 else "equivalent")
+            print(f"H8 {c}: E-N USD {d} → {verdict}")
+    # pooled spreads for the inconclusive rule
+    sp = [max(v) - min(v) for c in itertools.product(SIZES, LENGTHS, MATCHES) for mode in MODES
+          if (v := [m1(r) for r in rows if cell(r) == c and r["mode"] == mode])]
+    print("M1 within-condition spreads:", sorted(sp))
 
 
 def correct(r, turn):
