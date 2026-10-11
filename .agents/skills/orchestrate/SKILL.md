@@ -1,0 +1,91 @@
+---
+name: orchestrate
+description: Autonomous OODA loop orchestration harness. Manages task graphs, dispatches parallel subagents, enforces deterministic Go/No-Go verification gates, and seals atomic commits.
+disable-model-invocation: false
+---
+
+# /orchestrate — Autonomous OODA Orchestration Harness
+
+Macro-governor for autonomous multi-task execution over dependency graphs and task backlogs. Dispatches parallel micro-execution via subagents running `/work` and enforces deterministic Go/No-Go verification gates before any commit or frontier advancement.
+
+## Non-Negotiable Invariants
+
+1. **Tokens Per Verified Task:** Never trust verbal self-attestation from subagents or models. Accept deliverables only when all 4 layers of the Verification Gate evaluate to `pass`.
+2. **Strict 4-Value Vocabulary:** Report checks strictly using `pass`, `fail`, `blocked`, or `not run`. Exit code 0 is strictly forbidden if any mandatory check is skipped or unrun.
+3. **Context Isolation:** Keep the orchestrator root context lean (< 25k tokens). Exploration, iterative editing, and tool output belong strictly inside ephemeral subagents (`invoke_subagent`).
+4. **Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3):** Maximum 2 verification attempts per ticket without new information. On the second consecutive failure, halt the ticket, mark it `blocked`, and escalate to the repository owner.
+5. **Macro vs Micro Division:** `/orchestrate` governs the roadmap graph (`map.md`, `tasks/`), dependency resolution, parallel concurrency, and gating. Micro-delivery within scoped boundaries is delegated to subagents running `/work`.
+
+## The 6-Step OODA Loop
+
+```mermaid
+flowchart TD
+    OBS["1. OBSERVE: git status, HEAD, map.md / tasks/"] --> ORI["2. ORIENT: Unblocked frontier, constraints, thresholds"]
+    ORI --> DEC["3. DECIDE: Batch size N, prepare scoped worker prompts"]
+    DEC --> ACT["4. ACT: invoke_subagent concurrent workers"]
+    ACT --> GATE{"5. GATE: 4-Layer Autonomous Verification"}
+    GATE -->|"Pass (All 4 Layers)"| SEAL["6. SEAL: Commit batch, update graph, advance frontier"]
+    GATE -->|"Fail (Attempts < 2)"| RETRY["Retry with deterministic failure diff"]
+    RETRY --> ACT
+    GATE -->|"Fail (Attempts >= 2)"| ESC["Circuit Breaker: Mark blocked & escalate"]
+```
+
+### 1. OBSERVE (State Inspection)
+
+- Inspect Git worktree: `git status --porcelain`, current branch, and HEAD SHA.
+- Inspect the task graph: read `map.md` (or `tasks/` directory).
+- Identify tickets in state `open` whose dependencies are fully resolved (`Blocked by: []` or all dependencies in `resolved` / `verified`).
+
+### 2. ORIENT (Frontier & Contract Definition)
+
+- Select the next unblocked tickets on the dependency frontier.
+- Transition selected tickets from `open` to `claimed`.
+- Map architectural constraints, applicable ADRs (`docs/decisions/`), and specs (`specs/`).
+- Define the explicit **Verification Contract** for each ticket:
+  - Allowed file scope (`In scope: [...]`).
+  - Required deterministic check commands (e.g., `mise run validate`, `mise run test`).
+  - Quantitative thresholds (e.g., zero linter issues, schema adherence).
+
+### 3. DECIDE (Concurrency & Worker Prompts)
+
+- Determine batch size $N$ based on independent unblocked branches (typically 1 to 4 concurrent tickets).
+- Prepare structured dispatch prompts using [.agents/skills/orchestrate/subagent-prompt.md](subagent-prompt.md).
+- Ensure strict file boundary scoping to prevent concurrent write collisions across subagents.
+
+### 4. ACT (Concurrent Dispatch & Asynchronous Wait)
+
+- Dispatch worker subagents in a single `invoke_subagent` batch call with role and scoped prompt:
+  - Set `TypeName: "self"` (or `"research"` for read-only spikes).
+  - Include the verification contract directly in the prompt.
+- Do NOT poll in a loop. Antigravity will deliver asynchronous wakeup messages upon subagent completion.
+
+### 5. GATE (Deterministic Autonomous Verification)
+
+Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([.agents/skills/orchestrate/gate.md](gate.md)) across four sequential layers:
+
+1. **Layer 1 (Scope & Diff Gate):**
+   - Run `git status --porcelain` and `git diff --name-only`.
+   - Reject immediately if files outside declared scope were modified or temp files leaked.
+   - Rollback dirty out-of-scope edits via `git checkout -- <file>`.
+2. **Layer 2 (Deterministic Command & Exit Code Gate):**
+   - Execute verification commands: `mise run validate`, `mise run test`, or task-specific test suites.
+   - Map exit codes strictly: `0` = `pass`, `1` = `fail`, `2` = `blocked`.
+3. **Layer 3 (Quantitative Metric & Threshold Gate):**
+   - Verify objective thresholds (e.g. 0 lint warnings, schema validation, performance latency).
+4. **Layer 4 (Anti-Thrashing Circuit Breaker):**
+   - Track verification failure count per ticket.
+   - If count < 2: send deterministic failure logs to subagent for corrective action.
+   - If count $\ge 2$: stop worker, mark ticket `blocked`, record escalation, and alert owner.
+
+### 6. SEAL & ADVANCE (Atomic Integration)
+
+- Update ticket status in roadmap (`map.md` / `tasks/`) to `resolved`.
+- Create an atomic descriptive Git commit referencing the resolved ticket IDs:
+  `git commit -m "<type>(<scope>): <summary> [resolves #ID]"`
+- Advance the frontier of the dependency graph and repeat the OODA loop until all tickets are `resolved` or `blocked`.
+
+## References & Procedures
+
+- Verification Gate Rules & Rollback: [.agents/skills/orchestrate/gate.md](gate.md)
+- Subagent Canonical Prompt Template: [.agents/skills/orchestrate/subagent-prompt.md](subagent-prompt.md)
+- OODA State Machine & Transitions: [.agents/skills/orchestrate/references/ooda-cycle.md](references/ooda-cycle.md)
