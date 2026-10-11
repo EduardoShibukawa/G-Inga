@@ -46,13 +46,14 @@ Establish the G-Ingá repository as the sole source of truth for project state, 
 | B1 | baseline validation suite on main | pass | 9cec3e6 | `mise run validate` (77 pass, 0 fail) |
 | AC1 | PR #10 integration check | pass | 9cec3e6 | gh pr view 10 confirmed MERGED into 9cec3e6 |
 | AC2 | spec hash verification | pass | 9cec3e6 | sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab |
-| AC3 | documentation audit & status reconciliation | not run | | pending edits completion |
-| AC4 | repository-first protocol definition | not run | | in CLAUDE.md & README.md |
-| AC5 | docs/README.md navigation index | pass | 9cec3e6 | file created, links checked |
-| AC6 | validator coexistence architecture analysis | pass | 9cec3e6 | documented in task record below |
-| AC7 | repository validation suite | not run | | mise run validate && test |
-| R1 | local link integrity check | not run | | checked via tools/validate |
-| V1 | diff review against governance constraints | not run | | manual diff check |
+| AC3 | documentation audit & status reconciliation | pass | dd84a5a | README, CLAUDE, decision-map, ADR 0005, parent task updated |
+| AC4 | repository-first protocol definition | pass | dd84a5a | CLAUDE.md & README.md |
+| AC5 | docs/README.md navigation index | pass | dd84a5a | created, 626 local links verified |
+| AC6 | validator coexistence architecture analysis | pass | dd84a5a | documented in section below |
+| AC7 | repository validation suite | pass | dd84a5a | `mise run validate` (exit 0) & `mise run test` (77 pass, 0 fail) |
+| R1 | local link integrity check | pass | dd84a5a | 626 local references in 32 files pass |
+| R2 | external link verification | fail | dd84a5a | `mise run validate:external` (exit 1: 1 broken pre-existing Wikipedia URL in brand-and-roadmap.md:82, 2 unreachable) |
+| V1 | diff review against governance constraints | pass | dd84a5a | diff verified; no product code; spec hash unchanged |
 
 ## Validator Path Investigation (AC6)
 
@@ -80,6 +81,6 @@ To prevent conflation or overwriting between development tooling and the bundled
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch docs/repo-first-operating-model, head 9cec3e6, worktree in progress
-- done: baseline verified (main at 9cec3e6, PR #10 merged), spec hash verified (sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab), parent task checkpoint reconciled, ADR 0005 & decision-map headings updated, docs/README.md navigation map created, validator coexistence architecture analyzed
-- next: update README.md and CLAUDE.md, run validation suite, commit and create draft PR
+- as of: 2026-10-11, branch docs/repo-first-operating-model, head dd84a5a, worktree dirty
+- done: baseline verified (main at 9cec3e6, PR #10 merged), spec hash verified (sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab), documentation and task records reconciled, docs/README.md navigation map created, repository-first protocol defined in CLAUDE.md/README.md, validator coexistence architecture investigated, validation and test suite passing cleanly (77 pass, exit 0)
+- next: amend or commit updated task record, push branch to origin, and create Draft PR to main
