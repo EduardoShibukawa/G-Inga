@@ -1,0 +1,138 @@
+[
+  {
+    "id": "R01",
+    "description": "Fix a typo in the README",
+    "expected_tier": "light",
+    "deciding_signals": "all light conditions (S1, S2, S3, S4, S6 non-behavioral prose, S7, not S5)",
+    "hard_guardrails": [],
+    "brief_ref": ""
+  },
+  {
+    "id": "R02",
+    "description": "Change one color constant, with a screenshot check available",
+    "expected_tier": "light",
+    "deciding_signals": "all light conditions (S1, S2, S3, S4, S6, S7, not S5)",
+    "hard_guardrails": [],
+    "brief_ref": "8"
+  },
+  {
+    "id": "R03",
+    "description": "Add a log line inside one function",
+    "expected_tier": "light",
+    "deciding_signals": "all light conditions (S1, S2, S3, S4, S6, S7, not S5)",
+    "hard_guardrails": [],
+    "brief_ref": ""
+  },
+  {
+    "id": "R04",
+    "description": "Off-by-one pagination bug with a clear repro, cause not yet known",
+    "expected_tier": "standard",
+    "deciding_signals": "S2 fails (cause unknown, cannot describe diff in one sentence before diagnosis)",
+    "hard_guardrails": [],
+    "brief_ref": "2"
+  },
+  {
+    "id": "R05",
+    "description": "New endpoint following an existing pattern, criteria given",
+    "expected_tier": "standard",
+    "deciding_signals": "S3 fails (adds public contract, but no consumed contract changes, so not H3)",
+    "hard_guardrails": [],
+    "brief_ref": "1, 8"
+  },
+  {
+    "id": "R06",
+    "description": "Rename an internal function across 120 files with a codemod",
+    "expected_tier": "standard",
+    "deciding_signals": "S3 fails (crosses single module boundary; no public consumed contract change)",
+    "hard_guardrails": [],
+    "brief_ref": ""
+  },
+  {
+    "id": "R07",
+    "description": "Rename a REST response field the Angular client consumes",
+    "expected_tier": "heavy",
+    "deciding_signals": "H3 (contract consumed elsewhere changes)",
+    "hard_guardrails": ["H3"],
+    "brief_ref": "11"
+  },
+  {
+    "id": "R08",
+    "description": "Migration that drops a column",
+    "expected_tier": "heavy",
+    "deciding_signals": "H2 (one-way door: irreversible data loss / migration with drop)",
+    "hard_guardrails": ["H2"],
+    "brief_ref": ""
+  },
+  {
+    "id": "R09",
+    "description": "Make the app multi-tenant",
+    "expected_tier": "heavy",
+    "deciding_signals": "H1 (unsettled product/architectural scope), H5 (exceeds single session)",
+    "hard_guardrails": ["H1", "H5"],
+    "brief_ref": "3, 10"
+  },
+  {
+    "id": "R10",
+    "description": "Change auth token expiry",
+    "expected_tier": "heavy",
+    "deciding_signals": "H4 (sensitive behavior: authentication / security policy)",
+    "hard_guardrails": ["H4"],
+    "brief_ref": ""
+  },
+  {
+    "id": "R11",
+    "description": "How does caching work here?",
+    "expected_tier": "investigation",
+    "deciding_signals": "pure investigation / exploration; no deliverable change",
+    "hard_guardrails": [],
+    "brief_ref": ""
+  },
+  {
+    "id": "R12",
+    "description": "Typo fix in an error message that an external client parses",
+    "expected_tier": "heavy",
+    "deciding_signals": "light -> heavy: E1 reveals H3 (consumed contract change)",
+    "hard_guardrails": ["H3"],
+    "brief_ref": ""
+  },
+  {
+    "id": "R13",
+    "description": "Quick, just drop the legacy table, no plan",
+    "expected_tier": "heavy",
+    "deciding_signals": "H2 (destructive one-way door; owner override recorded; destructive action still gated)",
+    "hard_guardrails": ["H2"],
+    "brief_ref": "5"
+  },
+  {
+    "id": "R14",
+    "description": "standard fix fails twice without new information",
+    "expected_tier": "standard",
+    "deciding_signals": "standard -> re-plan (E3 recovery loop), escalates to heavy only if architectural",
+    "hard_guardrails": [],
+    "brief_ref": ""
+  },
+  {
+    "id": "R15",
+    "description": "Suspected API change turns out to be internal only",
+    "expected_tier": "standard",
+    "deciding_signals": "standard holds (no downgrade below standard without light checklist; S3 re-evaluated)",
+    "hard_guardrails": [],
+    "brief_ref": ""
+  },
+  {
+    "id": "R16",
+    "description": "Module tests already red before a small change",
+    "expected_tier": "standard",
+    "deciding_signals": "S6 fails (baseline not clean); failure attributed to baseline; not light",
+    "hard_guardrails": [],
+    "brief_ref": "7"
+  },
+  {
+    "id": "R17",
+    "description": "Change G-Ingá's own routing rules",
+    "expected_tier": "heavy",
+    "deciding_signals": "H4 (sensitive behavior: harness SDLC policy / governance)",
+    "hard_guardrails": ["H4"],
+    "brief_ref": "12"
+  }
+]

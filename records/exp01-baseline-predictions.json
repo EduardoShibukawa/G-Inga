@@ -1,0 +1,19 @@
+[
+  { "id": "R01", "predicted_tier": "light", "reasoning": "README typo fix; S1-S4 hold, non-behavioral prose, no contract change" },
+  { "id": "R02", "predicted_tier": "light", "reasoning": "Single color constant; existing screenshot test available; S1-S4 and S6-S7 hold" },
+  { "id": "R03", "predicted_tier": "light", "reasoning": "Internal log line in one function; S1-S4 and S7 hold, not sensitive" },
+  { "id": "R04", "predicted_tier": "standard", "reasoning": "Cause unknown; S2 fails (cannot describe diff in one sentence before diagnosis)" },
+  { "id": "R05", "predicted_tier": "standard", "reasoning": "Adds public endpoint pattern; S3 fails (new contract), but no consumed contract changes (not H3)" },
+  { "id": "R06", "predicted_tier": "standard", "reasoning": "Codemod across 120 files; S3 fails (module boundary), no consumed contract change" },
+  { "id": "R07", "predicted_tier": "heavy", "reasoning": "H3 holds: REST field consumed by Angular client" },
+  { "id": "R08", "predicted_tier": "heavy", "reasoning": "H2 holds: one-way door (migration dropping column)" },
+  { "id": "R09", "predicted_tier": "heavy", "reasoning": "H1 and H5 hold: unsettled product/architectural scope and exceeds single session" },
+  { "id": "R10", "predicted_tier": "heavy", "reasoning": "H4 holds: sensitive behavior (auth token expiry / security policy)" },
+  { "id": "R11", "predicted_tier": "investigation", "reasoning": "Pure investigation / exploration; no deliverable change" },
+  { "id": "R12", "predicted_tier": "heavy", "reasoning": "Light escalates to heavy: E1 reveals error message parsed by external client (H3)" },
+  { "id": "R13", "predicted_tier": "heavy", "reasoning": "H2 holds: destructive one-way door; override recorded, destructive action still gated" },
+  { "id": "R14", "predicted_tier": "standard", "reasoning": "Standard fix fails twice -> re-plan under standard; escalates to heavy only if architectural" },
+  { "id": "R15", "predicted_tier": "standard", "reasoning": "Standard holds: suspected API change is internal only, no downgrade without light checklist" },
+  { "id": "R16", "predicted_tier": "standard", "reasoning": "S6 fails: baseline tests already red; requires standard task with baseline failure attribution" },
+  { "id": "R17", "predicted_tier": "heavy", "reasoning": "H4 holds: sensitive behavior (changing G-Ingá's own routing policy)" }
+]
