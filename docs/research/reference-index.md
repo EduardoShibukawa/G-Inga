@@ -128,7 +128,6 @@ Kept for completeness. They support [brand and naming](../brand-and-roadmap.md) 
 | Embrapa, Revista Caatinga, Fundaj (mandacaru) | <https://www.infoteca.cnptia.embrapa.br/bitstream/doc/951853/1/CIT12002.pdf>, <https://doaj.org/article/bcb90f8b977e4f80832c00d1a49a8ca3>, <https://pesquisaescolar.fundaj.gov.br/pt-br/artigo/mandacaru/> | definition |
 | IBGE, UEPG, Câmara de Maringá (Maringá and its song) | <https://www.ibge.gov.br/biblioteca/visualizacao/dtb/parana/maringa.pdf>, <https://revistas.uepg.br/index.php/folkcom/article/download/18845/209209214776/209209238742>, <https://sapl.cmm.pr.gov.br/ta/195/text> | history |
 | Bem Paraná (Parque do Ingá) | <https://www.bemparana.com.br/noticias/parana/cidadesdoparana/mp-arquiva-investigacao-sobre-concessao-do-parque-do-inga-e-aponta-ausencia-de-irregularidades/> | corroboration |
-| Ginga (middleware), Wikipedia | <https://en.wikipedia.org/wiki/Ginga_(middleware)> | name collision to include in the name checks |
 
 ## 8. Rejected or deferred as candidates
 
