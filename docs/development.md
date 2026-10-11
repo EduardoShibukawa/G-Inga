@@ -49,7 +49,9 @@ mise run validate:external   # external URL availability (network)
 mise run setup               # only install dependencies (bun install --frozen-lockfile)
 ```
 
-`mise run validate` is the canonical entry point. It runs `bun install --frozen-lockfile` first, then `bun run validate`. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run validate` in `.github/workflows/validate.yml`, after installing the pinned mise with `jdx/mise-action`; it doesn't rely on a Bun or mise already on the runner.
+`mise run validate` is the canonical entry point. It runs `bun install --frozen-lockfile` first, then `bun run validate`. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run validate` in `.github/workflows/validate.yml`, after installing the pinned mise with `jdx/mise-action`; it doesn't rely on a Bun or mise already on the runner. It also sets up Node 22 and sets `G_INGA_REQUIRE_RUNTIMES=1`, so the product bundle tests in `tools/validate/bundle.test.ts` fail instead of skipping when Node 22 or later is missing.
+
+The product's standalone validator, manifest and update procedure are separate from this tooling; see [bundle](bundle.md). After changing `tools/validate/standalone.ts`, run `bun run build:validator`, commit the bundle assets, then regenerate `manifest.json` (`bun run manifest`) and commit it alone.
 
 Exit codes: `0` every check passed or was `not run`; `1` a check failed; `2` nothing failed but a check was `blocked`, or a prerequisite is missing (below).
 

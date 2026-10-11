@@ -43,4 +43,5 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 
 ## 6. Repository Development Tooling
 
+- [docs/bundle.md](bundle.md): Product bundle contents, manifest `commit` semantics, target adoption and the failure-atomic update procedure.
 - [docs/development.md](development.md): Toolchain setup (`mise`, Bun), repository validation commands (`mise run validate`, `mise run test`), check layers, and troubleshooting.

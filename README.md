@@ -48,7 +48,7 @@ Install [mise](https://mise.jdx.dev/installing-mise.html) and Git, then from the
 ```sh
 mise install        # installs pinned Bun
 mise run validate   # runs all deterministic checks (markdown-lint, links, mermaid, artifact contracts)
-mise run test       # runs contract rule and history test suites (77 tests)
+mise run test       # type-checks and tests the validators and the product bundle
 ```
 
 Additional commands (such as `mise run validate:external` for network checks) and troubleshooting guides are detailed in [docs/development.md](docs/development.md).
