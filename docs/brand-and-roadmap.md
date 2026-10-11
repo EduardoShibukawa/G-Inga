@@ -79,7 +79,7 @@ For each name there are three kinds of statement:
 - **Possible association:** the first stable milestone, or the product's core adaptive philosophy.
 - **Notes:**
   - As a release name, "G-Ingá Ginga" repeats the root. Using Ginga for the philosophy avoids that.
-  - "Ginga" is already a known Brazilian software name: the middleware standard of Brazil's digital TV system, ITU-T H.761 ([Wikipedia](https://en.wikipedia.org/wiki/Ginga_(middleware)), seen through search results). Include it in the name checks.
+  - "Ginga" is already a known Brazilian software name: the middleware standard of Brazil's digital TV system, ITU-T H.761 ([Wikipedia](<https://en.wikipedia.org/wiki/Ginga_(middleware)>), seen through search results). Include it in the name checks.
 
 ### Banzeiro
 
