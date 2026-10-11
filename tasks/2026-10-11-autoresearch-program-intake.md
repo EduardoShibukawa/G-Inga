@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "9339809"
 ---
 
 # Intake and Catalog G-Ingá Autoresearch Program
@@ -45,16 +46,19 @@ Ingest the proposed research procedure `G-INGA-AUTORESEARCH-PROGRAM.md` from the
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation suite | pass | 33a2b38 | `mise run validate` (exit 0) & `mise run test` (115 pass) on main |
-| AC1 | canonicalized autoresearch doc | not run | - | pending creation |
-| AC2 | docs index updated | not run | - | pending update |
-| AC3 | reference index updated | not run | - | pending update |
-| AC4 | validation & test suites | not run | - | pending run |
-| V1 | diff review against V1 governance | not run | - | pending review |
+| AC1 | canonicalized autoresearch doc | pass | 9339809 | docs/research/autoresearch-program.md created with repo links |
+| AC2 | docs index updated | pass | 9339809 | docs/README.md §5 updated with autoresearch program link |
+| AC3 | reference index updated | pass | 9339809 | docs/research/reference-index.md §12 catalogs karpathy/autoresearch |
+| AC4 | validation & test suites | pass | 9339809 | `mise run validate` (exit 0) & `mise run test` (115 pass) |
+| V1 | diff review against V1 governance | pass | 9339809 | doc changes only; no bundle or spec hash modified |
 
 ## Outcome
 
+The G-Ingá Autoresearch Program has been incorporated into canonical repository documentation under `docs/research/autoresearch-program.md`, cross-referenced in `docs/README.md`, and its external reference (`karpathy/autoresearch`) cataloged in `docs/research/reference-index.md` §12. Canonical validation and test suites pass cleanly.
+
 ## Checkpoint
 
-- as of: 2026-10-11, branch docs/autoresearch-program-intake, head 33a2b38, task active
-- done: branch created; baseline verified (B1 pass); task record authored
-- next: create docs/research/autoresearch-program.md and update reference index
+- as of: 2026-10-11, branch docs/autoresearch-program-intake, head 9339809, task verified
+- done: autoresearch program ingested, indexed, and cataloged; full validation suite passed; verified commit recorded
+- next: commit task verification update, push branch to origin, and create PR for owner review
+
