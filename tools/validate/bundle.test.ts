@@ -320,6 +320,22 @@ describe("update procedure (SC6)", () => {
     expect(snapshot(dir)).toEqual(before);
   });
 
+  test("a run refuses to touch a target while another live update holds it", () => {
+    const dir = gitRepo(USER_FILES);
+    updateBundle(REPO, dir);
+    const before = snapshot(dir);
+    mkdirSync(join(dir, WORK_DIR));
+    const holder = Bun.spawn(["sleep", "30"]);
+    try {
+      writeFileSync(join(dir, WORK_DIR, "pid"), String(holder.pid));
+      expect(() => updateBundle(sourceV2(), dir)).toThrow(/another update \(pid \d+\) is running/);
+    } finally {
+      holder.kill();
+    }
+    rmSync(join(dir, WORK_DIR), { recursive: true });
+    expect(snapshot(dir)).toEqual(before);
+  });
+
   test("an update killed mid-way is reported by the validator, then rolled back and completed by the next run", () => {
     const dir = gitRepo(USER_FILES);
     updateBundle(REPO, dir);

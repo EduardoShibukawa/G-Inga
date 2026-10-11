@@ -92,10 +92,21 @@ export function rollback(target, journal) {
     throw new UpdateError(`rollback incomplete; the target may hold a mixed bundle. Recovery data is in ${work}:\n  ${problems.join("\n  ")}`, 2);
 }
 
+function alive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return err.code === "EPERM";
+  }
+}
+
 /** Rolls back a run that died without cleaning up. Returns a message, or undefined when there was none. */
 function recoverInterrupted(target) {
   const work = join(target, WORK_DIR);
   if (!existsSync(work)) return undefined;
+  const pid = Number(existsSync(join(work, "pid")) ? readFileSync(join(work, "pid"), "utf8") : NaN);
+  if (Number.isInteger(pid) && pid > 0 && pid !== process.pid && alive(pid)) throw new UpdateError(`another update (pid ${pid}) is running on this target`);
   const journalPath = join(work, "journal.json");
   if (existsSync(journalPath)) {
     let journal;
@@ -155,6 +166,7 @@ export function updateBundle(sourceRoot, targetRoot, opts = {}) {
   const work = join(target, WORK_DIR);
   try {
     mkdirSync(work); // not recursive: fails if another run holds it
+    writeFileSync(join(work, "pid"), String(process.pid));
   } catch (err) {
     throw new UpdateError(`can't create ${work}: ${err.message}`);
   }
