@@ -27,3 +27,9 @@ The **Minimal V1 Specification is approved** (`specs/2026-10-11-minimal-v1-speci
 7. **Session Handoff:**
    - Update the task's `## Checkpoint` with current date, branch, HEAD SHA, worktree status, completed work, and the exact next action.
    - Create work on a dedicated branch; deliver via PR. Never commit directly to `main`.
+
+<!-- g-inga:pointer -->
+- Changes to deliverables go through `/work`.
+- Open work is tracked under `tasks/`.
+- Check results use `pass`, `fail`, `blocked`, and `not run`.
+<!-- /g-inga:pointer -->

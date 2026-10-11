@@ -19,9 +19,14 @@ jobs:
       - uses: jdx/mise-action@v5.1.1
         with:
           version: 2026.10.7
+      # The product bundle tests run the standalone validator under Node >= 22 as well as Bun (V1 spec SC4).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - run: mise run test
         env:
           MERMAID_BROWSER: /usr/bin/google-chrome
+          G_INGA_REQUIRE_RUNTIMES: "1"
       - run: mise run validate
         env:
           # Preinstalled on GitHub's Ubuntu runners; Mermaid is rendered in it.

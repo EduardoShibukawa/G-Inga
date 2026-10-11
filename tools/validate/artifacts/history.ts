@@ -2,6 +2,7 @@
  * Git history rules of the task/spec artifact contract (docs/artifact-contracts.md §7.1 and §8).
  * Reads only committed states plus the working tree. Never writes to the repository.
  */
+import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import contract from "./contract.json" with { type: "json" };
@@ -17,13 +18,18 @@ export interface HistoryResult {
 const WT = "working tree";
 
 export function git(root: string, args: string[]): { ok: boolean; out: string } {
-  const p = Bun.spawnSync(["git", ...args], { cwd: root, stdout: "pipe", stderr: "pipe" });
-  return { ok: p.exitCode === 0, out: p.stdout.toString() };
+  if (typeof Bun !== "undefined" && Bun.spawnSync) {
+    const p = Bun.spawnSync(["git", ...args], { cwd: root, stdout: "pipe", stderr: "pipe" });
+    return { ok: p.exitCode === 0, out: p.stdout.toString() };
+  }
+  const p = spawnSync("git", args, { cwd: root, encoding: "utf8" });
+  return { ok: p.status === 0, out: p.stdout || "" };
 }
 
 export function isGitRepo(root: string): boolean {
   return git(root, ["rev-parse", "--is-inside-work-tree"]).out.trim() === "true";
 }
+
 
 export type RecordHistory = { kind: "none" } | { kind: "some"; commit: string } | { kind: "unknown"; reason: "not-git" | "shallow" };
 
@@ -45,10 +51,15 @@ export function gitAncestry(root: string): Ancestry {
     const rb = git(root, ["rev-parse", "--verify", "--quiet", `${b}^{commit}`]);
     if (!ra.ok || !rb.ok) return undefined;
     if (ra.out.trim() === rb.out.trim()) return false;
-    const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root });
-    return p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
+    if (typeof Bun !== "undefined" && Bun.spawnSync) {
+      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root });
+      return p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
+    }
+    const p = spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd: root });
+    return p.status === 0 ? true : p.status === 1 ? false : undefined;
   };
 }
+
 
 /** Text of `tasks/*.md` and `specs/*.md` at a commit, or in the working tree. */
 function filesAt(root: string, rev: string): Map<string, string> {

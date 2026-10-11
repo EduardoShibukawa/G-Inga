@@ -49,7 +49,9 @@ mise run validate:external   # external URL availability (network)
 mise run setup               # only install dependencies (bun install --frozen-lockfile)
 ```
 
-`mise run validate` is the canonical entry point. It runs `bun install --frozen-lockfile` first, then `bun run validate`. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run validate` in `.github/workflows/validate.yml`, after installing the pinned mise with `jdx/mise-action`; it doesn't rely on a Bun or mise already on the runner.
+`mise run validate` is the canonical entry point. It runs `bun install --frozen-lockfile` first, then `bun run validate`. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run validate` in `.github/workflows/validate.yml`, after installing the pinned mise with `jdx/mise-action`; it doesn't rely on a Bun or mise already on the runner. It also sets up Node 22 and sets `G_INGA_REQUIRE_RUNTIMES=1`, so the product bundle tests in `tools/validate/bundle.test.ts` fail instead of skipping when Node 22 or later is missing.
+
+The product's standalone validator, manifest and update procedure are separate from this tooling; see [bundle](bundle.md). After changing `tools/validate/standalone.ts`, run `bun run build:validator`, commit the bundle assets, then regenerate `manifest.json` (`bun run manifest`) and commit it alone.
 
 Exit codes: `0` every check passed or was `not run`; `1` a check failed; `2` nothing failed but a check was `blocked`, or a prerequisite is missing (below).
 
@@ -77,7 +79,7 @@ flowchart TD
     T --> C{"Artifact contract present?"}
     T --> R{"Task or spec records present?"}
     D -->|"yes"| DR["decision-records"]
-    C -->|"yes"| AC["artifact-contract-sync, artifact-contract-examples, artifact-rule-fixtures"]
+    C -->|"yes"| AC["artifact-contract-sync, artifact-contract-copy, artifact-contract-examples, artifact-rule-fixtures"]
     R -->|"yes"| AR["artifact-records"]
 ```
 
@@ -105,7 +107,8 @@ The rules come from the [artifact contracts](artifact-contracts.md). `contract.j
 | Check | Applies when | What it proves |
 |---|---|---|
 | `artifact-contract-sync` | `docs/artifact-contracts.md` exists | `contract.json` has its defining record's status and the same edges as the contract's state diagram |
-| `artifact-contract-examples` | same | The contract's §9 example records satisfy its state rules |
+| `artifact-contract-copy` | `docs/artifact-contracts.md` and `.claude/skills/work/` exist | `.claude/skills/work/references/artifact-contracts.md`, the copy the bundle delivers, is byte for byte the transform `tools/validate/contract-copy.mjs` documents (a header comment plus a link prefix). After editing the contract, run `bun tools/validate/contract-copy.mjs` |
+| `artifact-contract-examples` | `docs/artifact-contracts.md` exists | The contract's §9 example records satisfy its state rules |
 | `artifact-rule-fixtures` | same | The §7.2 test table and review cases give the expected `pass`, `fail`, `blocked` or `frozen` |
 | `artifact-records` | a record exists now, or Git history shows one was ever committed, or the clone is shallow (see below) | Every record there, with the Git history walk (§7.1) and the frozen-record check (§8). Deleted records fail (§6.1). A schema-less file next to real records is `blocked` (§8) |
 

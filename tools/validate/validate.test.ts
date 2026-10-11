@@ -10,7 +10,7 @@ import { externalLinks } from "./universal/externalLinks.ts";
 
 afterAll(cleanupFixtures);
 
-const ARTIFACT_CHECKS = ["artifact-contract-sync", "artifact-contract-examples", "artifact-rule-fixtures", "artifact-records"];
+const ARTIFACT_CHECKS = ["artifact-contract-sync", "artifact-contract-copy", "artifact-contract-examples", "artifact-rule-fixtures", "artifact-records"];
 
 describe("universal checks on general Markdown", () => {
   test("documents with and without frontmatter pass; type-specific checks are not run (exit 0)", () => {
@@ -149,7 +149,7 @@ describe("this repository", () => {
     const before = porcelain();
     const r = validate(REPO);
     expect([0, 2]).toContain(r.code ?? -1);
-    for (const c of ["markdown-lint", "local-links", "decision-records", "artifact-contract-sync", "artifact-contract-examples", "artifact-rule-fixtures"])
+    for (const c of ["markdown-lint", "local-links", "decision-records", "artifact-contract-sync", "artifact-contract-copy", "artifact-contract-examples", "artifact-rule-fixtures"])
       expect(status(c, r.out)).toBe("pass");
     expect(r.out).not.toMatch(/^\s+d\d-/m);
     expect(porcelain()).toBe(before);

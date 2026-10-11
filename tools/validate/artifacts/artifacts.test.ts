@@ -7,6 +7,8 @@ import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path";
 import { cleanupFixtures, commitAll, fixtureDir, git, NO_BROWSER, REPO, status, validate } from "../testkit.ts";
 import { allCases, task } from "./fixtures.ts";
+import { CONTRACT_COPY, HEADER, LINK_PREFIX, renderContractCopy } from "../contract-copy.mjs";
+import { contractCopy } from "./checks.ts";
 import { reachable, recordHistory } from "./history.ts";
 import { bodyHash } from "./records.ts";
 
@@ -137,6 +139,61 @@ describe("contract checks apply where the contract document is", () => {
     const r = validate(dir, NO_BROWSER);
     expect(status("artifact-contract-sync", r.out)).toBe("fail");
     expect(r.code).toBe(1);
+  }, 60000);
+});
+
+describe("the bundle's contract copy matches the canonical contract (task 04, AC1, AC2)", () => {
+  /** docs/ and .claude/skills/work/ of this repository, copied: the layout where the copy check applies. */
+  const copyBundleSource = () => {
+    const dir = fixtureDir({});
+    cpSync(join(REPO, "docs"), join(dir, "docs"), { recursive: true });
+    cpSync(join(REPO, ".claude/skills/work"), join(dir, ".claude/skills/work"), { recursive: true });
+    return dir;
+  };
+
+  test("the committed copy is the transform of the canonical contract", () => {
+    const canonical = readFileSync(join(REPO, "docs/artifact-contracts.md"), "utf8");
+    expect(readFileSync(join(REPO, CONTRACT_COPY), "utf8")).toBe(renderContractCopy(canonical));
+    expect(contractCopy(REPO).status).toBe("pass");
+  });
+
+  test("the transform adds only the header and the link prefix, and states its source", () => {
+    const canonical = readFileSync(join(REPO, "docs/artifact-contracts.md"), "utf8");
+    const copy = renderContractCopy(canonical);
+    expect(copy.startsWith(HEADER)).toBe(true);
+    expect(HEADER).toContain("Generated copy of docs/artifact-contracts.md");
+    expect(copy.slice(HEADER.length).split(LINK_PREFIX).join("")).toBe(canonical);
+    expect(renderContractCopy("[a](x.md) [b](https://e.example/x) [c](#y) [d](/z)\n")).toBe(
+      `${HEADER}[a](${LINK_PREFIX}x.md) [b](https://e.example/x) [c](#y) [d](/z)\n`,
+    );
+  });
+
+  test("an edit to the canonical contract without regenerating the copy fails validation (exit 1)", () => {
+    const dir = copyBundleSource();
+    const path = join(dir, "docs/artifact-contracts.md");
+    writeFileSync(path, readFileSync(path, "utf8").replace("## 2. Shared conventions", "## 2. Shared conventions\n\nA drifted sentence."));
+    const r = validate(dir, NO_BROWSER);
+    expect(status("artifact-contract-copy", r.out)).toBe("fail");
+    expect(r.out).toContain(`${CONTRACT_COPY}:`);
+    expect(r.code).toBe(1);
+  }, 60000);
+
+  test("an edit to the copy alone fails, a deleted copy fails, and the regenerated copy passes", () => {
+    const dir = copyBundleSource();
+    const copy = join(dir, CONTRACT_COPY);
+    writeFileSync(copy, readFileSync(copy, "utf8") + " ");
+    expect(contractCopy(dir).status).toBe("fail");
+    rmSync(copy);
+    expect(contractCopy(dir).findings.join()).toContain("is missing");
+    writeFileSync(copy, renderContractCopy(readFileSync(join(dir, "docs/artifact-contracts.md"), "utf8")));
+    expect(contractCopy(dir).status).toBe("pass");
+  });
+
+  test("without .claude/skills/work/ there is no copy to check: not run", () => {
+    const dir = fixtureDir({});
+    cpSync(join(REPO, "docs"), join(dir, "docs"), { recursive: true });
+    const r = validate(dir, NO_BROWSER);
+    expect(status("artifact-contract-copy", r.out)).toBe("not run");
   }, 60000);
 });
 
