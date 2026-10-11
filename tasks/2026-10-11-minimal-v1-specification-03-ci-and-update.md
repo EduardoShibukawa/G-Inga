@@ -1,12 +1,11 @@
 ---
 schema: task/1
 tier: standard
-status: verified
+status: active
 parent: 2026-10-11-minimal-v1-specification
 spec: 2026-10-11-minimal-v1-specification@1
 depends_on:
   - 2026-10-11-minimal-v1-specification-02-validator-and-manifest
-verified_at: "7cf22c1"
 ---
 
 # CI Gate Template, Bundle Update Procedure, and Target Repo Installation Verification
@@ -50,9 +49,11 @@ Deliver the CI workflow definition template for target repositories (`tools/vali
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 7cf22c1, worktree dirty
-- done: CI template, update procedure, and target installation verified on commit 7cf22c1
-- next: commit child task 03, integrate evidence into parent heavy task, and run fresh-context review
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 9b7ebb5, worktree clean
+- reopened: update.mjs copied assets onto their final paths one at a time with no staging or rollback, so AC3's atomic-update claim (SC6) did not hold; no committed test backed AC3 or AC4
+- done: remediation commits 586a056, d12adc3, ba5ebe5, 4c9ac0d, 944c77b, 9b7ebb5 (pushed together with this record)
+- open: process deviation: the remediation code was committed before this reopen record, so the record again trails the code (parent `## Self-hosting assessment`)
+- next: rerun every AC, R and V row at 9b7ebb5 and record them; verification rows below are the pre-remediation claims, stale until rerun
 
 ## Outcome
 

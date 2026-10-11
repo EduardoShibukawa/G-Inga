@@ -1,12 +1,11 @@
 ---
 schema: task/1
 tier: standard
-status: verified
+status: active
 parent: 2026-10-11-minimal-v1-specification
 spec: 2026-10-11-minimal-v1-specification@1
 depends_on:
   - 2026-10-11-minimal-v1-specification-01-work-skill
-verified_at: "5faf6af"
 ---
 
 # Implement Standalone Validator and SHA-256 Integrity Manifest
@@ -53,9 +52,11 @@ Build the standalone zero-install runtime validator (`tools/validate/validate.js
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 5faf6af, worktree dirty
-- done: standalone validator and manifest generator implemented, tested on Node/Bun, verified on commit 5faf6af
-- next: commit child task 02 and proceed to child task 03 (CI and update procedure)
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head 9b7ebb5, worktree clean
+- reopened: AC5 recorded `mise run test` as pass at 5faf6af, but `tsc --noEmit` failed on tools/validate/standalone.ts (CI run 38142286827; reproduced locally at 5d38ae3). The documented `bun tools/validate/validate.ts` path did not exist, and manifest.json named commit d19205f, which predates validate.js
+- done: remediation commits 586a056, d12adc3, ba5ebe5, 4c9ac0d, 944c77b, 9b7ebb5 (pushed together with this record)
+- open: process deviation: the remediation code was committed before this reopen record, so the record again trails the code (parent `## Self-hosting assessment`)
+- next: rerun every AC, R and V row at 9b7ebb5 and record them; verification rows below are the pre-remediation claims, stale until rerun
 
 ## Outcome
 
