@@ -1,14 +1,15 @@
 {
   "release": "1.0.0",
-  "commit": "ba5ebe5637b18566de2224bc942bbf6008ed0390",
+  "commit": "57ac605536c9648b4783e08ecae46627549024f9",
   "files": {
-    ".claude/skills/work/SKILL.md": "ec32f68ab6f85ce631aac0fa662f42a8dcf8a56fee2f6dce089d93823ed4de78",
-    ".claude/skills/work/heavy.md": "229528b8f93e7aee06edd0ac733e82be779931205d0d304d961b9d314470a8db",
-    ".claude/skills/work/resume.md": "f31768350cd09b4dcb944dd6bc87c7c44bd51d51d7c71091c071cb490b892817",
+    ".claude/skills/work/SKILL.md": "04183dd3977d8479e00b942bd8e365692ed12d9f1a613581c21654f6b1d3174a",
+    ".claude/skills/work/heavy.md": "bb8c03c38515e5918da6cd2996a716ad5c6232a3c19d18d032a350313190d139",
+    ".claude/skills/work/resume.md": "6cdccc200264c39287ead22aa64fa32ec0464ab159da449e0d90989280e19730",
     ".claude/skills/work/review.md": "8b5abd9e9b757f930c4e56e786fc64f83d8c5942ac2ca1cc9771d07e21cb3214",
-    ".claude/skills/work/standard.md": "f559bde918124d9c5890ec1e564a9d2d75a2aecba364fcdc49dcc7f14d1b8786",
+    ".claude/skills/work/standard.md": "ebcd10521e955cd0a655b0ad2e3408a97cbbdc4e111f55e2ca86b734b81856a3",
+    ".claude/skills/work/references/artifact-contracts.md": "a39eb61edf1fff1654187fdf453bd15ecd25017432a1fa9f45d093e20add68a4",
     "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
-    "tools/validate/validate.js": "6b49b87a3534752b7aa25551deb13ab7909d65bebf17e4012f483140d0bec883",
+    "tools/validate/validate.js": "0fec2894593fb2008731d7efd82137103530d9d58beef18051302d0d2aaecb49",
     "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
