@@ -7,7 +7,9 @@
     "validate": "bun tools/validate/preflight.ts && bun tools/validate/main.ts",
     "validate:external": "bun tools/validate/preflight.ts && bun tools/validate/main.ts --external-only",
     "test": "bun tools/validate/preflight.ts && bun test tools/validate",
-    "typecheck": "bun tools/validate/preflight.ts && tsc --noEmit -p tools/validate"
+    "typecheck": "bun tools/validate/preflight.ts && tsc --noEmit -p tools/validate",
+    "build:validator": "bun build tools/validate/standalone.ts --target=node --outfile tools/validate/validate.js",
+    "manifest": "bun tools/validate/manifest.mjs"
   },
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^12.0.0",

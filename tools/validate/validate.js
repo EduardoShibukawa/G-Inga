@@ -6948,7 +6948,7 @@ var require_public_api = __commonJS(function(exports) {
 // tools/validate/standalone.ts
 import { createHash as createHash2 } from "node:crypto";
 import { existsSync as existsSync2, readdirSync as readdirSync2, readFileSync as readFileSync2 } from "node:fs";
-import { resolve, join as join2 } from "node:path";
+import { join as join2, resolve } from "node:path";
 
 // tools/validate/artifacts/history.ts
 import { spawnSync } from "node:child_process";
@@ -7650,9 +7650,34 @@ function checkTaskTransition(prev, cur, f) {
       f(`task ${cur.id}: moved @${pv} → @${cv} without a "spec-version: v${pv} → v${cv}; rerun: …" or "…; unaffected: …" entry`, "§4.4");
   }
 }
+// tools/validate/bundle.json
+var bundle_default = {
+  $comment: "Product bundle definition (V1 spec SC1, SC5). Read by standalone.ts (bundled into validate.js), manifest.mjs and update.mjs. tools/validate/ also holds this repository's development tooling, which isn't delivered.",
+  release: "1.0.0",
+  scope: [
+    ".claude/skills/work/",
+    "tools/validate/"
+  ],
+  assets: [
+    ".claude/skills/work/SKILL.md",
+    ".claude/skills/work/heavy.md",
+    ".claude/skills/work/resume.md",
+    ".claude/skills/work/review.md",
+    ".claude/skills/work/standard.md",
+    "tools/validate/ci-template.yml",
+    "tools/validate/validate.js",
+    "tools/validate/validate.ts"
+  ]
+};
 
 // tools/validate/standalone.ts
 var RECORD_DIRS = ["tasks", "specs"];
+var BUNDLE_SCOPE = bundle_default.scope;
+function inBundleScope(relPath) {
+  if (relPath.startsWith("/") || relPath.includes("\\") || relPath.split("/").some((s) => s === ".." || s === "." || s === ""))
+    return false;
+  return BUNDLE_SCOPE.some((p) => relPath.startsWith(p) && relPath.length > p.length);
+}
 function recordsPresent(root) {
   for (const dir of RECORD_DIRS) {
     const abs = join2(root, dir);
@@ -7665,87 +7690,88 @@ function recordsPresent(root) {
     }
   }
   const history = recordHistory(root);
-  if (history.kind === "some" || history.kind === "unknown" && history.reason === "shallow")
-    return true;
-  return false;
+  return history.kind === "some" || history.kind === "unknown" && history.reason === "shallow";
 }
 function checkManifestIntegrity(root) {
+  const name = "manifest-integrity";
   const manifestPath = join2(root, "manifest.json");
   if (!existsSync2(manifestPath))
-    return { status: "not run", reason: "no manifest.json" };
+    return { name, status: "blocked", summary: "manifest.json not found; bundle integrity can't be checked", details: [] };
+  let manifest;
   try {
-    const manifest = JSON.parse(readFileSync2(manifestPath, "utf8"));
-    const files = manifest.files || {};
-    const mismatches = [];
-    for (const [relPath, expectedHash] of Object.entries(files)) {
-      const fullPath = join2(root, relPath);
-      if (!existsSync2(fullPath)) {
-        mismatches.push(`${relPath}: missing file`);
-        continue;
-      }
-      const actualHash = createHash2("sha256").update(readFileSync2(fullPath)).digest("hex");
-      if (actualHash !== expectedHash) {
-        mismatches.push(`${relPath}: hash mismatch (expected ${expectedHash}, got ${actualHash})`);
-      }
-    }
-    if (mismatches.length > 0) {
-      return { status: "fail", mismatches };
-    }
-    return { status: "pass", count: Object.keys(files).length };
+    manifest = JSON.parse(readFileSync2(manifestPath, "utf8"));
   } catch (err) {
-    return { status: "blocked", reason: `failed to parse manifest.json: ${err.message}` };
+    return { name, status: "fail", summary: `manifest.json doesn't parse: ${err instanceof Error ? err.message : String(err)}`, details: [] };
   }
+  const files = manifest.files;
+  if (!files || typeof files !== "object" || Array.isArray(files) || Object.keys(files).length === 0)
+    return { name, status: "fail", summary: 'manifest.json has no "files" map', details: [] };
+  const details = [];
+  for (const [relPath, expected] of Object.entries(files)) {
+    if (relPath === "manifest.json" || !inBundleScope(relPath)) {
+      details.push(`${relPath}: outside the bundle scope (${BUNDLE_SCOPE.join(", ")})`);
+      continue;
+    }
+    if (typeof expected !== "string" || !/^[0-9a-f]{64}$/.test(expected)) {
+      details.push(`${relPath}: expected hash is not a SHA-256 hex digest`);
+      continue;
+    }
+    const fullPath = join2(root, relPath);
+    if (!existsSync2(fullPath)) {
+      details.push(`${relPath}: missing file`);
+      continue;
+    }
+    const actual = createHash2("sha256").update(readFileSync2(fullPath)).digest("hex");
+    if (actual !== expected)
+      details.push(`${relPath}: hash mismatch (expected ${expected}, got ${actual})`);
+  }
+  const count = Object.keys(files).length;
+  return details.length ? { name, status: "fail", summary: `${details.length} of ${count} bundle files drifted from manifest.json`, details } : { name, status: "pass", summary: `${count} bundle files match manifest.json`, details: [] };
+}
+function checkRecords(root) {
+  const name = "artifact-records";
+  if (!recordsPresent(root))
+    return { name, status: "not run", summary: "no task or spec records, now or in Git history", details: [] };
+  const history = checkHistory(root);
+  if ("blocked" in history)
+    return { name, status: "blocked", summary: history.blocked, details: [] };
+  const fail = history.findings.filter((f) => f.level === "fail");
+  const blocked = history.findings.filter((f) => f.level !== "fail");
+  const details = [
+    ...fail.map((f) => `fail: ${f.file} ${f.rule} ${f.msg}`),
+    ...blocked.map((f) => `blocked: ${f.file} ${f.rule} [${f.level}] ${f.msg}`)
+  ];
+  if (fail.length)
+    return { name, status: "fail", summary: `${fail.length} failing finding(s)`, details };
+  if (blocked.length)
+    return { name, status: "blocked", summary: `${blocked.length} blocked finding(s)`, details };
+  return { name, status: "pass", summary: `history walk done; ${history.frozen.length} frozen`, details: [] };
 }
 function runValidation(targetRoot) {
-  const root = resolve(targetRoot || process.cwd());
-  console.log(`G-Ingá standalone validator (${root})`);
+  const root = resolve(targetRoot);
   if (!isGitRepo(root)) {
-    console.error("blocked: not a Git repository");
+    return { code: 2, results: [{ name: "git", status: "blocked", summary: "not a Git repository", details: [] }] };
+  }
+  const results = [checkManifestIntegrity(root), checkRecords(root)];
+  const code = results.some((r) => r.status === "fail") ? 1 : results.some((r) => r.status === "blocked") ? 2 : 0;
+  return { code, results };
+}
+function main(argv) {
+  const i = argv.indexOf("--root");
+  if (i >= 0 && !argv[i + 1]) {
+    console.error("blocked: --root needs a directory");
     return 2;
   }
-  const manifestCheck = checkManifestIntegrity(root);
-  if (manifestCheck.status === "fail") {
-    for (const m of manifestCheck.mismatches) {
-      console.error(`fail: manifest integrity drift: ${m}`);
-    }
-    return 1;
-  }
-  if (manifestCheck.status === "blocked") {
-    console.error(`blocked: manifest integrity: ${manifestCheck.reason}`);
-    return 2;
-  }
-  const hasRecords = recordsPresent(root);
-  if (!hasRecords) {
-    console.log("universal checks: pass (no tasks or specs found)");
-    return 0;
-  }
-  const historyResult = checkHistory(root);
-  if ("blocked" in historyResult) {
-    console.error(`blocked: ${historyResult.blocked}`);
-    return 2;
-  }
-  const fail = historyResult.findings.filter((f) => f.level === "fail");
-  const blocked = historyResult.findings.filter((f) => f.level !== "fail");
-  for (const f of fail) {
-    console.error(`fail: ${f.file} ${f.rule} ${f.msg}`);
-  }
-  for (const b of blocked) {
-    console.error(`blocked: ${b.file} ${b.rule} [${b.level}] ${b.msg}`);
-  }
-  if (fail.length > 0) {
-    console.log(`
-Result: fail (${fail.length} issue(s))`);
-    return 1;
-  }
-  if (blocked.length > 0) {
-    console.log(`
-Result: blocked (${blocked.length} issue(s))`);
-    return 2;
+  const root = resolve(i >= 0 ? argv[i + 1] : process.cwd());
+  console.log(`G-Ingá standalone validator (${root})`);
+  const { code, results } = runValidation(root);
+  for (const r of results) {
+    console.log(`  ${r.name.padEnd(20)} ${r.status.padEnd(8)} ${r.summary}`);
+    for (const d of r.details)
+      console.log(`    - ${d}`);
   }
   console.log(`
-Result: pass (${historyResult.frozen.length} frozen, all active checks passed)`);
-  return 0;
+Overall: ${code === 0 ? "pass" : code === 1 ? "fail" : "blocked"}`);
+  return code;
 }
-var targetDir = process.argv[2] === "--root" ? process.argv[3] : process.cwd();
-var code = runValidation(targetDir);
-process.exit(code);
+process.exit(main(process.argv.slice(2)));
