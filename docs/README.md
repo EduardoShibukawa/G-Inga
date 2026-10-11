@@ -5,7 +5,8 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 ## 1. Getting Started & Principles
 
 - [README.md](../README.md): Repository entry point, problem statement, current status, and quickstart.
-- [CLAUDE.md](../CLAUDE.md): Session operating instructions for AI agents working in this repository.
+- [CLAUDE.md](../CLAUDE.md): Session operating instructions for AI agents working in this repository on Claude Code.
+- [GEMINI.md](../GEMINI.md): Session operating instructions for AI agents working in this repository on Google Antigravity.
 - [docs/principles.md](principles.md): Core operating principles (token frugality, deterministic gates, provenance).
 - [docs/brand-and-roadmap.md](brand-and-roadmap.md): Naming, brand narrative, and milestone roadmap (`proposed`).
 - [docs/friction-log.md](friction-log.md): Logged friction points driving harness evolution.
@@ -18,7 +19,7 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 - [ADR 0003: Minimum artifact schemas](decisions/0003-minimum-artifact-schemas.md) (`accepted`): Minimal contracts for task, spec, checkpoint, and evidence records.
 - [ADR 0004: Reuse strategy for existing skills](decisions/0004-reuse-strategy-for-existing-skills.md) (`accepted`): Transitional coexistence with upstream plugins without runtime dependencies.
 - [ADR 0005: Native primitive mapping](decisions/0005-native-primitive-mapping.md) (`accepted`): Primitive mapping, pinned bundle distribution architecture (Alternative A), co-located validator, and CI merge gating.
-- [ADR 0006: Usage observability](decisions/0006-usage-observability.md) (`proposed`): OpenTelemetry and local usage observation signals (exploratory, non-blocking for V1 core).
+- [ADR 0006: Usage observability](decisions/0006-usage-observability.md) (`accepted`): Multi-host local usage observation signals (OpenTelemetry for Claude Code, headless JSON for Antigravity) with 6-state taxonomy.
 
 ## 3. Contracts & Specifications
 
