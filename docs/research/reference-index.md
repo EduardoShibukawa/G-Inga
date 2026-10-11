@@ -194,3 +194,11 @@ Added after the G-S1 spike audit, for [Gemini CLI host decision review](gemini-c
 | Transitioning Gemini CLI to Antigravity CLI | Google Developers Blog (Dmitry Lyalin, Taylor Mullen) | <https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/> | 2026-10-10 | verified (live page read in full) | Deprecation of `@google/gemini-cli` for individual and free accounts on June 18, 2026; transition to Antigravity CLI (`agy`); preservation of Gemini CLI for enterprise licenses and paid API keys | host decision, ADR 0001, ADR 0005 | Future enterprise roadmap not verified |
 | Antigravity CLI Reference | Google Antigravity, official documentation | <https://antigravity.google/docs/cli/reference> | 2026-10-10 | verified (`agy --help` and local reference docs) | Non-interactive flags (`-p`, `--output-format json`), permission bypass (`--dangerously-skip-permissions`), config file `~/.gemini/antigravity-cli/settings.json` | host decision, D5 | Detailed OTel schema for `agy` not published |
 | Antigravity Customizations and Rules | Google Antigravity, official documentation | <https://antigravity.google/docs/rules-workflows> | 2026-10-10 | verified (offline specification in `agy-customizations`) | `GEMINI.md` / `AGENTS.md` directory rules, 24 KB per-file limit, 20,000-token rules budget (`defaultRulesBudget`), `.agents/` workspace discovery root | host decision, D5 | Behavior under deep directory trees not tested |
+
+## 12. Additions: Autoresearch Program (2026-10-11)
+
+Added for [G-Ingá Autoresearch Program](autoresearch-program.md).
+
+| Reference | Author / org, type | URL / Path | Consulted | State | What was learned (evidence) | May inform | Limits |
+|---|---|---|---|---|---|---|---|
+| `autoresearch` | Andrej Karpathy, GitHub repository | <https://github.com/karpathy/autoresearch> | 2026-10-11 | inspected (repository overview, experimental loop structure) | Autonomous iterative experimentation loop: pinned baseline, controlled single-target change, independent evaluation rubric, keep/discard decision rule | D7, experimental research loop, prompt optimization | GPU training loop and scalar benchmark code not applicable to G-Ingá SDLC harness; G-Ingá adapts the iterative experimental structure without importing single-scalar assumptions |
