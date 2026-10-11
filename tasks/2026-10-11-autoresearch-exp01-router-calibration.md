@@ -67,4 +67,3 @@ Experiment EXP-01 baseline completed. The 17 canonical scenarios R01–R17 are f
 - as of: 2026-10-11, branch exp/autoresearch-r01-r17-calibration, head 6d17135, task verified
 - done: frozen scenarios v1 created; evaluator script implemented and unit tested; ledger initialized; baseline run executed with 100% agreement and 0 critical misses; task verified
 - next: push branch and submit PR for owner review and decision
-
