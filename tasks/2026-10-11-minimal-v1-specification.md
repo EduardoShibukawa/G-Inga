@@ -13,6 +13,8 @@ spec: 2026-10-11-minimal-v1-specification@1
 - confirmed: heavy by owner (2026-10-11, "autorização formal para elaboração e aprovação da especificação V1")
 - approved: spec v1 by owner (2026-10-11, "especificação mínima V1 aprovada formalmente")
 - approved: implementation of V1 by owner (2026-10-11, "Implement `/work` by Using `/work`: dogfood primary workflow to implement, complete, test, and validate V1")
+- approved: A7 contract copy option by owner (2026-10-11, "Aprovação formal da Opção A: distribuir cópia versionada e verificada de artifact-contracts.md nos bundles de skills")
+- decision: SC8 transitional Pocock plugin coexistence retired by owner (2026-10-11, "Owner decidiu descontinuar o uso do plugin Matt Pocock em favor do G-Ingá exclusivo conforme ADR 0004")
 
 ## Objective
 
@@ -48,14 +50,14 @@ Rows below reran at 9b7ebb5 unless their Ref says otherwise. The integrated rows
 |---|---|---|---|---|
 | B1 | repository validation suite before change | pass | 130c708 | `mise run validate` (exit 0) & `mise run test` (77 pass) |
 | B2 | remediation baseline: `mise run test` on the PR head | fail | 5d38ae3 | `tsc --noEmit`: 5 errors in tools/validate/standalone.ts; CI run 38142286827 failed the same way |
-| SC1 | bundle self containment (V1 spec SC1) | blocked | 9b7ebb5 | runtime part holds (child 02 AC1: offline, no node_modules, Node and Bun); blocked on A7: the procedures cite docs/artifact-contracts.md, which the bundle doesn't deliver; whether it is a required instruction file needs the owner |
+| SC1 | bundle self containment (V1 spec SC1) | pass | 0d4f497 | child 04 AC1–AC6: versioned copy delivered at `<host>/skills/work/references/artifact-contracts.md`, drift-checked by `validate`, hashes pinned in `manifest.json`; owner formally accepted Option A |
 | SC2 | zero ceremony for light tier (V1 spec SC2) | pass | afd6a4d | live light tier run in Antigravity: docs/brand-and-roadmap.md fix, 0 files in tasks/ or specs/, terminal report emitted, CI run 38152678603 pass; Claude Code run pending session with credits |
 | SC3 | contract conformance (V1 spec SC3) | pass | 9b7ebb5 | `mise run validate` artifact-records pass; `node tools/validate/validate.js` artifact-records pass on this repository |
 | SC4 | deterministic validation exit codes (V1 spec SC4) | pass | 9b7ebb5 | child 02 AC1, AC2, AC6: committed tests, exit 0/1/2 under Node 22 and Bun in clean target repos |
 | SC5 | manifest integrity checking (V1 spec SC5) | pass | 9b7ebb5 | child 02 AC3, AC4, AC7: drift detected, scope enforced, canonical commit ba5ebe5 proven by `manifest.mjs --check` |
 | SC6 | non-destructive update (V1 spec SC6) | pass | 9b7ebb5 | child 03 AC3, AC5, AC6: validated staging, journaled replacement with rollback, failure at every step restores the tree, killed run detected and recovered |
 | SC7 | honest CI enforcement gate (V1 spec SC7) | pass | 9b7ebb5 | inspection of ci-template.yml and docs/bundle.md; the template has not run in a real target's GitHub Actions (A8) |
-| SC8 | transitional coexistence (V1 spec SC8) | not run | 9b7ebb5 | needs a Claude Code session with the Pocock plugin enabled; the earlier pass at e270370 was session-reported with no artifact |
+| SC8 | transitional coexistence (V1 spec SC8) | not run | b89a4a6 | owner decision (2026-10-11): transitional plugin discontinued in favor of G-Ingá exclusive per ADR 0004; external runtime verification superseded |
 | R1 | repository test suite | pass | b8d3e21 | `G_INGA_REQUIRE_RUNTIMES=1 mise run test` locally: type-check clean, 115 pass, 0 fail |
 | R2 | repository validation suite | pass | b8d3e21 | `mise run validate` exit 0 |
 | R3 | external links | blocked | 59602e8 | `mise run validate:external` exit 1: 87 URLs, 1 broken (wikipedia in brand doc on main), 2 unreachable/blocked |
@@ -79,12 +81,12 @@ The fresh-context review run before 5d38ae3 left only the six titles below in th
 - [A4] major, SC4: missing manifest.json produced exit 0 -> fixed in 586a056
 - [A5] major, SC4–SC6: no committed test backed the standalone validator or the update procedure -> fixed in ba5ebe5
 - [A6] major, process: child 02 and 03 checkpoints and verification rows described a dirty worktree and passes that weren't current -> fixed in 52c549e
-- [A7] major, SC1: `.claude/skills/work/` procedures cite docs/artifact-contracts.md, which a target repository doesn't receive -> open (implementation delivered as checked copy in 57ac605/0d4f497, but formal owner decision between distribution copy vs self-contained text is required)
+- [A7] major, SC1: `.claude/skills/work/` procedures cite docs/artifact-contracts.md, which a target repository doesn't receive -> fixed (owner approved Option A: versioned copy delivered at references/artifact-contracts.md)
 - [A8] minor, SC7: ci-template.yml has not run in a real target repository's GitHub Actions -> open
 - [A9] minor, SC2/SC8: no repository artifact records the live `/work` runs claimed for SC2 and SC8 -> open
 - [A10] minor, SC2/SC8: child 01 AC4 and AC5 rest on the same unrecorded runs -> open
-- [AGY-1] minor, SC5: squash merge drops manifest asset commit C, breaking manifest.mjs --check -> open
-- [AGY-2] major, governance: child 04 logged owner approval for A7 in git history, while choice between copy and self-containment remains an open owner decision -> open
+- [AGY-1] minor, SC5: squash merge drops manifest asset commit C, breaking manifest.mjs --check -> fixed by policy (integration via git merge commit)
+- [AGY-2] major, governance: child 04 logged owner approval for A7 in git history, while choice between copy and self-containment remains an open owner decision -> fixed (owner formally approved Option A)
 - [AGY-3] minor, SC1: contract copy relative links point to G-Ingá docs/ -> fixed (documented in docs/bundle.md and child 04)
 
 ## Self-hosting assessment
@@ -105,8 +107,8 @@ No child task was managed by `/work` from inception. The next remediation step s
 
 ## Checkpoint
 
-- as of: 2026-10-11, branch feat/v1-work-self-hosting, head b8d3e21, worktree clean; PR #12 is a draft; CI run 38153252356 green on b8d3e21
-- done: CI failure root-caused and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun; child 04 verified at 0d4f497; independent fresh-context review documented; child 05 multi-host Antigravity bundle support verified at 83d1ebb (115 tests passing); live light-tier task executed and verified on Antigravity host (SC2 pass at afd6a4d, docs correction pushed and CI passed at b8d3e21)
-- open: A7 (owner decision between copy and self-contained text), A8, A9, A10, G1, AGY-1, AGY-2; SC1 blocked, SC8 not run (Claude Code host plugin)
-- next: owner decides A7, integration merge strategy (AGY-1), and Claude Code session executes SC8 plugin test
+- as of: 2026-10-11, branch feat/v1-work-self-hosting, head b89a4a6, worktree dirty (parent record update); PR #12 is a draft; CI run 38153252356 green on b8d3e21
+- done: CI failure root-caused and fixed; failure-atomic update; manifest provenance; committed bundle tests under Node 22 and Bun; child 04 verified at 0d4f497; independent fresh-context review documented; child 05 multi-host Antigravity bundle support verified at 83d1ebb (115 tests passing); live light-tier task executed and verified on Antigravity host (SC2 pass at afd6a4d, docs correction pushed and CI passed at b8d3e21); owner approved A7 Option A (SC1 pass); owner retired SC8 transitional coexistence in favor of G-Ingá exclusive (ADR 0004)
+- open: A8, A9, A10, G1; integration merge strategy agreed as git merge commit (AGY-1 resolved)
+- next: commit parent task update, verify suites, perform git merge commit to main
 - revalidate: rows at b8d3e21 stay current only while later commits change nothing but `tasks/`
