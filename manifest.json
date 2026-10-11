@@ -1,13 +1,14 @@
 {
   "release": "1.0.0",
-  "commit": "d19205fb56a625d7a14b39151972f8870dab22ca",
-  "generated_at": "2026-10-11T13:05:04.569Z",
+  "commit": "ba5ebe5637b18566de2224bc942bbf6008ed0390",
   "files": {
     ".claude/skills/work/SKILL.md": "ec32f68ab6f85ce631aac0fa662f42a8dcf8a56fee2f6dce089d93823ed4de78",
     ".claude/skills/work/heavy.md": "229528b8f93e7aee06edd0ac733e82be779931205d0d304d961b9d314470a8db",
     ".claude/skills/work/resume.md": "f31768350cd09b4dcb944dd6bc87c7c44bd51d51d7c71091c071cb490b892817",
     ".claude/skills/work/review.md": "8b5abd9e9b757f930c4e56e786fc64f83d8c5942ac2ca1cc9771d07e21cb3214",
     ".claude/skills/work/standard.md": "f559bde918124d9c5890ec1e564a9d2d75a2aecba364fcdc49dcc7f14d1b8786",
-    "tools/validate/validate.js": "4796be0db109239efe6822f2248a243f73e02396e26076b9ee916df0fb09e9c9"
+    "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
+    "tools/validate/validate.js": "6b49b87a3534752b7aa25551deb13ab7909d65bebf17e4012f483140d0bec883",
+    "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
