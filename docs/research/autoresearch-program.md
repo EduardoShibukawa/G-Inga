@@ -84,16 +84,40 @@ A candidate may be **recommended** only if:
 
 A candidate is not automatically accepted merely because its mean cost is lower. A material regression in correctness, safety, or verification completeness invalidates a cost-only win.
 
-## First candidate experiments (ideas only)
+## Round 1 experimental results (EXP-01 to EXP-04)
 
-Choose one after D4 and D7 are accepted (both settled as `accepted` in [docs/decision-map.md](../decision-map.md)):
+The initial four candidate experiments were executed, measured against frozen scenario suites, and logged in the canonical experiment ledger ([records/autoresearch-ledger.tsv](../../records/autoresearch-ledger.tsv)):
 
-1. Compare the current router with a shorter router prompt on owner-labelled R01–R17. Main metric: routing agreement; hard guardrail: no under-routing of sensitive or irreversible scenarios. Secondary metrics: task success and context/cost where observable.
-2. Compare two `CLAUDE.md` / `GEMINI.md` layouts. Main metric: correct instruction following on fixed cases; secondary: fixed context overhead. Keep all policy semantics equivalent.
-3. Compare current recovery instruction against a more explicit “two failures without new information -> re-plan” rule. Main metric: repeated unproductive retries and verified success; guardrail: no premature stop when useful progress is demonstrated.
-4. Compare a subagent reviewer trigger policy against self-review only on cases where independent review is allowed. Main metric: defects caught/rework vs extra cost; never assume agent agreement is correctness.
+| ID | Hypothesis & target | Baseline & candidate | Scenarios | Primary metrics & outcome | Guardrails & safety gates | Owner decision |
+|---|---|---|---|---|---|---|
+| EXP-01 / EXP-01-C01 | Categorical routing & compact prompt ([.claude/skills/work/SKILL.md](../../.claude/skills/work/SKILL.md)) | `948e669` / `4da2510` | R01–R17 (`r01-r17-v1`) | 100% agreement (17/17); ~210 tokens (-18.5% chars) saved per `/work` invocation | 0 critical misses; 0 under-routing of sensitive/irreversible tasks | accepted (promoted to V1 bundle in `4da2510`) |
+| EXP-02 | Operational prompt layout optimization ([CLAUDE.md](../../CLAUDE.md), [GEMINI.md](../../GEMINI.md)) | `71b1890` / `b4d3197` | Protocol mandates (`protocol-mandates-v1`) | 214 tokens (-31.2% chars) saved per turn; fixed overhead reduced | 100% retention of all 7 operational mandates; pointer block preserved | accepted (promoted to V1 bundle in `8e8f2fe`) |
+| EXP-03 | Circuit-breaker recovery policy ("two failures without new info -> re-plan") ([tools/eval/evaluate_circuit_breaker.ts](../../tools/eval/evaluate_circuit_breaker.ts)) | `4a13a82` / `f66db94` | Recovery suite (`circuit-breaker-v1`, 12 scenarios) | 100% unproductive retries eliminated (5 -> 0); 100% verified success on transient/progressive failures | 0 premature stops; 0 critical misses; useful progress preserved | accepted (promoted to V1 bundle in `8e8f2fe`) |
+| EXP-04 | Calibrated independent reviewer trigger policy & deterministic audit gate ([tools/eval/evaluate_reviewer_trigger.ts](../../tools/eval/evaluate_reviewer_trigger.ts)) | `f66db94` / `2f62098` | Reviewer trigger suite (`reviewer-trigger-v1`, 14 scenarios) | 100% high-risk defects caught (9/9 vs 0/9 baseline); 14k tokens saved on simple tasks without unneeded reviews | Deterministic audit catches defects under hallucinated agent consensus; 0 false agreement escapes; 0 critical misses | accepted (promoted to V1 bundle in `8e8f2fe`) |
 
-Do not run a broad search over all prompts/skills simultaneously. One experiment should teach us something interpretable.
+## Round 2 candidate experiments
+
+Building upon the foundations of Round 1, Round 2 investigates concurrency scaling and real-time observability calibration:
+
+### EXP-05: Concurrency Batch Optimization & Dynamic Worktree Isolation
+
+- **Target artifact:** Orchestration dispatcher and task graph scheduler (`.agents/skills/orchestrate/` and git worktree isolation harness).
+- **Hypothesis:** Dynamic git worktree isolation with batched wave dispatch enables concurrent multi-subagent execution without git index lock collisions or working tree corruption, achieving >= 2x wall-clock throughput on independent task graphs while maintaining 100% gate verification.
+- **Evaluation criteria:**
+  - Index lock contention rate (target: 0 lock contention errors across concurrent waves).
+  - Task isolation integrity: subagents commit strictly to dedicated branches without cross-contamination.
+  - Wall-clock execution time reduction vs serialized wave dispatch.
+  - Guardrail: zero git state corruption, zero scope leak across task boundaries.
+
+### EXP-06: Telemetry Token Accounting & Cost Drift Calibration
+
+- **Target artifact:** Telemetry collectors and token usage monitors ([tools/eval/collect_usage.ts](../../tools/eval/collect_usage.ts) and OTel/CLI sanitizers).
+- **Hypothesis:** Real-time multi-host token usage measurement with per-task cost drift calibration prevents session cost overruns in long-running SDLC tasks, detecting context bloat within 1 turn of exceeding budget thresholds.
+- **Evaluation criteria:**
+  - Token accounting accuracy across Claude Code (`/usage`, OTel) and Antigravity CLI (`agy`, status line).
+  - Cost drift detection latency: alert triggered within <= 1 turn of exceeding budget limits.
+  - Privacy gate compliance: zero leakage of user prompts, emails, or credentials in local metric sinks.
+  - Guardrail: no interruption of in-flight verified tasks unless hard ceiling is exceeded.
 
 ## Required experiment report
 
