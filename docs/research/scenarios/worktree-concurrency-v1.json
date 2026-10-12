@@ -1,0 +1,230 @@
+[
+  {
+    "id": "WTC-01",
+    "name": "Independent parallel tasks with isolated files",
+    "category": "independent_parallel",
+    "description": "Two workers modify completely different non-overlapping files in separate worktrees without index contention.",
+    "worker_count": 2,
+    "shared_directory": false,
+    "lock_contention_expected_in_shared": true,
+    "expected_result": "pass",
+    "workers": [
+      {
+        "id": "worker-1",
+        "branch": "worker/feat-docs-1",
+        "file_changes": [
+          { "path": "docs/guide1.md", "content": "# Guide 1\nContent from worker 1\n" }
+        ],
+        "command": "bun test --version"
+      },
+      {
+        "id": "worker-2",
+        "branch": "worker/feat-docs-2",
+        "file_changes": [
+          { "path": "docs/guide2.md", "content": "# Guide 2\nContent from worker 2\n" }
+        ],
+        "command": "bun test --version"
+      }
+    ]
+  },
+  {
+    "id": "WTC-02",
+    "name": "Concurrent edits in same directory without filename collision",
+    "category": "shared_directory_disjoint_files",
+    "description": "Multiple workers modify separate files inside the same directory (e.g. tools/gate/), isolated by detached worktrees.",
+    "worker_count": 3,
+    "shared_directory": true,
+    "lock_contention_expected_in_shared": true,
+    "expected_result": "pass",
+    "workers": [
+      {
+        "id": "worker-a",
+        "branch": "worker/gate-feature-a",
+        "file_changes": [
+          { "path": "tools/gate/helper-a.ts", "content": "export const a = 'alpha';\n" }
+        ]
+      },
+      {
+        "id": "worker-b",
+        "branch": "worker/gate-feature-b",
+        "file_changes": [
+          { "path": "tools/gate/helper-b.ts", "content": "export const b = 'beta';\n" }
+        ]
+      },
+      {
+        "id": "worker-c",
+        "branch": "worker/gate-feature-c",
+        "file_changes": [
+          { "path": "tools/gate/helper-c.ts", "content": "export const c = 'gamma';\n" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "WTC-03",
+    "name": "Simultaneous commit lock pressure in shared repo vs isolated worktree",
+    "category": "index_lock_contention",
+    "description": "Simultaneous git write/commit operations in a single worktree produce .git/index.lock contention; detached worktrees have independent indices.",
+    "worker_count": 4,
+    "shared_directory": false,
+    "lock_contention_expected_in_shared": true,
+    "expected_result": "pass",
+    "workers": [
+      {
+        "id": "worker-lock-1",
+        "branch": "worker/lock-1",
+        "file_changes": [{ "path": "src/module1.ts", "content": "export const m1 = 1;\n" }]
+      },
+      {
+        "id": "worker-lock-2",
+        "branch": "worker/lock-2",
+        "file_changes": [{ "path": "src/module2.ts", "content": "export const m2 = 2;\n" }]
+      },
+      {
+        "id": "worker-lock-3",
+        "branch": "worker/lock-3",
+        "file_changes": [{ "path": "src/module3.ts", "content": "export const m3 = 3;\n" }]
+      },
+      {
+        "id": "worker-lock-4",
+        "branch": "worker/lock-4",
+        "file_changes": [{ "path": "src/module4.ts", "content": "export const m4 = 4;\n" }]
+      }
+    ]
+  },
+  {
+    "id": "WTC-04",
+    "name": "Sequential hermetic merge to primary branch",
+    "category": "hermetic_merge",
+    "description": "Worktree workers complete independent diffs; merge engine merges each branch sequentially onto main without conflict.",
+    "worker_count": 2,
+    "shared_directory": false,
+    "lock_contention_expected_in_shared": true,
+    "expected_result": "pass",
+    "workers": [
+      {
+        "id": "worker-merge-1",
+        "branch": "worker/merge-feature-1",
+        "file_changes": [{ "path": "features/feature1.txt", "content": "feature 1 completed\n" }]
+      },
+      {
+        "id": "worker-merge-2",
+        "branch": "worker/merge-feature-2",
+        "file_changes": [{ "path": "features/feature2.txt", "content": "feature 2 completed\n" }]
+      }
+    ]
+  },
+  {
+    "id": "WTC-05",
+    "name": "Failed worker command triggers complete worktree cleanup",
+    "category": "fault_cleanup",
+    "description": "Worker command fails with non-zero exit code; worktree runner captures error and guarantees complete ephemeral worktree removal.",
+    "worker_count": 1,
+    "shared_directory": false,
+    "lock_contention_expected_in_shared": false,
+    "expected_result": "fail",
+    "workers": [
+      {
+        "id": "worker-fail",
+        "branch": "worker/failing-command",
+        "file_changes": [{ "path": "temp/test.txt", "content": "test" }],
+        "command": "sh -c 'exit 42'"
+      }
+    ]
+  },
+  {
+    "id": "WTC-06",
+    "name": "Untracked artifacts in worktree cleaned up with force",
+    "category": "force_cleanup",
+    "description": "Worker creates untracked and uncommitted files in worktree; runner forcefully purges worktree without dirtying main repo.",
+    "worker_count": 1,
+    "shared_directory": false,
+    "lock_contention_expected_in_shared": false,
+    "expected_result": "pass",
+    "workers": [
+      {
+        "id": "worker-untracked",
+        "branch": "worker/dirty-worktree",
+        "file_changes": [
+          { "path": "scratch/untracked.log", "content": "temporary log data" },
+          { "path": "scratch/temp.tmp", "content": "binary-like junk" }
+        ],
+        "skip_commit": true
+      }
+    ]
+  },
+  {
+    "id": "WTC-07",
+    "name": "High-concurrency worker wave (5 parallel workers)",
+    "category": "concurrency_scaling",
+    "description": "5 workers spin up simultaneously, run isolated workloads, and measure setup overhead under concurrency.",
+    "worker_count": 5,
+    "shared_directory": false,
+    "lock_contention_expected_in_shared": true,
+    "expected_result": "pass",
+    "workers": [
+      { "id": "scale-1", "branch": "scale/1", "file_changes": [{ "path": "data/w1.json", "content": "{ \"id\": 1 }" }] },
+      { "id": "scale-2", "branch": "scale/2", "file_changes": [{ "path": "data/w2.json", "content": "{ \"id\": 2 }" }] },
+      { "id": "scale-3", "branch": "scale/3", "file_changes": [{ "path": "data/w3.json", "content": "{ \"id\": 3 }" }] },
+      { "id": "scale-4", "branch": "scale/4", "file_changes": [{ "path": "data/w4.json", "content": "{ \"id\": 4 }" }] },
+      { "id": "scale-5", "branch": "scale/5", "file_changes": [{ "path": "data/w5.json", "content": "{ \"id\": 5 }" }] }
+    ]
+  },
+  {
+    "id": "WTC-08",
+    "name": "Conflicting identical file edit detection",
+    "category": "merge_conflict_detection",
+    "description": "Two workers modify the exact same lines of the same file in separate worktrees; merge engine detects conflict cleanly without corrupting main.",
+    "worker_count": 2,
+    "shared_directory": true,
+    "lock_contention_expected_in_shared": true,
+    "expected_result": "conflict",
+    "workers": [
+      {
+        "id": "conflict-worker-1",
+        "branch": "conflict/w1",
+        "file_changes": [{ "path": "shared/file.txt", "content": "version A of file\n" }]
+      },
+      {
+        "id": "conflict-worker-2",
+        "branch": "conflict/w2",
+        "file_changes": [{ "path": "shared/file.txt", "content": "version B of file\n" }]
+      }
+    ]
+  },
+  {
+    "id": "WTC-09",
+    "name": "Worktree runner sandbox environment isolation",
+    "category": "env_isolation",
+    "description": "Worker executes custom command with custom env vars inside worktree without leaking environment into main runner process.",
+    "worker_count": 1,
+    "shared_directory": false,
+    "lock_contention_expected_in_shared": false,
+    "expected_result": "pass",
+    "workers": [
+      {
+        "id": "env-worker",
+        "branch": "worker/env-check",
+        "env": { "SUBAGENT_WORKER_ID": "subagent-alpha" },
+        "command": "sh -c 'test \"$SUBAGENT_WORKER_ID\" = \"subagent-alpha\"'"
+      }
+    ]
+  },
+  {
+    "id": "WTC-10",
+    "name": "Crash recovery when worktree directory is abruptly modified or locked",
+    "category": "resilient_cleanup",
+    "description": "Cleanup handles edge cases where worktree branches or directories have lingering locks or missing dirs gracefully.",
+    "worker_count": 1,
+    "shared_directory": false,
+    "lock_contention_expected_in_shared": false,
+    "expected_result": "pass",
+    "workers": [
+      {
+        "id": "crash-worker",
+        "branch": "worker/crash-resilience",
+        "file_changes": [{ "path": "crash/file.txt", "content": "resilience check" }]
+      }
+    ]
+  }
+]
