@@ -65,6 +65,7 @@ Promote accepted autoresearch findings (EXP-02, EXP-03, EXP-04) into the V1 prod
 ## Outcome
 
 Autoresearch findings EXP-02, EXP-03, and EXP-04 have been promoted to the V1 product bundle:
+
 - `records/autoresearch-ledger.tsv` updated marking EXP-02, EXP-03, and EXP-04 owner decisions as accepted.
 - `.claude/skills/work/SKILL.md` and `.agents/skills/work/SKILL.md` updated with the circuit-breaker recovery policy and risk-calibrated deterministic verification audit rules, citing delivered contract copies.
 - Manifest `manifest.json` regenerated following the two-commit bundle provenance protocol and proven via `manifest.mjs --check` and `bundle.test.ts`.
