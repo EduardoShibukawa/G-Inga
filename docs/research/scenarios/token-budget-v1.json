@@ -1,0 +1,296 @@
+[
+  {
+    "id": "TB-01",
+    "name": "Efficient single-turn light task (Antigravity)",
+    "host": "antigravity",
+    "ceremony": "light",
+    "description": "Quick doc typo fix completed in 2 turns with tight context and high cache hit.",
+    "verified_success": true,
+    "expected_verdict": "pass",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 2800,
+      "tokens_output": 240,
+      "cache_read_tokens": 1800,
+      "cache_write_tokens": 0,
+      "total_tokens": 3040,
+      "cache_read_ratio": 0.3719
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Fix typo in docs/README.md\",\"input_tokens\":1200,\"cache_read_tokens\":800,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"I will fix the typo.\",\"input_tokens\":1600,\"cache_read_tokens\":1000,\"output_tokens\":240,\"tool_calls\":[{\"name\":\"replace_file_content\",\"args\":{}}]}"
+    ]
+  },
+  {
+    "id": "TB-02",
+    "name": "Standard feature implementation within budget (Antigravity)",
+    "host": "antigravity",
+    "ceremony": "standard",
+    "description": "Standard SDLC ticket requiring test and code modifications completed in 6 turns under 25k ceiling.",
+    "verified_success": true,
+    "expected_verdict": "pass",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 14200,
+      "tokens_output": 1850,
+      "cache_read_tokens": 9200,
+      "cache_write_tokens": 0,
+      "total_tokens": 16050,
+      "cache_read_ratio": 0.3644
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Implement token accounting evaluator\",\"input_tokens\":2000,\"cache_read_tokens\":1000,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Analyzing requirements.\",\"input_tokens\":2800,\"cache_read_tokens\":1800,\"output_tokens\":350,\"tool_calls\":[{\"name\":\"view_file\",\"args\":{}}]}",
+      "{\"step_index\":3,\"source\":\"MODEL\",\"type\":\"GENERIC\",\"content\":\"File contents viewed.\",\"input_tokens\":0,\"cache_read_tokens\":0,\"output_tokens\":0}",
+      "{\"step_index\":4,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Writing code.\",\"input_tokens\":4100,\"cache_read_tokens\":2600,\"output_tokens\":650,\"tool_calls\":[{\"name\":\"write_to_file\",\"args\":{}}]}",
+      "{\"step_index\":5,\"source\":\"MODEL\",\"type\":\"GENERIC\",\"content\":\"File written.\",\"input_tokens\":0,\"cache_read_tokens\":0,\"output_tokens\":0}",
+      "{\"step_index\":6,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Running tests.\",\"input_tokens\":5300,\"cache_read_tokens\":3800,\"output_tokens\":850,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{}}]}"
+    ]
+  },
+  {
+    "id": "TB-03",
+    "name": "Standard task approaching budget threshold warning (Antigravity)",
+    "host": "antigravity",
+    "ceremony": "standard",
+    "description": "Standard task with multiple test-and-fix iterations reaching 85% of standard budget (21.5k / 25k).",
+    "verified_success": true,
+    "expected_verdict": "warn",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 21600,
+      "tokens_output": 2900,
+      "cache_read_tokens": 12500,
+      "cache_write_tokens": 0,
+      "total_tokens": 24500,
+      "cache_read_ratio": 0.3378
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Refactor complex pipeline\",\"input_tokens\":3000,\"cache_read_tokens\":1500,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Inspecting pipeline\",\"input_tokens\":4500,\"cache_read_tokens\":2500,\"output_tokens\":600,\"tool_calls\":[{\"name\":\"view_file\",\"args\":{}}]}",
+      "{\"step_index\":3,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Applying changes\",\"input_tokens\":6200,\"cache_read_tokens\":3500,\"output_tokens\":1100,\"tool_calls\":[{\"name\":\"write_to_file\",\"args\":{}}]}",
+      "{\"step_index\":4,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Fixing edge cases\",\"input_tokens\":7900,\"cache_read_tokens\":5000,\"output_tokens\":1200,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{}}]}"
+    ]
+  },
+  {
+    "id": "TB-04",
+    "name": "Light task budget overrun failure (Antigravity)",
+    "host": "antigravity",
+    "ceremony": "light",
+    "description": "Light ceremony task (ceiling 5,000) that inflates to 6,800 tokens due to unexpected multi-step exploration.",
+    "verified_success": false,
+    "expected_verdict": "fail",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 5800,
+      "tokens_output": 1000,
+      "cache_read_tokens": 3200,
+      "cache_write_tokens": 0,
+      "total_tokens": 6800,
+      "cache_read_ratio": 0.32
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Quick comment edit in config\",\"input_tokens\":1500,\"cache_read_tokens\":500,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Reading config\",\"input_tokens\":2000,\"cache_read_tokens\":1200,\"output_tokens\":300,\"tool_calls\":[{\"name\":\"view_file\",\"args\":{}}]}",
+      "{\"step_index\":3,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Searching related settings\",\"input_tokens\":2300,\"cache_read_tokens\":1500,\"output_tokens\":700,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{}}]}"
+    ]
+  },
+  {
+    "id": "TB-05",
+    "name": "Stagnant retry loop exceeding budget (Antigravity)",
+    "host": "antigravity",
+    "ceremony": "standard",
+    "description": "Runaway unproductive loop repeatedly executing failing commands without progress, blowing through 28,000 tokens.",
+    "verified_success": false,
+    "expected_verdict": "fail",
+    "is_loop": true,
+    "loop_fingerprint": "run_command:bun test",
+    "expected_metrics": {
+      "tokens_input": 26800,
+      "tokens_output": 3500,
+      "cache_read_tokens": 8000,
+      "cache_write_tokens": 0,
+      "total_tokens": 30300,
+      "cache_read_ratio": 0.2089
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Fix failing test\",\"input_tokens\":2000,\"cache_read_tokens\":500,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Running test attempt 1\",\"input_tokens\":3800,\"cache_read_tokens\":1200,\"output_tokens\":500,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{\"CommandLine\":\"bun test\"}}]}",
+      "{\"step_index\":3,\"source\":\"MODEL\",\"type\":\"GENERIC\",\"content\":\"Test failed: Error 123\",\"input_tokens\":0,\"cache_read_tokens\":0,\"output_tokens\":0}",
+      "{\"step_index\":4,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Running test attempt 2\",\"input_tokens\":5200,\"cache_read_tokens\":1800,\"output_tokens\":600,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{\"CommandLine\":\"bun test\"}}]}",
+      "{\"step_index\":5,\"source\":\"MODEL\",\"type\":\"GENERIC\",\"content\":\"Test failed: Error 123\",\"input_tokens\":0,\"cache_read_tokens\":0,\"output_tokens\":0}",
+      "{\"step_index\":6,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Running test attempt 3\",\"input_tokens\":6800,\"cache_read_tokens\":2100,\"output_tokens\":750,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{\"CommandLine\":\"bun test\"}}]}",
+      "{\"step_index\":7,\"source\":\"MODEL\",\"type\":\"GENERIC\",\"content\":\"Test failed: Error 123\",\"input_tokens\":0,\"cache_read_tokens\":0,\"output_tokens\":0}",
+      "{\"step_index\":8,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Running test attempt 4\",\"input_tokens\":9000,\"cache_read_tokens\":2400,\"output_tokens\":1650,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{\"CommandLine\":\"bun test\"}}]}"
+    ]
+  },
+  {
+    "id": "TB-06",
+    "name": "Unnecessary re-read context inflation loop (Antigravity)",
+    "host": "antigravity",
+    "ceremony": "standard",
+    "description": "Agent repeatedly views the identical large file in a loop across 5 turns, causing asymptotic context bloat and early trip.",
+    "verified_success": false,
+    "expected_verdict": "fail",
+    "is_loop": true,
+    "loop_fingerprint": "view_file:large-file.ts",
+    "expected_metrics": {
+      "tokens_input": 25000,
+      "tokens_output": 2800,
+      "cache_read_tokens": 13000,
+      "cache_write_tokens": 0,
+      "total_tokens": 27800,
+      "cache_read_ratio": 0.3186
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Audit large file\",\"input_tokens\":2000,\"cache_read_tokens\":1000,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Viewing large-file.ts round 1\",\"input_tokens\":4000,\"cache_read_tokens\":2000,\"output_tokens\":400,\"tool_calls\":[{\"name\":\"view_file\",\"args\":{\"AbsolutePath\":\"/path/large-file.ts\"}}]}",
+      "{\"step_index\":3,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Viewing large-file.ts round 2\",\"input_tokens\":5500,\"cache_read_tokens\":3000,\"output_tokens\":500,\"tool_calls\":[{\"name\":\"view_file\",\"args\":{\"AbsolutePath\":\"/path/large-file.ts\"}}]}",
+      "{\"step_index\":4,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Viewing large-file.ts round 3\",\"input_tokens\":7000,\"cache_read_tokens\":4000,\"output_tokens\":600,\"tool_calls\":[{\"name\":\"view_file\",\"args\":{\"AbsolutePath\":\"/path/large-file.ts\"}}]}",
+      "{\"step_index\":5,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Viewing large-file.ts round 4\",\"input_tokens\":6500,\"cache_read_tokens\":3000,\"output_tokens\":1300,\"tool_calls\":[{\"name\":\"view_file\",\"args\":{\"AbsolutePath\":\"/path/large-file.ts\"}}]}"
+    ]
+  },
+  {
+    "id": "TB-07",
+    "name": "Claude Code standard session under budget (OTel / API requests)",
+    "host": "claude-code",
+    "ceremony": "standard",
+    "description": "Claude Code session parsed via structured JSON events, cleanly within 25k ceiling.",
+    "verified_success": true,
+    "expected_verdict": "pass",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 8200,
+      "tokens_output": 1400,
+      "cache_read_tokens": 4500,
+      "cache_write_tokens": 1200,
+      "total_tokens": 15300,
+      "cache_read_ratio": 0.2941
+    },
+    "transcript_lines": [
+      "{\"event\":\"api_request\",\"input_tokens\":3000,\"output_tokens\":500,\"cache_read_tokens\":1500,\"cache_creation_tokens\":400,\"cost_usd\":0.012,\"session_id\":\"session-cc-01\"}",
+      "{\"event\":\"api_request\",\"input_tokens\":5200,\"output_tokens\":900,\"cache_read_tokens\":3000,\"cache_creation_tokens\":800,\"cost_usd\":0.025,\"session_id\":\"session-cc-01\"}"
+    ]
+  },
+  {
+    "id": "TB-08",
+    "name": "Claude Code OTel metric counter session warning drift",
+    "host": "claude-code",
+    "ceremony": "standard",
+    "description": "Claude Code session with OTel metric events reaching 22,000 total tokens (88% of standard ceiling).",
+    "verified_success": true,
+    "expected_verdict": "warn",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 12000,
+      "tokens_output": 2000,
+      "cache_read_tokens": 6000,
+      "cache_write_tokens": 2000,
+      "total_tokens": 22000,
+      "cache_read_ratio": 0.2727
+    },
+    "transcript_lines": [
+      "{\"name\":\"claude_code.token.usage\",\"attributes\":{\"type\":\"input\"},\"value\":12000,\"session_id\":\"session-cc-02\"}",
+      "{\"name\":\"claude_code.token.usage\",\"attributes\":{\"type\":\"output\"},\"value\":2000,\"session_id\":\"session-cc-02\"}",
+      "{\"name\":\"claude_code.token.usage\",\"attributes\":{\"type\":\"cacheRead\"},\"value\":6000,\"session_id\":\"session-cc-02\"}",
+      "{\"name\":\"claude_code.token.usage\",\"attributes\":{\"type\":\"cacheCreation\"},\"value\":2000,\"session_id\":\"session-cc-02\"}"
+    ]
+  },
+  {
+    "id": "TB-09",
+    "name": "Claude Code runaway tool repetition loop (Fail)",
+    "host": "claude-code",
+    "ceremony": "standard",
+    "description": "Claude Code session trapped in repetitive API calls exceeding 25k budget.",
+    "verified_success": false,
+    "expected_verdict": "fail",
+    "is_loop": true,
+    "loop_fingerprint": "bash:npm test",
+    "expected_metrics": {
+      "tokens_input": 21000,
+      "tokens_output": 5500,
+      "cache_read_tokens": 4000,
+      "cache_write_tokens": 1500,
+      "total_tokens": 32000,
+      "cache_read_ratio": 0.125
+    },
+    "transcript_lines": [
+      "{\"event\":\"api_request\",\"tool_call\":\"bash:npm test\",\"input_tokens\":5000,\"output_tokens\":1200,\"cache_read_tokens\":1000,\"cache_creation_tokens\":300,\"session_id\":\"session-cc-03\"}",
+      "{\"event\":\"api_request\",\"tool_call\":\"bash:npm test\",\"input_tokens\":5000,\"output_tokens\":1300,\"cache_read_tokens\":1000,\"cache_creation_tokens\":400,\"session_id\":\"session-cc-03\"}",
+      "{\"event\":\"api_request\",\"tool_call\":\"bash:npm test\",\"input_tokens\":5500,\"output_tokens\":1400,\"cache_read_tokens\":1000,\"cache_creation_tokens\":400,\"session_id\":\"session-cc-03\"}",
+      "{\"event\":\"api_request\",\"tool_call\":\"bash:npm test\",\"input_tokens\":5500,\"output_tokens\":1600,\"cache_read_tokens\":1000,\"cache_creation_tokens\":400,\"session_id\":\"session-cc-03\"}"
+    ]
+  },
+  {
+    "id": "TB-10",
+    "name": "Nested subagent delegation wave within heavy ceremony ceiling (Antigravity)",
+    "host": "antigravity",
+    "ceremony": "heavy",
+    "description": "Complex multi-subagent orchestration staying safely inside heavy ceiling (<60k tokens) at 44.5k.",
+    "verified_success": true,
+    "expected_verdict": "pass",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 38000,
+      "tokens_output": 6500,
+      "cache_read_tokens": 28000,
+      "cache_write_tokens": 0,
+      "total_tokens": 44500,
+      "cache_read_ratio": 0.3862
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Architectural refactor and ADR update\",\"input_tokens\":6000,\"cache_read_tokens\":4000,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Spawning subagent 1\",\"input_tokens\":10000,\"cache_read_tokens\":7000,\"output_tokens\":1500,\"tool_calls\":[{\"name\":\"invoke_subagent\",\"args\":{\"Role\":\"Architect\"}}]}",
+      "{\"step_index\":3,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Spawning subagent 2\",\"input_tokens\":11000,\"cache_read_tokens\":8000,\"output_tokens\":2000,\"tool_calls\":[{\"name\":\"invoke_subagent\",\"args\":{\"Role\":\"Coder\"}}]}",
+      "{\"step_index\":4,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Integrating subagent outcomes\",\"input_tokens\":11000,\"cache_read_tokens\":9000,\"output_tokens\":3000,\"tool_calls\":[{\"name\":\"write_to_file\",\"args\":{}}]}"
+    ]
+  },
+  {
+    "id": "TB-11",
+    "name": "Heavy ceremony exceeding ceiling failure (Antigravity)",
+    "host": "antigravity",
+    "ceremony": "heavy",
+    "description": "Runaway heavy ceremony that crosses 60,000 token limit to 67,000 tokens.",
+    "verified_success": false,
+    "expected_verdict": "fail",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 57000,
+      "tokens_output": 10000,
+      "cache_read_tokens": 30000,
+      "cache_write_tokens": 0,
+      "total_tokens": 67000,
+      "cache_read_ratio": 0.3093
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Massive migration across 50 files\",\"input_tokens\":15000,\"cache_read_tokens\":5000,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Executing phase 1\",\"input_tokens\":20000,\"cache_read_tokens\":10000,\"output_tokens\":4000,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{}}]}",
+      "{\"step_index\":3,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Executing phase 2\",\"input_tokens\":22000,\"cache_read_tokens\":15000,\"output_tokens\":6000,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{}}]}"
+    ]
+  },
+  {
+    "id": "TB-12",
+    "name": "Legitimate complex multi-step standard task with zero premature stop",
+    "host": "antigravity",
+    "ceremony": "standard",
+    "description": "Legitimate complex task taking 8 turns and 23.5k tokens (<25k), with productive steps, confirming zero premature stop.",
+    "verified_success": true,
+    "expected_verdict": "warn",
+    "is_loop": false,
+    "expected_metrics": {
+      "tokens_input": 20500,
+      "tokens_output": 3000,
+      "cache_read_tokens": 15000,
+      "cache_write_tokens": 0,
+      "total_tokens": 23500,
+      "cache_read_ratio": 0.3896
+    },
+    "transcript_lines": [
+      "{\"step_index\":1,\"source\":\"USER_EXPLICIT\",\"type\":\"USER_INPUT\",\"content\":\"Step 1 plan\",\"input_tokens\":2000,\"cache_read_tokens\":1000,\"output_tokens\":0}",
+      "{\"step_index\":2,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Step 2 research\",\"input_tokens\":3500,\"cache_read_tokens\":2000,\"output_tokens\":400,\"tool_calls\":[{\"name\":\"view_file\",\"args\":{\"AbsolutePath\":\"a.ts\"}}]}",
+      "{\"step_index\":3,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Step 3 edit a\",\"input_tokens\":4500,\"cache_read_tokens\":3000,\"output_tokens\":600,\"tool_calls\":[{\"name\":\"write_to_file\",\"args\":{\"TargetFile\":\"a.ts\"}}]}",
+      "{\"step_index\":4,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Step 4 test a\",\"input_tokens\":4500,\"cache_read_tokens\":3500,\"output_tokens\":400,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{\"CommandLine\":\"bun test a\"}}]}",
+      "{\"step_index\":5,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Step 5 edit b\",\"input_tokens\":3000,\"cache_read_tokens\":2500,\"output_tokens\":700,\"tool_calls\":[{\"name\":\"write_to_file\",\"args\":{\"TargetFile\":\"b.ts\"}}]}",
+      "{\"step_index\":6,\"source\":\"MODEL\",\"type\":\"PLANNER_RESPONSE\",\"content\":\"Step 6 test b\",\"input_tokens\":3000,\"cache_read_tokens\":3000,\"output_tokens\":900,\"tool_calls\":[{\"name\":\"run_command\",\"args\":{\"CommandLine\":\"bun test b\"}}]}"
+    ]
+  }
+]
