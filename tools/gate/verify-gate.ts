@@ -19,6 +19,7 @@ import { resolve } from "node:path";
 
 interface GateConfig {
   allowedScope?: string[];
+  filesOverride?: string[];
   command?: string;
   maxAttempts?: number;
   currentAttempt?: number;
@@ -36,6 +37,9 @@ function parseArgs(): GateConfig {
     if (args[i] === "--scope" && args[i + 1]) {
       config.allowedScope = args[i + 1].split(",").map((s) => s.trim());
       i++;
+    } else if (args[i] === "--files" && args[i + 1]) {
+      config.filesOverride = args[i + 1].split(",").map((s) => s.trim());
+      i++;
     } else if (args[i] === "--cmd" && args[i + 1]) {
       config.command = args[i + 1];
       i++;
@@ -51,23 +55,27 @@ function parseArgs(): GateConfig {
   return config;
 }
 
-export function evaluateScope(allowedScope: string[]): { pass: boolean; violations: string[] } {
+export function evaluateScope(allowedScope: string[], filesOverride?: string[]): { pass: boolean; violations: string[] } {
   if (!allowedScope || allowedScope.length === 0) {
     return { pass: true, violations: [] };
   }
 
-  const gitDiff = spawnSync("git", ["diff", "--name-only", "HEAD"], { encoding: "utf8" });
-  const gitUntracked = spawnSync("git", ["status", "--porcelain"], { encoding: "utf8" });
-
   const touchedFiles = new Set<string>();
-  if (gitDiff.stdout) {
-    gitDiff.stdout.split("\n").map((f) => f.trim()).filter(Boolean).forEach((f) => touchedFiles.add(f));
-  }
-  if (gitUntracked.stdout) {
-    gitUntracked.stdout.split("\n").forEach((line) => {
-      const match = line.match(/^(\?\?| A|M )\s*(.+)$/);
-      if (match) touchedFiles.add(match[2].trim());
-    });
+  if (filesOverride !== undefined) {
+    filesOverride.forEach((f) => touchedFiles.add(f));
+  } else {
+    const gitDiff = spawnSync("git", ["diff", "--name-only", "HEAD"], { encoding: "utf8" });
+    const gitUntracked = spawnSync("git", ["status", "--porcelain"], { encoding: "utf8" });
+
+    if (gitDiff.stdout) {
+      gitDiff.stdout.split("\n").map((f) => f.trim()).filter(Boolean).forEach((f) => touchedFiles.add(f));
+    }
+    if (gitUntracked.stdout) {
+      gitUntracked.stdout.split("\n").forEach((line) => {
+        const match = line.match(/^(\?\?| A|M )\s*(.+)$/);
+        if (match) touchedFiles.add(match[2].trim());
+      });
+    }
   }
 
   const violations: string[] = [];
@@ -99,7 +107,7 @@ export function evaluateGate(): number {
 
   // Layer 1 Check: Scope & Diff Gate
   if (config.allowedScope && config.allowedScope.length > 0) {
-    const scopeRes = evaluateScope(config.allowedScope);
+    const scopeRes = evaluateScope(config.allowedScope, config.filesOverride);
     if (!scopeRes.pass) {
       console.error(`[OODA Gate L1 Scope] FAIL: Touched files outside declared scope:`);
       scopeRes.violations.forEach((v) => console.error(`  - ${v}`));
