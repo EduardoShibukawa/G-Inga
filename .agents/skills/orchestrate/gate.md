@@ -35,6 +35,9 @@ Before executing test suites or reading reports, the orchestrator inspects the p
 ```bash
 git status --porcelain
 git diff --name-only HEAD
+
+# Check concurrent declared scopes across subagents (CLI)
+bun tools/gate/verify-gate.ts --declared-scopes '{"worker-1": ["tools/gate/"], "worker-2": ["tasks/"]}'
 ```
 
 ### Invariants & Evaluation
@@ -42,18 +45,42 @@ git diff --name-only HEAD
 1. **Scope Boundary:** Every modified, added, or deleted path MUST match the declared `In scope:` patterns of the dispatched ticket.
 2. **Untracked Leakage:** No untracked scratch files, dumps, `.DS_Store`, or node artifacts outside `.gitignore`.
 3. **Secret Scan:** No staged or unstaged diff contains patterns matching API keys, `.env` files, or access tokens.
+4. **Concurrent Scope Isolation:** When dispatching multiple subagents in parallel or evaluating concurrent batch runs, all declared file boundaries MUST be mutually disjoint. Overlapping files, directory prefixes, or wildcard patterns across workers are deterministically detected via `detectScopeCollisions`:
+   - Exact file overlaps (e.g. `src/index.ts` vs `src/index.ts`).
+   - Directory prefix containment (e.g. `tools/gate/` vs `tools/gate/verify-gate.ts`).
+   - Wildcard glob matches (e.g. `tools/gate/*` vs `tools/gate/verify-gate.ts`).
+   - Relative path normalization (`./path` vs `path`).
 
-### Rollback Procedure on Violation
+### Module API: `detectScopeCollisions`
 
-If a subagent touches files outside its authorized boundary:
+```typescript
+import { detectScopeCollisions } from "tools/gate/verify-gate.ts";
+
+const result = detectScopeCollisions({
+  "worker-1": ["tools/gate/verify-gate.ts"],
+  "worker-2": ["tools/gate/verify-gate.test.ts"],
+});
+
+// result:
+// {
+//   hasCollisions: false,
+//   collisions: {},
+//   byWorker: {},
+//   byFile: {}
+// }
+```
+
+### Rollback & Collision Procedure
+
+If concurrent scope collisions are detected prior to dispatch, the orchestrator serializes conflicting tasks. If detected during gate evaluation:
 
 ```bash
 git checkout HEAD -- <unauthorized-file>
 git clean -fd <unauthorized-directory>
 ```
 
-The ticket evaluation for Layer 1 is immediately marked `fail` with the message:
-`Gate 1 violation: Touched out-of-scope files: [<file1>, <file2>]`.
+The ticket evaluation for Layer 1 is immediately marked `fail` (Exit Code 1) with:
+`[OODA Gate L1 Scope Collision] FAIL: Scope collision detected between concurrent workers: <details>`.
 
 ---
 

@@ -1,0 +1,394 @@
+[
+  {
+    "id": "CB-01",
+    "name": "Transient network timeout on dependency install",
+    "category": "transient_failure",
+    "description": "First attempt fails due to registry socket hangup; second retry succeeds with zero code changes.",
+    "expected_action": "resolve",
+    "useful_progress_demonstrated": false,
+    "guardrail": "allow_transient_retry",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun install",
+        "status": "fail",
+        "error_fingerprint": "ERR_SOCKET_TIMEOUT_REGISTRY",
+        "error_message": "FetchError: socket hang up fetching https://registry.npmjs.org/@types/node",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Transient socket hang up from external registry"
+      },
+      {
+        "attempt": 2,
+        "command": "bun install",
+        "status": "pass",
+        "error_fingerprint": null,
+        "error_message": null,
+        "has_new_info": true,
+        "useful_progress": true,
+        "diagnostic": "Installed 246 packages successfully on retry"
+      }
+    ]
+  },
+  {
+    "id": "CB-02",
+    "name": "Repeated identical syntax error without changes",
+    "category": "stagnant_failure",
+    "description": "First attempt fails with syntax error on line 15; second attempt reruns without edits producing identical failure and zero new info.",
+    "expected_action": "replan",
+    "useful_progress_demonstrated": false,
+    "guardrail": "trip_circuit_breaker",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun run build",
+        "status": "fail",
+        "error_fingerprint": "SYNTAX_ERR_LINE_15",
+        "error_message": "SyntaxError: Unexpected token '}' at src/index.ts:15:3",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Initial build failure identifying syntax error"
+      },
+      {
+        "attempt": 2,
+        "command": "bun run build",
+        "status": "fail",
+        "error_fingerprint": "SYNTAX_ERR_LINE_15",
+        "error_message": "SyntaxError: Unexpected token '}' at src/index.ts:15:3",
+        "has_new_info": false,
+        "useful_progress": false,
+        "diagnostic": "Unchanged error output; no new diagnostics or modifications"
+      }
+    ]
+  },
+  {
+    "id": "CB-03",
+    "name": "Progressive compilation error resolution",
+    "category": "progressive_failure",
+    "description": "First attempt fails with 4 TypeScript errors; second attempt fixes syntax/imports and reveals 1 narrow type mismatch. Demonstrates useful progress.",
+    "expected_action": "proceed",
+    "useful_progress_demonstrated": true,
+    "guardrail": "no_premature_stop",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "tsc --noEmit",
+        "status": "fail",
+        "error_fingerprint": "TS_ERR_4_ISSUES",
+        "error_message": "src/api.ts:4: TS2304 Cannot find name 'Request'; src/api.ts:12: TS2322 Type 'string' is not assignable to type 'number'",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Initial 4 compiler errors across multiple symbols"
+      },
+      {
+        "attempt": 2,
+        "command": "tsc --noEmit",
+        "status": "fail",
+        "error_fingerprint": "TS_ERR_1_ISSUE",
+        "error_message": "src/api.ts:12: TS2322 Type 'string' is not assignable to type 'number'",
+        "has_new_info": true,
+        "useful_progress": true,
+        "diagnostic": "Reduced error count from 4 to 1; resolved import symbols and isolated scalar conversion"
+      }
+    ]
+  },
+  {
+    "id": "CB-04",
+    "name": "Transient port collision on integration test",
+    "category": "transient_failure",
+    "description": "Attempt 1 encounters port 8080 busy during teardown overlap; attempt 2 runs cleanly after ephemeral port freed.",
+    "expected_action": "resolve",
+    "useful_progress_demonstrated": false,
+    "guardrail": "allow_transient_retry",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun test test/integration.test.ts",
+        "status": "fail",
+        "error_fingerprint": "EADDRINUSE_8080",
+        "error_message": "Error: listen EADDRINUSE: address already in use 127.0.0.1:8080",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Server port bind conflict"
+      },
+      {
+        "attempt": 2,
+        "command": "bun test test/integration.test.ts",
+        "status": "pass",
+        "error_fingerprint": null,
+        "error_message": null,
+        "has_new_info": true,
+        "useful_progress": true,
+        "diagnostic": "Test suite passed once socket was cleared"
+      }
+    ]
+  },
+  {
+    "id": "CB-05",
+    "name": "Identical test suite timeout with zero stack diff",
+    "category": "stagnant_failure",
+    "description": "Attempt 1 times out after 30s in test harness; attempt 2 repeats execution without changing inputs or flags and hangs identically.",
+    "expected_action": "replan",
+    "useful_progress_demonstrated": false,
+    "guardrail": "trip_circuit_breaker",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun test --timeout 30000",
+        "status": "fail",
+        "error_fingerprint": "TIMEOUT_TEST_SUITE_30S",
+        "error_message": "Test execution timed out after 30000ms in suite 'runner'",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Timeout after 30 seconds"
+      },
+      {
+        "attempt": 2,
+        "command": "bun test --timeout 30000",
+        "status": "fail",
+        "error_fingerprint": "TIMEOUT_TEST_SUITE_30S",
+        "error_message": "Test execution timed out after 30000ms in suite 'runner'",
+        "has_new_info": false,
+        "useful_progress": false,
+        "diagnostic": "Identical timeout with zero diagnostic delta"
+      }
+    ]
+  },
+  {
+    "id": "CB-06",
+    "name": "Progressive assertion isolation with detailed stack trace",
+    "category": "progressive_failure",
+    "description": "Attempt 1 fails with opaque 500 error; attempt 2 adds debug logger and identifies missing property in request payload parser.",
+    "expected_action": "proceed",
+    "useful_progress_demonstrated": true,
+    "guardrail": "no_premature_stop",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun test test/handler.test.ts",
+        "status": "fail",
+        "error_fingerprint": "HTTP_500_OPAQUE",
+        "error_message": "AssertionError: expected 200 OK but received 500 Internal Server Error",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Generic server error from test client"
+      },
+      {
+        "attempt": 2,
+        "command": "bun test test/handler.test.ts",
+        "status": "fail",
+        "error_fingerprint": "TYPE_ERROR_PARSER_NULL",
+        "error_message": "TypeError: Cannot read properties of undefined (reading 'sessionToken') at parseAuth (src/auth.ts:28:14)",
+        "has_new_info": true,
+        "useful_progress": true,
+        "diagnostic": "Pinpointed exact null reference location and failing sessionToken field"
+      }
+    ]
+  },
+  {
+    "id": "CB-07",
+    "name": "Repeated permission denied EACCES without configuration change",
+    "category": "stagnant_failure",
+    "description": "Attempt 1 fails to write to system directory; attempt 2 retries with exact same credentials and path.",
+    "expected_action": "replan",
+    "useful_progress_demonstrated": false,
+    "guardrail": "trip_circuit_breaker",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun run write-cache",
+        "status": "fail",
+        "error_fingerprint": "EACCES_CACHE_DIR",
+        "error_message": "Error: EACCES: permission denied, open '/var/cache/app.bin'",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Permission denied on protected path"
+      },
+      {
+        "attempt": 2,
+        "command": "bun run write-cache",
+        "status": "fail",
+        "error_fingerprint": "EACCES_CACHE_DIR",
+        "error_message": "Error: EACCES: permission denied, open '/var/cache/app.bin'",
+        "has_new_info": false,
+        "useful_progress": false,
+        "diagnostic": "Repeated exact EACCES error with no privilege escalation or alternative path"
+      }
+    ]
+  },
+  {
+    "id": "CB-08",
+    "name": "Progressive database migration dependency shift",
+    "category": "progressive_failure",
+    "description": "Attempt 1 fails due to existing table name collision; attempt 2 renames migration and reveals specific foreign key dependency requirement.",
+    "expected_action": "proceed",
+    "useful_progress_demonstrated": true,
+    "guardrail": "no_premature_stop",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun run db:migrate",
+        "status": "fail",
+        "error_fingerprint": "DB_TABLE_EXISTS",
+        "error_message": "MigrationError: table \"audit_logs\" already exists in schema public",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Table name collision in public schema"
+      },
+      {
+        "attempt": 2,
+        "command": "bun run db:migrate",
+        "status": "fail",
+        "error_fingerprint": "DB_FK_MISSING",
+        "error_message": "MigrationError: foreign key constraint \"fk_audit_org\" requires column \"organization_id\" in table \"organizations\"",
+        "has_new_info": true,
+        "useful_progress": true,
+        "diagnostic": "Collision bypassed; uncovered foreign key requirement on parent table"
+      }
+    ]
+  },
+  {
+    "id": "CB-09",
+    "name": "Stagnant HTTP 404 on missing route mock",
+    "category": "stagnant_failure",
+    "description": "Attempt 1 fails with 404 from missing route in mock server; attempt 2 sends identical HTTP request without adding the route.",
+    "expected_action": "replan",
+    "useful_progress_demonstrated": false,
+    "guardrail": "trip_circuit_breaker",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun test test/routes.test.ts",
+        "status": "fail",
+        "error_fingerprint": "HTTP_404_ROUTE",
+        "error_message": "AssertionError: expected status 200, got 404 for GET /api/v2/metrics",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Endpoint not registered"
+      },
+      {
+        "attempt": 2,
+        "command": "bun test test/routes.test.ts",
+        "status": "fail",
+        "error_fingerprint": "HTTP_404_ROUTE",
+        "error_message": "AssertionError: expected status 200, got 404 for GET /api/v2/metrics",
+        "has_new_info": false,
+        "useful_progress": false,
+        "diagnostic": "Same 404 received; route remains unregistered"
+      }
+    ]
+  },
+  {
+    "id": "CB-10",
+    "name": "Transient Git index lock contention",
+    "category": "transient_failure",
+    "description": "Attempt 1 encounters index.lock conflict from concurrent background reader; attempt 2 succeeds once process finishes.",
+    "expected_action": "resolve",
+    "useful_progress_demonstrated": false,
+    "guardrail": "allow_transient_retry",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "git add -A",
+        "status": "fail",
+        "error_fingerprint": "GIT_INDEX_LOCK",
+        "error_message": "fatal: Unable to create '.git/index.lock': File exists.",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Git lock file contention"
+      },
+      {
+        "attempt": 2,
+        "command": "git add -A",
+        "status": "pass",
+        "error_fingerprint": null,
+        "error_message": null,
+        "has_new_info": true,
+        "useful_progress": true,
+        "diagnostic": "Staging index succeeded cleanly"
+      }
+    ]
+  },
+  {
+    "id": "CB-11",
+    "name": "Progressive dependency and export diagnostics",
+    "category": "progressive_failure",
+    "description": "Attempt 1 fails due to missing package; attempt 2 installs package and discovers missing named export. Each attempt provides new actionable diagnostic information.",
+    "expected_action": "proceed",
+    "useful_progress_demonstrated": true,
+    "guardrail": "no_premature_stop",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun run build",
+        "status": "fail",
+        "error_fingerprint": "MODULE_NOT_FOUND_ZOD",
+        "error_message": "ResolveMessage: Cannot find package 'zod' from 'src/schema.ts'",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Missing external package"
+      },
+      {
+        "attempt": 2,
+        "command": "bun run build",
+        "status": "fail",
+        "error_fingerprint": "EXPORT_NOT_FOUND_ZOD",
+        "error_message": "SyntaxError: 'zodSchema' is not exported from 'zod'; did you mean 'z'?",
+        "has_new_info": true,
+        "useful_progress": true,
+        "diagnostic": "Package resolved; actionable export correction suggested"
+      }
+    ]
+  },
+  {
+    "id": "CB-12",
+    "name": "Progressive step followed by consecutive stagnant failures",
+    "category": "stagnant_failure",
+    "description": "Attempt 1 reveals missing configuration; attempt 2 configures key and progresses to database auth error; attempts 3 and 4 fail identically with rejected password and zero new info.",
+    "expected_action": "replan",
+    "useful_progress_demonstrated": false,
+    "guardrail": "trip_circuit_breaker",
+    "history": [
+      {
+        "attempt": 1,
+        "command": "bun run start",
+        "status": "fail",
+        "error_fingerprint": "MISSING_ENV_CONFIG",
+        "error_message": "ConfigError: missing required environment variable DATABASE_URL",
+        "has_new_info": true,
+        "useful_progress": false,
+        "diagnostic": "Initial configuration gap"
+      },
+      {
+        "attempt": 2,
+        "command": "bun run start",
+        "status": "fail",
+        "error_fingerprint": "AUTH_FAILED_DB",
+        "error_message": "DBError: FATAL password authentication failed for user 'app_user'",
+        "has_new_info": true,
+        "useful_progress": true,
+        "diagnostic": "Config resolved, progresses to database authentication layer"
+      },
+      {
+        "attempt": 3,
+        "command": "bun run start",
+        "status": "fail",
+        "error_fingerprint": "AUTH_FAILED_DB",
+        "error_message": "DBError: FATAL password authentication failed for user 'app_user'",
+        "has_new_info": false,
+        "useful_progress": false,
+        "diagnostic": "Identical authentication failure repeated without credential change"
+      },
+      {
+        "attempt": 4,
+        "command": "bun run start",
+        "status": "fail",
+        "error_fingerprint": "AUTH_FAILED_DB",
+        "error_message": "DBError: FATAL password authentication failed for user 'app_user'",
+        "has_new_info": false,
+        "useful_progress": false,
+        "diagnostic": "Second consecutive failure with zero new information"
+      }
+    ]
+  }
+]

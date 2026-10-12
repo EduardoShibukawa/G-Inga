@@ -27,6 +27,7 @@ interface GateConfig {
   command?: string;
   maxAttempts?: number;
   currentAttempt?: number;
+  declaredScopes?: Record<string, string[]>;
 }
 
 function parseArgs(): GateConfig {
@@ -55,6 +56,25 @@ function parseArgs(): GateConfig {
       i++;
     } else if (args[i] === "--max-attempts" && args[i + 1]) {
       config.maxAttempts = parseInt(args[i + 1], 10);
+      i++;
+    } else if (
+      (args[i] === "--declared-scopes" || args[i] === "--concurrent-scopes" || args[i] === "--scopes-json") &&
+      args[i + 1]
+    ) {
+      const val = args[i + 1];
+      if (existsSync(val)) {
+        try {
+          config.declaredScopes = JSON.parse(readFileSync(val, "utf8"));
+        } catch (e) {
+          console.error(`[OODA Gate] Error parsing JSON file "${val}": ${e}`);
+        }
+      } else {
+        try {
+          config.declaredScopes = JSON.parse(val);
+        } catch (e) {
+          console.error(`[OODA Gate] Error parsing scopes JSON string: ${e}`);
+        }
+      }
       i++;
     }
   }
@@ -100,6 +120,139 @@ export function evaluateScope(allowedScope: string[], filesOverride?: string[]):
   }
 
   return { pass: violations.length === 0, violations };
+}
+
+export interface ScopeCollisionResult {
+  hasCollisions: boolean;
+  collisions: Record<string, string[]>;
+  byWorker: Record<string, string[]>;
+  byFile: Record<string, string[]>;
+}
+
+function normalizeScopePattern(pattern: string): { raw: string; normalized: string; isDir: boolean } {
+  const trimmed = pattern.trim();
+  let p = trimmed.replace(/\\/g, "/");
+  p = p.replace(/^(\.\/|\/)+/, "");
+  const isDir = p.endsWith("/") || p.endsWith("/*") || p.endsWith("/**");
+  const stripped = p.replace(/(\/\*{1,2}|\/)+$/, "");
+  return { raw: trimmed, normalized: stripped, isDir };
+}
+
+function globToRegex(glob: string): RegExp {
+  const norm = glob.trim().replace(/\\/g, "/").replace(/^(\.\/|\/)+/, "");
+  let reStr = norm.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+  reStr = reStr.replace(/\*\*/g, ".*");
+  reStr = reStr.replace(/(?<!\.)\*/g, "[^/]*");
+  return new RegExp(`^${reStr}$`);
+}
+
+function arePatternsColliding(rawA: string, rawB: string): boolean {
+  if (!rawA || !rawB) return false;
+  const a = normalizeScopePattern(rawA);
+  const b = normalizeScopePattern(rawB);
+
+  // Exact match after normalization
+  if (a.normalized === b.normalized) {
+    return true;
+  }
+
+  // Directory containment with path separator boundary
+  if (b.normalized.startsWith(a.normalized + "/")) {
+    return true;
+  }
+  if (a.normalized.startsWith(b.normalized + "/")) {
+    return true;
+  }
+
+  // Glob matching
+  if (a.raw.includes("*") || b.raw.includes("*")) {
+    if (a.raw.includes("*") && !b.raw.includes("*")) {
+      return globToRegex(a.raw).test(b.normalized);
+    }
+    if (b.raw.includes("*") && !a.raw.includes("*")) {
+      return globToRegex(b.raw).test(a.normalized);
+    }
+    // Both are globs: check prefix containment
+    const aPrefix = a.raw.split("*")[0].replace(/\/+$/, "");
+    const bPrefix = b.raw.split("*")[0].replace(/\/+$/, "");
+    if (!aPrefix || !bPrefix || aPrefix === bPrefix || aPrefix.startsWith(bPrefix + "/") || bPrefix.startsWith(aPrefix + "/")) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export function detectScopeCollisions(
+  declaredScopes: Record<string, string[]>
+): ScopeCollisionResult {
+  const byWorker: Record<string, string[]> = {};
+  const byFile: Record<string, string[]> = {};
+
+  const workers = Object.keys(declaredScopes || {});
+  if (workers.length <= 1) {
+    return {
+      hasCollisions: false,
+      collisions: {},
+      byWorker: {},
+      byFile: {},
+    };
+  }
+
+  for (let i = 0; i < workers.length; i++) {
+    const workerA = workers[i];
+    const scopesA = (declaredScopes[workerA] || []).map((s) => s.trim()).filter(Boolean);
+
+    for (let j = i + 1; j < workers.length; j++) {
+      const workerB = workers[j];
+      const scopesB = (declaredScopes[workerB] || []).map((s) => s.trim()).filter(Boolean);
+
+      for (const patA of scopesA) {
+        for (const patB of scopesB) {
+          if (arePatternsColliding(patA, patB)) {
+            // Determine colliding target representation for byFile
+            const aNorm = normalizeScopePattern(patA);
+            const bNorm = normalizeScopePattern(patB);
+            let collisionSite = patA;
+            if (aNorm.normalized === bNorm.normalized) {
+              collisionSite = aNorm.normalized;
+            } else if (bNorm.normalized.startsWith(aNorm.normalized + "/")) {
+              collisionSite = patB;
+            } else if (aNorm.normalized.startsWith(bNorm.normalized + "/")) {
+              collisionSite = patA;
+            }
+
+            // Record in byWorker
+            if (!byWorker[workerA]) byWorker[workerA] = [];
+            if (!byWorker[workerA].includes(patA)) byWorker[workerA].push(patA);
+
+            if (!byWorker[workerB]) byWorker[workerB] = [];
+            if (!byWorker[workerB].includes(patB)) byWorker[workerB].push(patB);
+
+            // Record in byFile
+            if (!byFile[collisionSite]) byFile[collisionSite] = [];
+            if (!byFile[collisionSite].includes(workerA)) byFile[collisionSite].push(workerA);
+            if (!byFile[collisionSite].includes(workerB)) byFile[collisionSite].push(workerB);
+          }
+        }
+      }
+    }
+  }
+
+  const hasCollisions = Object.keys(byWorker).length > 0;
+  const collisions: Record<string, string[]> = { ...byFile };
+  for (const [w, files] of Object.entries(byWorker)) {
+    if (!(w in collisions)) {
+      collisions[w] = files;
+    }
+  }
+
+  return {
+    hasCollisions,
+    collisions,
+    byWorker,
+    byFile,
+  };
 }
 
 export interface TaskAncestryResult {
@@ -283,6 +436,19 @@ export function evaluateGate(): number {
     console.log(`[OODA Gate L1 Scope] PASS: All touched files within scope: [${config.allowedScope.join(", ")}]`);
   } else {
     console.log(`[OODA Gate L1 Scope] PASS: No restricted scope declared.`);
+  }
+
+  // Layer 1 Check: Concurrent Scope Isolation Gate
+  if (config.declaredScopes && Object.keys(config.declaredScopes).length > 0) {
+    const collisionRes = detectScopeCollisions(config.declaredScopes);
+    if (collisionRes.hasCollisions) {
+      console.error(`[OODA Gate L1 Scope Collision] FAIL: Scope collision detected between concurrent workers:`);
+      for (const [worker, files] of Object.entries(collisionRes.byWorker)) {
+        console.error(`  - Worker "${worker}" collides on: [${files.join(", ")}]`);
+      }
+      return 1;
+    }
+    console.log(`[OODA Gate L1 Scope Collision] PASS: All declared scopes are mutually disjoint.`);
   }
 
   // Layer 2 Check: Deterministic Command Gate

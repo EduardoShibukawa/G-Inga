@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { evaluateScope, evaluateTaskAncestry, parseTaskRecord } from "./verify-gate.ts";
+import { detectScopeCollisions, evaluateScope, evaluateTaskAncestry, parseTaskRecord } from "./verify-gate.ts";
 import { spawnSync } from "node:child_process";
+import { unlinkSync, writeFileSync } from "node:fs";
 
 describe("Autonomous Verification Gate", () => {
   test("Gate 1: fails when touched files exceed allowed scope", () => {
@@ -188,5 +189,133 @@ verified_at: "e0e8e9c"
     ], { encoding: "utf8" });
     expect(proc.status).toBe(0);
     expect(proc.stdout).toContain("ALL LAYERS PASSED");
+  });
+
+  describe("Gate 1: Concurrency & Scope Collision Detection", () => {
+    test("detectScopeCollisions returns hasCollisions: false for empty scopes or single worker", () => {
+      expect(detectScopeCollisions({}).hasCollisions).toBe(false);
+      expect(detectScopeCollisions({ "worker-1": ["src/index.ts"] }).hasCollisions).toBe(false);
+    });
+
+    test("detectScopeCollisions returns hasCollisions: false when workers have disjoint scopes", () => {
+      const res = detectScopeCollisions({
+        "worker-1": ["src/auth/login.ts", "src/auth/token.ts"],
+        "worker-2": ["src/billing/checkout.ts", "src/billing/invoice.ts"],
+      });
+      expect(res.hasCollisions).toBe(false);
+      expect(res.collisions).toEqual({});
+      expect(res.byWorker).toEqual({});
+      expect(res.byFile).toEqual({});
+    });
+
+    test("detectScopeCollisions detects exact file collision between two workers", () => {
+      const res = detectScopeCollisions({
+        "worker-1": ["tools/gate/verify-gate.ts", "tools/gate/verify-gate.test.ts"],
+        "worker-2": ["tools/gate/verify-gate.ts", "tasks/task-b.md"],
+      });
+      expect(res.hasCollisions).toBe(true);
+      expect(res.byWorker["worker-1"]).toContain("tools/gate/verify-gate.ts");
+      expect(res.byWorker["worker-2"]).toContain("tools/gate/verify-gate.ts");
+      expect(res.byFile["tools/gate/verify-gate.ts"]).toEqual(["worker-1", "worker-2"]);
+      expect(res.collisions["tools/gate/verify-gate.ts"]).toEqual(["worker-1", "worker-2"]);
+      expect(res.collisions["worker-1"]).toContain("tools/gate/verify-gate.ts");
+    });
+
+    test("detectScopeCollisions detects directory prefix containment collision", () => {
+      const res = detectScopeCollisions({
+        "worker-1": ["tools/gate/"],
+        "worker-2": ["tools/gate/verify-gate.ts"],
+      });
+      expect(res.hasCollisions).toBe(true);
+      expect(res.byWorker["worker-1"]).toContain("tools/gate/");
+      expect(res.byWorker["worker-2"]).toContain("tools/gate/verify-gate.ts");
+    });
+
+    test("detectScopeCollisions detects directory wildcard collision", () => {
+      const res = detectScopeCollisions({
+        "worker-1": ["tools/gate/*"],
+        "worker-2": ["tools/gate/verify-gate.ts"],
+      });
+      expect(res.hasCollisions).toBe(true);
+      expect(res.byWorker["worker-1"]).toContain("tools/gate/*");
+      expect(res.byWorker["worker-2"]).toContain("tools/gate/verify-gate.ts");
+    });
+
+    test("detectScopeCollisions does not falsely collide on path without boundary separator", () => {
+      const res = detectScopeCollisions({
+        "worker-1": ["tools/gate"],
+        "worker-2": ["tools/gatekeeper.ts"],
+      });
+      expect(res.hasCollisions).toBe(false);
+    });
+
+    test("detectScopeCollisions normalizes relative paths with leading ./", () => {
+      const res = detectScopeCollisions({
+        "worker-1": ["./tools/gate/verify-gate.ts"],
+        "worker-2": ["tools/gate/verify-gate.ts"],
+      });
+      expect(res.hasCollisions).toBe(true);
+      expect(res.byFile["tools/gate/verify-gate.ts"]).toEqual(["worker-1", "worker-2"]);
+    });
+
+    test("detectScopeCollisions isolates multi-worker collisions and preserves non-colliding workers", () => {
+      const res = detectScopeCollisions({
+        "worker-1": ["src/shared.ts", "src/auth.ts"],
+        "worker-2": ["src/shared.ts", "src/billing.ts"],
+        "worker-3": ["src/billing.ts", "src/reports.ts"],
+        "worker-4": ["src/independent.ts"],
+      });
+      expect(res.hasCollisions).toBe(true);
+      expect(res.byWorker["worker-1"]).toEqual(["src/shared.ts"]);
+      expect(res.byWorker["worker-2"]).toEqual(["src/shared.ts", "src/billing.ts"]);
+      expect(res.byWorker["worker-3"]).toEqual(["src/billing.ts"]);
+      expect(res.byWorker["worker-4"]).toBeUndefined();
+    });
+
+    test("CLI returns exit code 0 when declared scopes are disjoint", () => {
+      const proc = spawnSync("bun", [
+        "tools/gate/verify-gate.ts",
+        "--declared-scopes",
+        JSON.stringify({
+          "worker-1": ["src/a.ts"],
+          "worker-2": ["src/b.ts"],
+        }),
+      ], { encoding: "utf8" });
+      expect(proc.status).toBe(0);
+      expect(proc.stdout).toContain("All declared scopes are mutually disjoint");
+    });
+
+    test("CLI returns exit code 1 when declared scopes collide", () => {
+      const proc = spawnSync("bun", [
+        "tools/gate/verify-gate.ts",
+        "--declared-scopes",
+        JSON.stringify({
+          "worker-1": ["tools/gate/verify-gate.ts"],
+          "worker-2": ["tools/gate/verify-gate.ts"],
+        }),
+      ], { encoding: "utf8" });
+      expect(proc.status).toBe(1);
+      expect(proc.stderr).toContain("Scope collision detected between concurrent workers");
+    });
+
+    test("CLI parses declared scopes from JSON file path", () => {
+      const tempPath = `tasks/temp-scopes-${Date.now()}.json`;
+      writeFileSync(tempPath, JSON.stringify({
+        "worker-1": ["tools/gate/verify-gate.ts"],
+        "worker-2": ["tools/gate/verify-gate.ts"],
+      }), "utf8");
+
+      try {
+        const proc = spawnSync("bun", [
+          "tools/gate/verify-gate.ts",
+          "--declared-scopes",
+          tempPath,
+        ], { encoding: "utf8" });
+        expect(proc.status).toBe(1);
+        expect(proc.stderr).toContain("Scope collision detected between concurrent workers");
+      } finally {
+        unlinkSync(tempPath);
+      }
+    });
   });
 });
