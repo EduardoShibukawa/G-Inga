@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "b4d3197"
 ---
 
 # Autoresearch Experiment 02 Candidate 02: Layout Optimization of CLAUDE.md and GEMINI.md
@@ -47,18 +48,18 @@ Run Candidate 02 of EXP-02 under the OODA orchestration harness: evaluate a cond
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation suite | pass | 71b1890 | `mise run validate` (exit 0) & `mise run test` (127 pass) on main |
-| AC1 | layout token reduction | not run | - | pending authoring |
-| AC2 | 7 mandates and pointer block | not run | - | pending authoring |
-| AC3 | ledger candidate row | not run | - | pending run |
-| AC4 | 4-layer gate and test suite | not run | - | pending eval |
-| V1 | diff review against V1 governance | not run | - | pending review |
+| AC1 | layout token reduction | pass | b4d3197 | 31.2% char reduction (2741 -> 1886) in CLAUDE.md, 30.9% in GEMINI.md (~214 tokens saved) |
+| AC2 | 7 mandates and pointer block | pass | b4d3197 | all 7 mandates preserved, pointer block identical and markdownlint passes |
+| AC3 | ledger candidate row | pass | b4d3197 | EXP-02 recorded in records/autoresearch-ledger.tsv with complete status |
+| AC4 | 4-layer gate and test suite | pass | b4d3197 | verify-gate pass (attempt 1), validate pass, test pass (127 pass, 0 fail) |
+| V1 | diff review against V1 governance | pass | b4d3197 | layout briefs, ledger and task record only; approved spec hash untouched |
 
 ## Outcome
 
-(Pending candidate execution)
+Candidate 02 of EXP-02 verified successfully under OODA harness. Achieved 31.2% character reduction in `CLAUDE.md` and 30.9% in `GEMINI.md` (saving ~214 tokens per turn, comfortably exceeding the >= 20% / ~140 token target) while preserving 100% of the 7 working protocol mandates and pointer block integrity. Verified via 4-layer gate and 127 automated tests.
 
 ## Checkpoint
 
-- as of: 2026-10-12, branch exp/autoresearch-candidate-02-layout, head 71b1890, task active
-- done: branch created, baseline verified on 71b1890
-- next: execute candidate edits in CLAUDE.md and GEMINI.md, update ledger, evaluate gates
+- as of: 2026-10-12, branch exp/autoresearch-candidate-02-layout, head b4d3197, task verified
+- done: Candidate 02 implemented, verified across all gates and 127 tests, ledger updated
+- next: push branch to origin and submit PR for owner review
