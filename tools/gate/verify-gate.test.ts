@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { detectScopeCollisions, evaluateScope, evaluateTaskAncestry, parseTaskRecord } from "./verify-gate.ts";
+import {
+  detectScopeCollisions,
+  evaluateScope,
+  evaluateTaskAncestry,
+  parseTaskRecord,
+  partitionWaves,
+  validatePreDispatch,
+} from "./verify-gate.ts";
 import { spawnSync } from "node:child_process";
 import { unlinkSync, writeFileSync } from "node:fs";
 
@@ -275,6 +282,7 @@ verified_at: "e0e8e9c"
     test("CLI returns exit code 0 when declared scopes are disjoint", () => {
       const proc = spawnSync("bun", [
         "tools/gate/verify-gate.ts",
+        "--tasks", "",
         "--declared-scopes",
         JSON.stringify({
           "worker-1": ["src/a.ts"],
@@ -316,6 +324,113 @@ verified_at: "e0e8e9c"
       } finally {
         unlinkSync(tempPath);
       }
+    });
+
+    test("validatePreDispatch returns pass: true and single wave for disjoint scopes", () => {
+      const scopes = {
+        "worker-1": ["src/module-a/index.ts", "src/module-a/utils.ts"],
+        "worker-2": ["src/module-b/index.ts", "src/module-b/service.ts"],
+        "worker-3": ["docs/architecture.md"],
+      };
+      const res = validatePreDispatch(scopes);
+      expect(res.pass).toBe(true);
+      expect(res.hasCollisions).toBe(false);
+      expect(res.collisions).toEqual({});
+      expect(res.byWorker).toEqual({});
+      expect(res.waves).toEqual([["worker-1", "worker-2", "worker-3"]]);
+    });
+
+    test("validatePreDispatch returns pass: false and identifies conflicting workers", () => {
+      const scopes = {
+        "worker-1": ["src/shared/types.ts", "src/feature-a.ts"],
+        "worker-2": ["src/shared/types.ts", "src/feature-b.ts"],
+      };
+      const res = validatePreDispatch(scopes);
+      expect(res.pass).toBe(false);
+      expect(res.hasCollisions).toBe(true);
+      expect(res.byWorker["worker-1"]).toContain("src/shared/types.ts");
+      expect(res.byWorker["worker-2"]).toContain("src/shared/types.ts");
+      expect(res.byFile["src/shared/types.ts"]).toEqual(["worker-1", "worker-2"]);
+    });
+
+    test("partitionWaves serializes conflicting workers into conflict-free sequential waves", () => {
+      const scopes = {
+        "worker-1": ["src/a.ts"],
+        "worker-2": ["src/a.ts"],
+        "worker-3": ["src/b.ts"],
+      };
+      const waves = partitionWaves(scopes);
+      // Wave 1: worker-1, worker-3 (disjoint)
+      // Wave 2: worker-2 (conflicts with worker-1)
+      expect(waves.length).toBe(2);
+      expect(waves[0]).toEqual(["worker-1", "worker-3"]);
+      expect(waves[1]).toEqual(["worker-2"]);
+
+      // Verify each wave internally has zero collisions
+      for (const wave of waves) {
+        const waveScopes: Record<string, string[]> = {};
+        for (const w of wave) {
+          waveScopes[w] = scopes[w as keyof typeof scopes];
+        }
+        expect(detectScopeCollisions(waveScopes).hasCollisions).toBe(false);
+      }
+    });
+
+    test("partitionWaves handles multiple chain collisions into cascading waves", () => {
+      const scopes = {
+        "worker-1": ["tools/gate/"],
+        "worker-2": ["tools/gate/verify-gate.ts"],
+        "worker-3": ["tools/gate/verify-gate.test.ts"],
+        "worker-4": ["docs/README.md"],
+      };
+      const waves = partitionWaves(scopes);
+      // worker-1 takes tools/gate/, worker-4 takes docs/README.md in wave 1
+      // worker-2 collides with wave 1 (worker-1), moves to wave 2
+      // worker-3 collides with wave 1 (worker-1), and in wave 2 it might be disjoint from worker-2 depending on path matching:
+      // Note: tools/gate/verify-gate.ts vs tools/gate/verify-gate.test.ts are disjoint!
+      expect(waves[0]).toContain("worker-1");
+      expect(waves[0]).toContain("worker-4");
+      expect(waves[1]).toContain("worker-2");
+      expect(waves[1]).toContain("worker-3");
+
+      for (const wave of waves) {
+        const waveScopes: Record<string, string[]> = {};
+        for (const w of wave) {
+          waveScopes[w] = scopes[w as keyof typeof scopes];
+        }
+        expect(detectScopeCollisions(waveScopes).hasCollisions).toBe(false);
+      }
+    });
+
+    test("CLI with --pre-dispatch returns exit code 0 when disjoint", () => {
+      const proc = spawnSync("bun", [
+        "tools/gate/verify-gate.ts",
+        "--pre-dispatch",
+        "--declared-scopes",
+        JSON.stringify({
+          w1: ["src/a.ts"],
+          w2: ["src/b.ts"],
+        }),
+      ], { encoding: "utf8" });
+      expect(proc.status).toBe(0);
+      expect(proc.stdout).toContain("[OODA Gate Pre-Dispatch] PASS");
+    });
+
+    test("CLI with --pre-dispatch returns exit code 1 when colliding and suggests waves", () => {
+      const proc = spawnSync("bun", [
+        "tools/gate/verify-gate.ts",
+        "--pre-dispatch",
+        "--declared-scopes",
+        JSON.stringify({
+          w1: ["src/a.ts"],
+          w2: ["src/a.ts"],
+        }),
+      ], { encoding: "utf8" });
+      expect(proc.status).toBe(1);
+      expect(proc.stderr).toContain("[OODA Gate Pre-Dispatch] FAIL: Scope collision detected between concurrent workers");
+      expect(proc.stderr).toContain("Worker \"w1\" collides on: [src/a.ts]");
+      expect(proc.stderr).toContain("Worker \"w2\" collides on: [src/a.ts]");
+      expect(proc.stderr).toContain("Suggested serialized execution waves:");
     });
   });
 });

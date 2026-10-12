@@ -21,8 +21,10 @@ Macro-governor for autonomous multi-task execution over dependency graphs and ta
 ```mermaid
 flowchart TD
     OBS["1. OBSERVE: git status, HEAD, map.md / tasks/"] --> ORI["2. ORIENT: Unblocked frontier, constraints, thresholds"]
-    ORI --> DEC["3. DECIDE: Batch size N, prepare scoped worker prompts"]
-    DEC --> ACT["4. ACT: invoke_subagent concurrent workers"]
+    ORI --> DEC["3. DECIDE: Batch size N, pre-dispatch scope collision check"]
+    DEC -->|"Collisions detected"| SER["Serialize into conflict-free waves"]
+    SER --> ACT
+    DEC -->|"Disjoint scopes"| ACT["4. ACT: invoke_subagent concurrent workers"]
     ACT --> GATE{"5. GATE: 5-Layer Autonomous Verification"}
     GATE -->|"Pass (All 5 Layers)"| SEAL["6. SEAL: Commit batch, update graph, advance frontier"]
     GATE -->|"Fail (Attempts < 2)"| RETRY["Retry with deterministic failure diff"]
@@ -46,11 +48,22 @@ flowchart TD
   - Required deterministic check commands (e.g., `mise run validate`, `mise run test`).
   - Quantitative thresholds (e.g., zero linter issues, schema adherence).
 
-### 3. DECIDE (Concurrency & Worker Prompts)
+### 3. DECIDE (Concurrency & Pre-Dispatch Collision Guardrail)
 
 - Determine batch size $N$ based on independent unblocked branches (typically 1 to 4 concurrent tickets).
 - Prepare structured dispatch prompts using [.agents/skills/orchestrate/subagent-prompt.md](subagent-prompt.md).
-- Ensure strict file boundary scoping to prevent concurrent write collisions across subagents.
+- **Mandatory Pre-Dispatch Concurrency Collision Check:**
+  - Before any call to `invoke_subagent`, execute the deterministic collision guardrail across all declared worker scopes:
+
+    ```bash
+    bun tools/gate/verify-gate.ts --pre-dispatch --declared-scopes '{"worker-1": ["scope1/"], "worker-2": ["scope2/"]}'
+    ```
+
+  - Alternatively, evaluate programmatically via `validatePreDispatch(declaredScopes)`.
+  - **Invariants:**
+    - If scopes collide (Exit Code 1), parallel dispatch is strictly rejected.
+    - Conflicting workers MUST be partitioned into sequential conflict-free execution waves (`partitionWaves`).
+    - Only mutually disjoint batches (Exit Code 0) are dispatched concurrently.
 
 ### 4. ACT (Concurrent Dispatch & Asynchronous Wait)
 

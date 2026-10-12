@@ -36,7 +36,10 @@ Before executing test suites or reading reports, the orchestrator inspects the p
 git status --porcelain
 git diff --name-only HEAD
 
-# Check concurrent declared scopes across subagents (CLI)
+# Mandatory Pre-dispatch check across candidate concurrent subagents (CLI)
+bun tools/gate/verify-gate.ts --pre-dispatch --declared-scopes '{"worker-1": ["src/a.ts"], "worker-2": ["src/b.ts"]}'
+
+# Check concurrent declared scopes across subagents during post-run evaluation (CLI)
 bun tools/gate/verify-gate.ts --declared-scopes '{"worker-1": ["tools/gate/"], "worker-2": ["tasks/"]}'
 ```
 
@@ -45,34 +48,48 @@ bun tools/gate/verify-gate.ts --declared-scopes '{"worker-1": ["tools/gate/"], "
 1. **Scope Boundary:** Every modified, added, or deleted path MUST match the declared `In scope:` patterns of the dispatched ticket.
 2. **Untracked Leakage:** No untracked scratch files, dumps, `.DS_Store`, or node artifacts outside `.gitignore`.
 3. **Secret Scan:** No staged or unstaged diff contains patterns matching API keys, `.env` files, or access tokens.
-4. **Concurrent Scope Isolation:** When dispatching multiple subagents in parallel or evaluating concurrent batch runs, all declared file boundaries MUST be mutually disjoint. Overlapping files, directory prefixes, or wildcard patterns across workers are deterministically detected via `detectScopeCollisions`:
+4. **Pre-Dispatch Concurrency Collision Guardrail:** Before invoking concurrent subagents in Step 3 DECIDE, the orchestrator MUST evaluate declared worker scopes using `validatePreDispatch` or `bun tools/gate/verify-gate.ts --pre-dispatch --declared-scopes <json>`.
+   - Returns exit code 0 (`pass`) when all scopes are mutually disjoint.
+   - Returns exit code 1 (`fail`) when collisions are detected, detailing conflicting workers and files.
+   - When collisions occur, conflicting workers are partitioned into sequential conflict-free execution waves via `partitionWaves`.
+5. **Concurrent Scope Isolation:** When evaluating concurrent batch runs post-execution, all declared file boundaries MUST be mutually disjoint. Overlapping files, directory prefixes, or wildcard patterns across workers are deterministically detected via `detectScopeCollisions`:
    - Exact file overlaps (e.g. `src/index.ts` vs `src/index.ts`).
    - Directory prefix containment (e.g. `tools/gate/` vs `tools/gate/verify-gate.ts`).
    - Wildcard glob matches (e.g. `tools/gate/*` vs `tools/gate/verify-gate.ts`).
    - Relative path normalization (`./path` vs `path`).
 
-### Module API: `detectScopeCollisions`
+### Module API: `validatePreDispatch` & `detectScopeCollisions`
 
 ```typescript
-import { detectScopeCollisions } from "tools/gate/verify-gate.ts";
+import { detectScopeCollisions, validatePreDispatch, partitionWaves } from "tools/gate/verify-gate.ts";
 
+// Pre-dispatch evaluation with wave partitioning:
+const preResult = validatePreDispatch({
+  "worker-1": ["tools/gate/verify-gate.ts"],
+  "worker-2": ["tools/gate/verify-gate.ts"],
+  "worker-3": ["docs/architecture.md"],
+});
+
+// preResult:
+// {
+//   pass: false,
+//   hasCollisions: true,
+//   collisions: { "tools/gate/verify-gate.ts": ["worker-1", "worker-2"], ... },
+//   byWorker: { "worker-1": ["tools/gate/verify-gate.ts"], "worker-2": ["tools/gate/verify-gate.ts"] },
+//   byFile: { "tools/gate/verify-gate.ts": ["worker-1", "worker-2"] },
+//   waves: [["worker-1", "worker-3"], ["worker-2"]] // conflict-free sequential waves
+// }
+
+// Post-execution collision evaluation:
 const result = detectScopeCollisions({
   "worker-1": ["tools/gate/verify-gate.ts"],
   "worker-2": ["tools/gate/verify-gate.test.ts"],
 });
-
-// result:
-// {
-//   hasCollisions: false,
-//   collisions: {},
-//   byWorker: {},
-//   byFile: {}
-// }
 ```
 
 ### Rollback & Collision Procedure
 
-If concurrent scope collisions are detected prior to dispatch, the orchestrator serializes conflicting tasks. If detected during gate evaluation:
+If concurrent scope collisions are detected prior to dispatch, the orchestrator serializes conflicting tasks into sequential execution waves (`partitionWaves`). If detected during gate evaluation:
 
 ```bash
 git checkout HEAD -- <unauthorized-file>

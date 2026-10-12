@@ -28,6 +28,7 @@ interface GateConfig {
   maxAttempts?: number;
   currentAttempt?: number;
   declaredScopes?: Record<string, string[]>;
+  preDispatch?: boolean;
 }
 
 function parseArgs(): GateConfig {
@@ -39,14 +40,16 @@ function parseArgs(): GateConfig {
   };
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--scope" && args[i + 1]) {
-      config.allowedScope = args[i + 1].split(",").map((s) => s.trim());
+    if (args[i] === "--pre-dispatch") {
+      config.preDispatch = true;
+    } else if (args[i] === "--scope" && args[i + 1] !== undefined) {
+      config.allowedScope = args[i + 1].split(",").map((s) => s.trim()).filter(Boolean);
       i++;
-    } else if (args[i] === "--files" && args[i + 1]) {
-      config.filesOverride = args[i + 1].split(",").map((s) => s.trim());
+    } else if (args[i] === "--files" && args[i + 1] !== undefined) {
+      config.filesOverride = args[i + 1].split(",").map((s) => s.trim()).filter(Boolean);
       i++;
-    } else if (args[i] === "--tasks" && args[i + 1]) {
-      config.taskFilesOverride = args[i + 1].split(",").map((s) => s.trim());
+    } else if (args[i] === "--tasks" && args[i + 1] !== undefined) {
+      config.taskFilesOverride = args[i + 1].split(",").map((s) => s.trim()).filter(Boolean);
       i++;
     } else if (args[i] === "--cmd" && args[i + 1]) {
       config.command = args[i + 1];
@@ -255,6 +258,79 @@ export function detectScopeCollisions(
   };
 }
 
+export interface PreDispatchValidationResult {
+  pass: boolean;
+  hasCollisions: boolean;
+  collisions: Record<string, string[]>;
+  byWorker: Record<string, string[]>;
+  byFile: Record<string, string[]>;
+  waves: string[][];
+}
+
+/**
+ * Greedily partitions workers into sequential waves where every wave has mutually disjoint file scopes.
+ */
+export function partitionWaves(declaredScopes: Record<string, string[]>): string[][] {
+  const workers = Object.keys(declaredScopes || {});
+  if (workers.length === 0) return [];
+  if (workers.length === 1) return [[workers[0]]];
+
+  const waves: string[][] = [];
+
+  for (const worker of workers) {
+    let placed = false;
+    for (const wave of waves) {
+      // Check if worker collides with any worker already in this wave
+      let collidesWithWave = false;
+      const workerScopes = declaredScopes[worker] || [];
+      for (const existingWorker of wave) {
+        const existingScopes = declaredScopes[existingWorker] || [];
+        for (const patA of workerScopes) {
+          for (const patB of existingScopes) {
+            if (arePatternsColliding(patA, patB)) {
+              collidesWithWave = true;
+              break;
+            }
+          }
+          if (collidesWithWave) break;
+        }
+        if (collidesWithWave) break;
+      }
+
+      if (!collidesWithWave) {
+        wave.push(worker);
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      waves.push([worker]);
+    }
+  }
+
+  return waves;
+}
+
+/**
+ * Evaluates declared scopes before dispatching parallel subagents.
+ * Returns pass: true (and waves: [all workers in one wave]) if disjoint.
+ * If collisions exist, returns pass: false and partitions into sequential conflict-free waves.
+ */
+export function validatePreDispatch(declaredScopes: Record<string, string[]>): PreDispatchValidationResult {
+  const collisionResult = detectScopeCollisions(declaredScopes);
+  const waves = partitionWaves(declaredScopes);
+
+  return {
+    pass: !collisionResult.hasCollisions,
+    hasCollisions: collisionResult.hasCollisions,
+    collisions: collisionResult.collisions,
+    byWorker: collisionResult.byWorker,
+    byFile: collisionResult.byFile,
+    waves,
+  };
+}
+
 export interface TaskAncestryResult {
   pass: boolean;
   violations: string[];
@@ -417,6 +493,29 @@ export function evaluateTaskAncestry(taskFilesOverride?: string[], fileContentMa
 
 export function evaluateGate(): number {
   const config = parseArgs();
+
+  // Pre-Dispatch Concurrency Collision Check
+  if (config.preDispatch) {
+    console.log(`[OODA Gate Pre-Dispatch] Evaluating declared worker scopes for concurrency collisions...`);
+    const scopes = config.declaredScopes || {};
+    const preResult = validatePreDispatch(scopes);
+    if (!preResult.pass) {
+      console.error(`[OODA Gate Pre-Dispatch] FAIL: Scope collision detected between concurrent workers:`);
+      for (const [worker, files] of Object.entries(preResult.byWorker)) {
+        console.error(`  - Worker "${worker}" collides on: [${files.join(", ")}]`);
+      }
+      if (preResult.waves.length > 1) {
+        console.error(`[OODA Gate Pre-Dispatch] Suggested serialized execution waves:`);
+        preResult.waves.forEach((wave, idx) => {
+          console.error(`  - Wave ${idx + 1}: [${wave.join(", ")}]`);
+        });
+      }
+      return 1;
+    }
+    console.log(`[OODA Gate Pre-Dispatch] PASS: All declared scopes are mutually disjoint. Safe to dispatch concurrently.`);
+    return 0;
+  }
+
   console.log(`[OODA Gate] Evaluating attempt ${config.currentAttempt} of ${config.maxAttempts}`);
 
   // Layer 5 Check: Circuit Breaker
