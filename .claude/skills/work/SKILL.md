@@ -50,11 +50,16 @@ Stop and escalate immediately (`escalated: <from> → <to> because <E1–E5>: <e
 
 - **E1:** New evidence breaks `light` or triggers `heavy`.
 - **E2:** Diff outgrows one sentence or touches another module.
-- **E3:** Verification fails twice without new information (re-plan).
+- **E3:** Verification fails twice without new information (re-plan: circuit breaker halts repeated unproductive retries while preserving useful progress).
 - **E4:** Affected check fails in baseline without clear attribution.
 - **E5:** Implementation diverges from approved specification.
 
 *Note:* Escalation to `heavy` stops for owner confirmation.
+
+## Verification & Review Auditing
+
+1. **Risk-Calibrated Independent Review:** Trigger an independent reviewer subagent for `heavy` tasks or high-risk changes (cross-module footprint, public contract changes, or sensitive behavior under S5/H4); simple, localized tasks rely on self-review.
+2. **Deterministic Verification Audit:** Never assume model or agent consensus equals correctness. Deterministic verification gates (test suites, validators, linters, schemas) strictly override model agreement.
 
 ## Resume Command
 
