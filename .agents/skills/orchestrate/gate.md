@@ -4,7 +4,7 @@ The Autonomous Verification Gate is the deterministic barrier between subagent c
 
 ---
 
-## 1. The 4 Verification Layers
+## 1. The 5 Verification Layers
 
 ```mermaid
 flowchart TD
@@ -16,10 +16,12 @@ flowchart TD
     RET -->|Yes| FDB[Send failure log to worker]
     RET -->|No| CB[Circuit Breaker: Mark ticket BLOCKED]
     
-    L2 -->|Exit 0| L3{Layer 3: Quantitative Thresholds}
-    L3 -->|Below Target| RET
-    L3 -->|Meets Target| L4[Layer 4: Record Evidence & Pass]
-    L4 --> COMMIT[Seal Atomic Commit]
+    L2 -->|Exit 0| L3{Layer 3: Task Ancestry & Lineage}
+    L3 -->|Invalid Hash / Broken Ancestry| RET
+    L3 -->|Valid Lineage| L4{Layer 4: Quantitative Thresholds}
+    L4 -->|Below Target| RET
+    L4 -->|Meets Target| L5[Layer 5: Record Evidence & Pass]
+    L5 --> COMMIT[Seal Atomic Commit]
 ```
 
 ---
@@ -93,7 +95,20 @@ mise run test
 
 ---
 
-## 4. Layer 3: Quantitative Metric & Threshold Gate
+## 4. Layer 3: Task Ancestry & Git Lineage Gate
+
+Layer 3 enforces deterministic Git lineage integrity before any commit sealing or PR creation, preventing §3.4/§7.1 CI failures:
+
+### Ancestry Invariants and Evaluation
+
+1. **Task Record Discovery:** Detects modified or staged `tasks/*.md` records.
+2. **Commit Existence:** When `status: verified` (or `accepted`), ensures that `verified_at` and baseline `Ref` commit hashes (e.g., `B1`) exist in the local Git repository (`git rev-parse --verify <sha>^{commit}`).
+3. **Strict Ancestry Verification:** Deterministically asserts via `git merge-base --is-ancestor <baseline_sha> <verified_at>` that the baseline commit is a strict valid ancestor of `verified_at` and not identical to it (a baseline must run strictly before the change).
+4. **Rejection:** Rejects with exit code 1 (`fail`) if any referenced commit does not exist or if ancestry is broken/reversed.
+
+---
+
+## 5. Layer 4: Quantitative Metric & Threshold Gate
 
 For tickets specifying numerical acceptance thresholds (e.g., benchmark latency, test coverage delta, token budgets, or schema adherence):
 
@@ -108,7 +123,7 @@ If any threshold is not satisfied, the gate evaluates to `fail`.
 
 ---
 
-## 5. Layer 4: Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3)
+## 6. Layer 5: Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3)
 
 To prevent infinite loops and runaway token expenditure:
 
