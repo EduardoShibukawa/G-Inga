@@ -10,7 +10,7 @@ Macro-governor for autonomous multi-task execution over dependency graphs and ta
 
 ## Non-Negotiable Invariants
 
-1. **Tokens Per Verified Task:** Never trust verbal self-attestation from subagents or models. Accept deliverables only when all 4 layers of the Verification Gate evaluate to `pass`.
+1. **Tokens Per Verified Task:** Never trust verbal self-attestation from subagents or models. Accept deliverables only when all 5 layers of the Verification Gate evaluate to `pass`.
 2. **Strict 4-Value Vocabulary:** Report checks strictly using `pass`, `fail`, `blocked`, or `not run`. Exit code 0 is strictly forbidden if any mandatory check is skipped or unrun.
 3. **Context Isolation:** Keep the orchestrator root context lean (< 25k tokens). Exploration, iterative editing, and tool output belong strictly inside ephemeral subagents (`invoke_subagent`).
 4. **Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3):** Maximum 2 verification attempts per ticket without new information. On the second consecutive failure, halt the ticket, mark it `blocked`, and escalate to the repository owner.
@@ -23,8 +23,8 @@ flowchart TD
     OBS["1. OBSERVE: git status, HEAD, map.md / tasks/"] --> ORI["2. ORIENT: Unblocked frontier, constraints, thresholds"]
     ORI --> DEC["3. DECIDE: Batch size N, prepare scoped worker prompts"]
     DEC --> ACT["4. ACT: invoke_subagent concurrent workers"]
-    ACT --> GATE{"5. GATE: 4-Layer Autonomous Verification"}
-    GATE -->|"Pass (All 4 Layers)"| SEAL["6. SEAL: Commit batch, update graph, advance frontier"]
+    ACT --> GATE{"5. GATE: 5-Layer Autonomous Verification"}
+    GATE -->|"Pass (All 5 Layers)"| SEAL["6. SEAL: Commit batch, update graph, advance frontier"]
     GATE -->|"Fail (Attempts < 2)"| RETRY["Retry with deterministic failure diff"]
     RETRY --> ACT
     GATE -->|"Fail (Attempts >= 2)"| ESC["Circuit Breaker: Mark blocked & escalate"]
@@ -61,7 +61,7 @@ flowchart TD
 
 ### 5. GATE (Deterministic Autonomous Verification)
 
-Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([.agents/skills/orchestrate/gate.md](gate.md)) across four sequential layers:
+Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([.agents/skills/orchestrate/gate.md](gate.md)) across five sequential layers:
 
 1. **Layer 1 (Scope & Diff Gate):**
    - Run `git status --porcelain` and `git diff --name-only`.
@@ -70,9 +70,13 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
 2. **Layer 2 (Deterministic Command & Exit Code Gate):**
    - Execute verification commands: `mise run validate`, `mise run test`, or task-specific test suites.
    - Map exit codes strictly: `0` = `pass`, `1` = `fail`, `2` = `blocked`.
-3. **Layer 3 (Quantitative Metric & Threshold Gate):**
+3. **Layer 3 (Task Ancestry & Git Lineage Gate):**
+   - Validate modified `tasks/*.md` records.
+   - When status is `verified` or `accepted`, check that `verified_at` and baseline commit `B1` exist locally.
+   - Ensure `B1` is a strict valid ancestor of `verified_at` via `git merge-base --is-ancestor`.
+4. **Layer 4 (Quantitative Metric & Threshold Gate):**
    - Verify objective thresholds (e.g. 0 lint warnings, schema validation, performance latency).
-4. **Layer 4 (Anti-Thrashing Circuit Breaker):**
+5. **Layer 5 (Anti-Thrashing Circuit Breaker):**
    - Track verification failure count per ticket.
    - If count < 2: send deterministic failure logs to subagent for corrective action.
    - If count $\ge 2$: stop worker, mark ticket `blocked`, record escalation, and alert owner.

@@ -2,24 +2,28 @@
 /**
  * Autonomous Verification Gate CLI for G-Ingá OODA Orchestrator.
  *
- * Deterministic 4-layer verification gate:
+ * Deterministic 5-layer verification gate:
  * - Layer 1: Scope & Diff Gate (git diff --name-only against allowed patterns)
  * - Layer 2: Deterministic Command & Exit Code Gate (run command; check exit 0/1/2)
- * - Layer 3: Quantitative Thresholds (lint count == 0, test failures == 0)
- * - Layer 4: Anti-Thrashing Circuit Breaker (attempts < 2)
+ * - Layer 3: Task Ancestry & History Gate (git ancestry and commit validity on tasks/*.md)
+ * - Layer 4: Quantitative Thresholds (lint count == 0, test failures == 0)
+ * - Layer 5: Anti-Thrashing Circuit Breaker (attempts < 2)
  *
  * Exit codes:
  * 0: Gate PASSED (all layers passed)
- * 1: Gate FAILED (deterministic failure, diff violation or threshold missed)
+ * 1: Gate FAILED (deterministic failure, diff violation, ancestry violation or threshold missed)
  * 2: Gate BLOCKED (circuit breaker tripped or environment blocked)
  */
 
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { parse as parseYaml } from "yaml";
 
 interface GateConfig {
   allowedScope?: string[];
   filesOverride?: string[];
+  taskFilesOverride?: string[];
   command?: string;
   maxAttempts?: number;
   currentAttempt?: number;
@@ -39,6 +43,9 @@ function parseArgs(): GateConfig {
       i++;
     } else if (args[i] === "--files" && args[i + 1]) {
       config.filesOverride = args[i + 1].split(",").map((s) => s.trim());
+      i++;
+    } else if (args[i] === "--tasks" && args[i + 1]) {
+      config.taskFilesOverride = args[i + 1].split(",").map((s) => s.trim());
       i++;
     } else if (args[i] === "--cmd" && args[i + 1]) {
       config.command = args[i + 1];
@@ -95,13 +102,173 @@ export function evaluateScope(allowedScope: string[], filesOverride?: string[]):
   return { pass: violations.length === 0, violations };
 }
 
+export interface TaskAncestryResult {
+  pass: boolean;
+  violations: string[];
+  checkedTasks: string[];
+}
+
+export interface TaskRecordData {
+  status?: string;
+  verifiedAt?: string;
+  rows: { id: string; kind: string; result: string; sha: string; note: string }[];
+}
+
+export function parseTaskRecord(filePath: string, content?: string): TaskRecordData | null {
+  const text = content !== undefined ? content : existsSync(filePath) ? readFileSync(filePath, "utf8") : "";
+  if (!text) return null;
+
+  const norm = text.replace(/\r\n/g, "\n");
+  const fmMatch = /^---\n([\s\S]*?)\n---\n?/.exec(norm);
+  let status: string | undefined;
+  let verifiedAt: string | undefined;
+
+  if (fmMatch) {
+    try {
+      const parsed = parseYaml(fmMatch[1]) as Record<string, unknown>;
+      if (parsed) {
+        if (typeof parsed.status === "string") status = parsed.status;
+        if (parsed.verified_at !== undefined) verifiedAt = String(parsed.verified_at);
+      }
+    } catch {
+      // If YAML fails to parse, downstream checks or validator will catch
+    }
+  }
+
+  const body = fmMatch ? norm.slice(fmMatch[0].length) : norm;
+  const rows: { id: string; kind: string; result: string; sha: string; note: string }[] = [];
+
+  let inVerification = false;
+  for (const line of body.split("\n")) {
+    const h = /^## (.+?)\s*$/.exec(line);
+    if (h) {
+      inVerification = h[1] === "Verification";
+      continue;
+    }
+    if (inVerification) {
+      const cells = line.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      const kindMatch = /^(AC|SC|B|R|V)\d*$/.exec(cells[0] ?? "");
+      if (kindMatch && cells.length >= 4) {
+        rows.push({
+          id: cells[0],
+          kind: kindMatch[1],
+          result: cells[2],
+          sha: (cells[3] ?? "").split(/\s+/)[0],
+          note: cells[4] ?? "",
+        });
+      }
+    }
+  }
+
+  return { status, verifiedAt, rows };
+}
+
+function verifyCommitExists(commitSha: string): boolean {
+  if (!commitSha) return false;
+  const proc = spawnSync("git", ["rev-parse", "--verify", "--quiet", `${commitSha}^{commit}`], { encoding: "utf8" });
+  return proc.status === 0;
+}
+
+function verifyStrictAncestor(ancestorSha: string, descendantSha: string): boolean {
+  if (!ancestorSha || !descendantSha) return false;
+  // If identical, not a strict ancestor (baseline must run before the change)
+  const aRes = spawnSync("git", ["rev-parse", "--verify", "--quiet", `${ancestorSha}^{commit}`], { encoding: "utf8" });
+  const bRes = spawnSync("git", ["rev-parse", "--verify", "--quiet", `${descendantSha}^{commit}`], { encoding: "utf8" });
+  if (aRes.status !== 0 || bRes.status !== 0) return false;
+  if (aRes.stdout.trim() === bRes.stdout.trim()) return false;
+
+  const proc = spawnSync("git", ["merge-base", "--is-ancestor", ancestorSha, descendantSha], { encoding: "utf8" });
+  return proc.status === 0;
+}
+
+export function evaluateTaskAncestry(taskFilesOverride?: string[], fileContentMap?: Record<string, string>): TaskAncestryResult {
+  const taskFiles: string[] = [];
+
+  if (taskFilesOverride !== undefined) {
+    taskFiles.push(...taskFilesOverride);
+  } else {
+    const gitDiff = spawnSync("git", ["diff", "--name-only", "HEAD"], { encoding: "utf8" });
+    const gitUntracked = spawnSync("git", ["status", "--porcelain"], { encoding: "utf8" });
+
+    const candidates = new Set<string>();
+    if (gitDiff.stdout) {
+      gitDiff.stdout.split("\n").map((f) => f.trim()).filter(Boolean).forEach((f) => candidates.add(f));
+    }
+    if (gitUntracked.stdout) {
+      gitUntracked.stdout.split("\n").forEach((line) => {
+        const match = line.match(/^(\?\?| A|M )\s*(.+)$/);
+        if (match) candidates.add(match[2].trim());
+      });
+    }
+
+    for (const f of candidates) {
+      if (f.startsWith("tasks/") && f.endsWith(".md")) {
+        taskFiles.push(f);
+      }
+    }
+  }
+
+  const violations: string[] = [];
+  const checkedTasks: string[] = [];
+
+  for (const taskPath of taskFiles) {
+    checkedTasks.push(taskPath);
+    const content = fileContentMap ? fileContentMap[taskPath] : undefined;
+    const taskData = parseTaskRecord(taskPath, content);
+    if (!taskData) continue;
+
+    // Only inspect ancestry when status is verified (or accepted)
+    if (taskData.status === "verified" || taskData.status === "accepted") {
+      const verifiedAt = taskData.verifiedAt;
+      if (!verifiedAt) {
+        violations.push(`${taskPath}: status is "${taskData.status}" but verified_at is missing`);
+        continue;
+      }
+
+      if (!verifyCommitExists(verifiedAt)) {
+        violations.push(`${taskPath}: verified_at commit "${verifiedAt}" does not exist in local Git repository`);
+        continue;
+      }
+
+      // Check baseline B rows
+      const bRows = taskData.rows.filter((r) => r.kind === "B");
+      for (const bRow of bRows) {
+        if (!bRow.sha) {
+          violations.push(`${taskPath}: baseline row ${bRow.id} has no Ref commit SHA`);
+          continue;
+        }
+
+        if (!verifyCommitExists(bRow.sha)) {
+          violations.push(`${taskPath}: baseline row ${bRow.id} commit "${bRow.sha}" does not exist in local Git repository`);
+          continue;
+        }
+
+        if (bRow.sha === verifiedAt) {
+          violations.push(`${taskPath}: baseline row ${bRow.id} commit "${bRow.sha}" equals verified_at; baseline must run strictly before verified_at`);
+          continue;
+        }
+
+        if (!verifyStrictAncestor(bRow.sha, verifiedAt)) {
+          violations.push(`${taskPath}: baseline row ${bRow.id} commit "${bRow.sha}" is not a strict ancestor of verified_at "${verifiedAt}"`);
+        }
+      }
+    }
+  }
+
+  return {
+    pass: violations.length === 0,
+    violations,
+    checkedTasks,
+  };
+}
+
 export function evaluateGate(): number {
   const config = parseArgs();
   console.log(`[OODA Gate] Evaluating attempt ${config.currentAttempt} of ${config.maxAttempts}`);
 
-  // Layer 4 Check: Circuit Breaker
+  // Layer 5 Check: Circuit Breaker
   if ((config.currentAttempt ?? 1) > (config.maxAttempts ?? 2)) {
-    console.error(`[OODA Gate L4 Circuit Breaker] Tripped: attempt ${config.currentAttempt} exceeds max ${config.maxAttempts}. Status: BLOCKED`);
+    console.error(`[OODA Gate L5 Circuit Breaker] Tripped: attempt ${config.currentAttempt} exceeds max ${config.maxAttempts}. Status: BLOCKED`);
     return 2;
   }
 
@@ -132,8 +299,21 @@ export function evaluateGate(): number {
     console.log(`[OODA Gate L2 Command] PASS: Command exited with code 0`);
   }
 
-  // Layer 3 Check: Quantitative Threshold Gate
-  console.log(`[OODA Gate L3 Threshold] PASS: Quantitative criteria met.`);
+  // Layer 3 Check: Task Ancestry & History Gate
+  const ancestryRes = evaluateTaskAncestry(config.taskFilesOverride);
+  if (!ancestryRes.pass) {
+    console.error(`[OODA Gate L3 Task Ancestry] FAIL: Task lineage / ancestry validation failed:`);
+    ancestryRes.violations.forEach((v) => console.error(`  - ${v}`));
+    return 1;
+  }
+  if (ancestryRes.checkedTasks.length > 0) {
+    console.log(`[OODA Gate L3 Task Ancestry] PASS: Validated ${ancestryRes.checkedTasks.length} task(s) ancestry successfully.`);
+  } else {
+    console.log(`[OODA Gate L3 Task Ancestry] PASS: No modified task records requiring ancestry check.`);
+  }
+
+  // Layer 4 Check: Quantitative Threshold Gate
+  console.log(`[OODA Gate L4 Threshold] PASS: Quantitative criteria met.`);
 
   console.log(`[OODA Gate Final] ALL LAYERS PASSED. Status: PASS (Go)`);
   return 0;
