@@ -26,7 +26,7 @@ G-Ingá solves this with:
   - Usage & token observability ([ADR 0006](docs/decisions/0006-usage-observability.md)).
   - Evaluation protocol for exploratory pilot ([D7 Evaluation Protocol](docs/research/d7-evaluation-protocol.md)).
 - **What Remains Open / Proposed:**
-  - The `/orchestrate` and `/drive` skills (`.claude/skills/`, `.agents/skills/`) exist beyond the V1 spec; their governance decision is pending.
+  - The `/orchestrate` and `/drive` skills (`.claude/skills/`, `.agents/skills/`) exist beyond the V1 spec as repository-local extensions outside the bundle, governed by [ADR 0007](docs/decisions/0007-harness-extensions-beyond-v1.md) (`accepted`).
 
 > [!NOTE]
 > Implementation status is distinct from repository validation tooling: the repository development checks (`mise run validate`, `mise run test`) are fully functional and pass, validating documentation, contracts, and the product bundle.

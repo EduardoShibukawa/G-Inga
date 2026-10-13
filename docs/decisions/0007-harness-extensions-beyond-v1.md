@@ -1,8 +1,8 @@
 # 0007 — Harness extensions beyond V1
 
-- **Status:** proposed (drafted 2026-10-13 from an audit of the approved V1 spec against the repository; awaiting the owner's decision on each item)
-- **Date:** 2026-10-13
-- **Deciders:** project owner (only the owner accepts this record; each Decision item can be accepted, changed or rejected on its own)
+- **Status:** accepted (2026-10-13)
+- **Date:** 2026-10-13 (drafted from an audit of the approved V1 spec against the repository; accepted 2026-10-13)
+- **Deciders:** project owner (accepted 2026-10-13 in full, Decision items 1–5 without change, by the owner's message requesting the `/orchestrate` run that accepts ADR 0007 and opens its follow-ups; the three open questions are answered below)
 - **Depends on:** [ADR 0002](0002-ceremony-tiers-and-routing.md), [ADR 0004](0004-reuse-strategy-for-existing-skills.md), [ADR 0005](0005-native-primitive-mapping.md) and [ADR 0006](0006-usage-observability.md), all `accepted`, and the approved [Minimal V1 Specification](../../specs/2026-10-11-minimal-v1-specification.md) (`approved_version: 1`). This record changes none of them: the spec stays frozen under its hash and accepted ADRs stay as written.
 - **Evidence:** repository files at commit b1aa551, cited inline. Audit task: [tasks/2026-10-13-adr-0007-harness-extensions.md](../../tasks/2026-10-13-adr-0007-harness-extensions.md).
 
@@ -34,7 +34,7 @@ Decide, per divergence, whether the repository or the record changes, so that:
 - a verification that depends on an owner-local tool degrades to `not run` instead of silently failing or being skipped;
 - gaps in the V1 verification protocol are closed by new records, never by editing accepted ones.
 
-## Decision (proposed)
+## Decision
 
 1. **Manifest scope: accept as a recorded deviation.** The `.agents/skills/work/**` coverage stays. The owner approved it in child task 05, and it extends SC5's integrity intent to a second host without hashing any user file. This record is the written deviation from SC5's "strictly" wording. A spec v2 is deferred until another spec change needs reapproval, and folds this in then.
 2. **Extra skills: post-V1 extensions outside the bundle, made user-invocable.** `/orchestrate` and `/drive` stay as repository-local extensions, never delivered by `bundle.json`. A follow-up `light` task sets `disable-model-invocation: true` on both, on both hosts, which takes their descriptions out of every turn (`N3`) and restores the V1 budget of one model-invocable description. Both are invoked by name for multi-task runs, so automatic loading buys little.
@@ -64,10 +64,12 @@ Decide, per divergence, whether the repository or the record changes, so that:
 - The V1 spec stays at `approved_version: 1` and its hash doesn't change; this record is where the SC5 deviation and the plugin retirement are found.
 - Per-turn fixed overhead returns to one description once item 2's follow-up lands; until then it is three.
 - `/drive` runs in cloud sessions with a recorded `not run` for the Gira-G step instead of an unexplained failure.
-- Two follow-up tasks are needed (skills frontmatter plus the `/drive` fallback rule; the verification walk and spike S2). Neither starts before the owner accepts the matching item.
+- Two follow-up tasks are needed (skills frontmatter plus the `/drive` fallback and staleness rules; the verification walk and spike S2). Both are authorized by the acceptance on 2026-10-13. The `/drive` `not run` fallback of item 3 already landed with the [drive contract alignment task](../../tasks/2026-10-13-align-drive-skill-with-contracts.md).
 
-## Open questions
+## Open questions (answered)
 
-- Should a spec v2 be opened proactively, gathering this record's deviations, or only when another change needs reapproval? (Item 1 recommends the latter.)
-- Should the staleness check in item 3 be a validator layer, or stay a `/drive` instruction? A validator layer would need `gira.yaml` parsing inside `tools/validate/`, which is bundle scope.
-- Does spike S2 need a pinned Claude Code version to count as evidence, as ADR 0005 asks for spike S1?
+Answered by the owner on 2026-10-13, with the acceptance.
+
+- Should a spec v2 be opened proactively, gathering this record's deviations, or only when another change needs reapproval? **Answer:** not now. A spec v2 is opened only when another change needs reapproval, as item 1 recommends.
+- Should the staleness check in item 3 be a validator layer, or stay a `/drive` instruction? A validator layer would need `gira.yaml` parsing inside `tools/validate/`, which is bundle scope. **Answer:** it stays a `/drive` instruction. It doesn't become a validator layer, which keeps `gira.yaml` parsing out of the bundle.
+- Does spike S2 need a pinned Claude Code version to count as evidence, as ADR 0005 asks for spike S1? **Answer:** yes. A spike S2 row counts as evidence only when it records the Claude Code version (`claude --version`) it ran on, as for spike S1.
