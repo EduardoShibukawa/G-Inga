@@ -69,13 +69,15 @@ The `/drive` driver accepts configuration flags to control execution scope and r
 - Scan active and open tasks in `tasks/*.md` (and `map.md` if present).
 - Filter tasks by eligibility:
   - Schema is valid (`schema: task/1`).
-  - Status is `active` or `draft` (or unblocked pending implementation).
+  - Status is `todo` or `active`, or `blocked` with its `## Blockers` entry resolved (contract §3.3: `blocked --> active` when the blocker is resolved). Never `completed`, `verified`, `accepted`, `partial` or `cancelled`.
   - Dependencies listed in `depends_on` are fully `verified` or `accepted`.
 - Sort candidates topologically by dependency depth and limit candidates to `--limit <N>`.
 
 ### Step 2: Gira-G Architectural Context Extraction (L1 / L3)
 
-To ensure zero token waste and maximize tokens per verified task, query the Gira-G architectural index (`docs/architecture/macro-map.json`):
+To ensure zero token waste and maximize tokens per verified task, query the Gira-G architectural index (`docs/architecture/macro-map.json`).
+
+**Availability check:** run `command -v gira`. The `gira` CLI is not part of this repository and may be absent (for example in cloud sessions). If it is unavailable, apply the fallback below instead of the commands that follow.
 
 - **Locate Target Nodes:**
 
@@ -97,6 +99,8 @@ To ensure zero token waste and maximize tokens per verified task, query the Gira
 
 Inject only the minimal contextual slice and bounded contract boundaries into the worker execution prompts.
 
+**Fallback when `gira` is unavailable:** record the Gira-G context step as `not run` with the note `gira not installed`. It is `not run`, not `blocked`, because the step only enriches context and no gate depends on it. Derive the context slice deterministically from the task record instead: the files listed under `In scope:` in its `## Objective`, plus the contract sections its acceptance criteria cite. Do not substitute another tool.
+
 ### Step 3: Concurrency Wave Partitioning & Orchestration (L2)
 
 Hand off candidate tasks to `/orchestrate` via the auto-runner harness:
@@ -112,7 +116,7 @@ Each worker subagent executes `/work` within its designated worktree:
 - Follow ceremony tier procedures (typically `standard`).
 - Confine edits strictly to declared `In scope` files.
 - Validate locally: `mise run validate` and `mise run test`.
-- Report completion with `status: ready_for_gate`.
+- Leave the task record at `completed` (or `verified` only when the §3.4 rule holds at `verified_at`) and report the deliverable to the orchestrator for the gate.
 
 ### Step 5: Verification Gate & Circuit Breaker (L2)
 
