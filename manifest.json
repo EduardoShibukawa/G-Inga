@@ -1,6 +1,6 @@
 {
   "release": "1.0.0",
-  "commit": "1092a44b6ef194e0e082cefce73590a9df7f0523",
+  "commit": "7ca857ad671d6adabc8505d6a1d2944f30ac7b09",
   "files": {
     ".claude/skills/work/SKILL.md": "bce79343f48cc0a0b2969f257beaf06449e524125b0a2878116d44ce858feb60",
     ".claude/skills/work/heavy.md": "bb8c03c38515e5918da6cd2996a716ad5c6232a3c19d18d032a350313190d139",
@@ -15,7 +15,7 @@
     ".agents/skills/work/standard.md": "e9b4e80c30d8384b090aefcba65d67d7442f5f934a1a87e90d14f001c8e24e51",
     ".agents/skills/work/references/artifact-contracts.md": "a39eb61edf1fff1654187fdf453bd15ecd25017432a1fa9f45d093e20add68a4",
     "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
-    "tools/validate/validate.js": "ad97b5f9b996404ff12b8dbf1c97cd577b2f6b9bfa51462c821a2b90452b94f3",
+    "tools/validate/validate.js": "0108deabe16a2e30b53070783c96bf55c89bd24e59fde37848bbcd3be02c0374",
     "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
