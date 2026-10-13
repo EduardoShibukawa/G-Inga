@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "79df752"
 ---
 
 # Promote Autoresearch Round 2 Findings (EXP-05, EXP-06) to V1 Bundle
@@ -56,12 +57,12 @@ Promote accepted Round 2 autoresearch findings (EXP-05 Dynamic Worktree Isolatio
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation and test suite | pass | e3f383b | `bun run validate` pass, `bun test` (220 pass), `manifest.mjs --check` pass on HEAD |
-| AC1 | autoresearch ledger accepted decisions | pass | e3f383b | records/autoresearch-ledger.tsv updated for EXP-05 and EXP-06 |
-| AC2 | autoresearch program results section | pass | e3f383b | docs/research/autoresearch-program.md updated with Round 2 results |
-| AC3 | bundle skills incorporate EXP-05 and EXP-06 | pass | e3f383b | applied to .claude/skills/work/SKILL.md and .agents/skills/work/SKILL.md |
-| AC4 | bundle manifest asset hashes updated | pass | e3f383b | manifest.json hashes updated; bundle asset tests pass |
-| AC5 | repository validation suite | pass | e3f383b | bun run validate passes with exit code 0 (75 files, 0 issues) |
-| V1 | diff review against scope | pass | e3f383b | diff strictly bounded to in-scope files; spec hash untouched |
+| AC1 | autoresearch ledger accepted decisions | pass | 79df752 | records/autoresearch-ledger.tsv updated for EXP-05 and EXP-06 |
+| AC2 | autoresearch program results section | pass | 79df752 | docs/research/autoresearch-program.md updated with Round 2 results |
+| AC3 | bundle skills incorporate EXP-05 and EXP-06 | pass | 79df752 | applied to .claude/skills/work/SKILL.md and .agents/skills/work/SKILL.md |
+| AC4 | bundle manifest asset hashes updated | pass | 79df752 | manifest.json hashes updated; bundle asset tests pass |
+| AC5 | repository validation suite | pass | 79df752 | bun run validate passes with exit code 0 (76 files, 0 issues) |
+| V1 | diff review against scope | pass | 79df752 | diff strictly bounded to in-scope files; spec hash untouched |
 
 ## Outcome
 
@@ -75,6 +76,6 @@ Round 2 autoresearch findings (EXP-05 Dynamic Worktree Isolation and EXP-06 Toke
 
 ## Checkpoint
 
-- as of: 2026-10-12, branch main, head e3f383b, task active
-- done: ledger updated, research doc updated, bundle skills updated, manifest updated, validation suite clean
-- next: deliver ready_for_gate report to parent orchestrator for verification gate and atomic commit seal
+- as of: 2026-10-12, branch feat/promote-autoresearch-round2-bundle, head 79df752, task verified
+- done: ledger updated, research doc updated, bundle skills updated, manifest provenance pass, 5-layer OODA gate passed
+- next: squash/merge PR to main and sync
