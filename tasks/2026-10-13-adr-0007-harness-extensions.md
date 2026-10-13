@@ -50,9 +50,9 @@ Also index the ADR in `docs/decision-map.md` and `docs/README.md`, and fix the s
 | AC1 | ADR 0007 drafted as proposed | pass | 8c80d59 | header has Status `proposed`, Date, Deciders, Depends on; sections Context, Problem, Decision, Alternatives considered, Consequences, Open questions cover items 1–5 with options and a recommendation each |
 | AC2 | factual claims checked | pass | 8c80d59 | checked against `bundle.json` (15 assets), `manifest.json`, SKILL.md frontmatter (descriptions 134/173/267 chars on Claude Code, 149 for Antigravity `/work`, all `disable-model-invocation: false`), `gira.yaml`, macro map (357 `commit_sha`, all `47cc03d`), `git rev-list` (12 commits, 8 non-merge, 47cc03d..b1aa551), parent task rows, ADR 0004 §7, ADR 0005 §1 and Alternatives B and D, ADR 0006 header |
 | AC3 | decision map and docs index | pass | 8c80d59 | D8 row `proposed` links ADR 0007 under "Not on the V1 path"; `docs/README.md` indexes ADR 0007 and labels both accepted task records `accepted` (the parent record on line 31 was also stale) |
-| AC4 | scope bounded | pass | 8c80d59 | `git diff --stat b1aa551..8c80d59` touches only the 4 in-scope files; spec and ADRs 0001–0006 unchanged |
+| AC4 | scope bounded | pass | 8c80d59 | `git diff --stat 4808f5c..8c80d59` touches only the 4 in-scope files; spec and ADRs 0001–0006 unchanged |
 | AC5 | validate, typecheck, test | pass | 8c80d59 | `bun run validate` Overall pass (markdown-lint, local-links, decision-records 7 ADRs and 9 map rows); `bun run typecheck` exit 0; `bun run test` 220 pass, 0 fail |
-| V1 | diff review against ticket and governance | pass | 8c80d59 | self-review of `b1aa551..8c80d59`: ADR stays `proposed`, no edit to the approved spec, ADRs 0001–0006 or accepted task records; recommendations need owner acceptance before any follow-up task |
+| V1 | diff review against ticket and governance | pass | 8c80d59 | self-review of `4808f5c..8c80d59`: ADR stays `proposed`, no edit to the approved spec, ADRs 0001–0006 or accepted task records; recommendations need owner acceptance before any follow-up task |
 
 ## Plan
 
