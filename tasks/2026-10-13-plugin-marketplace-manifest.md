@@ -54,14 +54,16 @@ verified_at: "63e6aa4"
 
 The repository is a single-plugin marketplace. `claude plugin marketplace add EduardoShibukawa/G-Inga` then `claude plugin install g-inga@g-inga` installs the `g-inga` plugin, which loads `/g-inga:work`, `/g-inga:drive` and `/g-inga:orchestrate` from `.claude/skills/`. The pinned bundle and the V1 spec are unchanged.
 
+Owner install check (2026-10-13, outside the verification table because it ran on the branch head e3382cd, whose plugin files equal 63e6aa4): `claude plugin marketplace add EduardoShibukawa/G-Inga` failed before merge (default branch has no manifest); `claude plugin marketplace add "EduardoShibukawa/G-Inga#feat/plugin-marketplace-manifest"` and `claude plugin install g-inga@g-inga` succeeded; `claude plugin list` shows `g-inga@g-inga`, version `e3382cd53249`, enabled, `Skills (3) drive, orchestrate, work`.
+
 Follow-ups (not done):
 
 - Record the plugin channel in ADR 0005 / the decision map if it becomes more than a personal convenience.
 - Inside this repository, the project skills and the plugin skills both load when the plugin is enabled (namespaced, no collision, ~154 tok extra); disable the plugin per repository if that cost matters.
-- Install from GitHub is not run until this branch reaches `main` (the marketplace clones the default branch).
+- After merge, re-add the marketplace without `#ref` so it tracks `main`: `claude plugin marketplace remove g-inga`, then `claude plugin marketplace add EduardoShibukawa/G-Inga`.
 
 ## Checkpoint
 
 - as of: 2026-10-13, branch feat/plugin-marketplace-manifest, head 63e6aa4, task verified
 - done: marketplace and plugin manifests, README install section, AC1-AC6 and V1 pass
-- next: owner review and PR merge; then run `claude plugin marketplace add EduardoShibukawa/G-Inga`
+- next: owner review and PR #34 merge; then re-add the marketplace without `#ref`
