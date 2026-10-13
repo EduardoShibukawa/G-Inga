@@ -64,12 +64,28 @@ flowchart TD
     - If scopes collide (Exit Code 1), parallel dispatch is strictly rejected.
     - Conflicting workers MUST be partitioned into sequential conflict-free execution waves (`partitionWaves`).
     - Only mutually disjoint batches (Exit Code 0) are dispatched concurrently.
+  - **Automated Wave Execution Harness (`orchestrate-runner.ts`):**
+    - The auto-runner CLI (`tools/gate/orchestrate-runner.ts`) automates wave partitioning, worker dispatch in ephemeral worktrees (EXP-05), and token budget calibration (EXP-06):
+
+      ```bash
+      bun tools/gate/orchestrate-runner.ts --batch batch.json --ceremony standard
+      ```
+
+    - Supports dry-run validation:
+
+      ```bash
+      bun tools/gate/orchestrate-runner.ts --batch '{"worker-1": ["scope1/"], "worker-2": ["scope2/"]}' --dry-run
+      ```
 
 ### 4. ACT (Concurrent Dispatch & Asynchronous Wait)
 
 - Dispatch worker subagents in a single `invoke_subagent` batch call with role and scoped prompt:
   - Set `TypeName: "self"` (or `"research"` for read-only spikes).
   - Include the verification contract directly in the prompt.
+- **Dynamic Git Worktree Isolation (EXP-05):**
+  - When running concurrent workers locally or through the auto-runner, workers execute inside isolated ephemeral git worktrees (`tools/gate/worktree-runner.ts`), eliminating `.git/index.lock` contention and ensuring setup overhead < 500ms.
+- **Token Budget Guardrail (EXP-06):**
+  - Telemetry across workers is monitored via `tools/eval/token_budget_guard.ts`. Standard ceremony tickets enforce hard ceilings (< 25,000 tokens) with warning alerts at $\ge 80\%$ consumption.
 - Do NOT poll in a loop. Antigravity will deliver asynchronous wakeup messages upon subagent completion.
 
 ### 5. GATE (Deterministic Autonomous Verification)
@@ -106,3 +122,5 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
 - Verification Gate Rules & Rollback: [.agents/skills/orchestrate/gate.md](gate.md)
 - Subagent Canonical Prompt Template: [.agents/skills/orchestrate/subagent-prompt.md](subagent-prompt.md)
 - OODA State Machine & Transitions: [.agents/skills/orchestrate/references/ooda-cycle.md](references/ooda-cycle.md)
+- Automated Wave Runner: [tools/gate/orchestrate-runner.ts](../../../tools/gate/orchestrate-runner.ts)
+- Token Budget Guardrail (EXP-06): [tools/eval/token_budget_guard.ts](../../../tools/eval/token_budget_guard.ts)
