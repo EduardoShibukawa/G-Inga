@@ -1,4 +1,4 @@
-// markdownlint configuration for repository docs (tools/validate/checks/markdownLint.ts).
+// markdownlint configuration for repository docs (tools/validate/universal/markdownLint.ts).
 {
   "default": true,
   // Prose is written one paragraph per line; wrapping would make diffs noisier.
