@@ -1,0 +1,26 @@
+# Category: should-not-fire. Expected: no G-Inga skill fires for a self-contained coding question.
+# Graders: no-work = deterministic (tool_used max 0, scored in both arms); answer = deterministic (regex).
+schema_version: "1.0"
+name: work-should-not-fire-unrelated-code
+description: "should-not-fire: a one-off coding question with no repo deliverable. Graders: deterministic only."
+tags: [trigger, skill-work, should-not-fire, grader-deterministic]
+expected_outcome: "No Skill call to work; the agent answers with a Python function inline."
+execution:
+  prompt: |
+    Write a Python function that returns the reverse of a string. Reply with just the code, no files.
+  max_turns: 2
+  timeout_seconds: 120
+  allowed_tools: [Skill, Read, Glob, Grep]
+runs: 3
+graders:
+  - name: no-work
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(g-inga:)?work"'
+    min: 0
+    max: 0
+    arm: both
+  - name: answer
+    type: regex
+    target: last_message
+    pattern: 'def\s+\w+\s*\('

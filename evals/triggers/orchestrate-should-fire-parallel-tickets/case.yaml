@@ -1,0 +1,29 @@
+# Category: should-fire. Expected: the `orchestrate` skill fires for parallel ticket dispatch behind a gate.
+# Graders: fired-orchestrate = deterministic (tool_used, trigger indicator, reported not scored under ablation);
+#          gated-dispatch = model-graded (llm).
+schema_version: "1.0"
+name: orchestrate-should-fire-parallel-tickets
+description: "should-fire: dispatch open tickets to parallel subagents behind a Go/No-Go gate. Graders: deterministic + model-graded."
+tags: [trigger, skill-orchestrate, should-fire, grader-deterministic, grader-model]
+expected_outcome: "The orchestrate skill fires and the agent plans gated parallel dispatch."
+execution:
+  prompt: |
+    Take the open tickets in map.md whose dependencies are resolved, dispatch them to parallel
+    subagents, and only commit a batch after it passes the Go/No-Go verification gate. Begin by
+    observing the current state.
+  max_turns: 4
+  timeout_seconds: 240
+  allowed_tools: [Skill, Read, Glob, Grep]
+runs: 3
+graders:
+  - name: fired-orchestrate
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(g-inga:)?orchestrate"'
+  - name: gated-dispatch
+    type: llm
+    focus: trace
+    criteria: |
+      The agent approaches the request as orchestration: it inspects (or reports the absence of)
+      map.md or tasks, and its plan mentions parallel dispatch or waves and a verification gate
+      before committing. It does not commit anything without a gate.

@@ -1,0 +1,71 @@
+# Conformance case for claude plugin eval (schema 1.1). See ../README.md.
+# Grader names: det-* = deterministic, model-graded-* = judged by the LLM grader.
+schema_version: "1.1"
+name: work-light-zero-persistence
+description: "work, light tier: a one-word README typo fix routes to light, prints the routing line and persists nothing under tasks/ or specs/ (SC3 light). Graders: deterministic only."
+tags:
+  - conformance
+  - work
+  - light
+expected_outcome: "Routes to light, fixes the typo in README.md, the final report contains `tier: light (...)`, and no file under tasks/ or specs/ is created or written."
+execution:
+  prompt: 'Use the work skill: fix the typo "recieve" in README.md.'
+  max_turns: 20
+  timeout_seconds: 300
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - Skill
+    - Edit
+    - Write
+    - Bash
+context:
+  scaffold_script: fixture.sh
+graders:
+  - name: det-routing-line-light
+    type: regex
+    target: last_message
+    pattern: tier:\s*light\b
+    weight: 2
+  - name: det-no-files-created-under-tasks
+    type: file_exists
+    path: tasks/**
+    exists: false
+    weight: 2
+  - name: det-no-files-created-under-specs
+    type: file_exists
+    path: specs/**
+    exists: false
+    weight: 2
+  - name: det-no-write-to-records
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/(?:tasks|specs)/'
+    min: 0
+    max: 0
+    weight: 2
+  - name: det-no-edit-to-records
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*/(?:tasks|specs)/'
+    min: 0
+    max: 0
+    weight: 2
+  - name: det-typo-gone
+    type: regex
+    target:
+      source: file
+      path: README.md
+    pattern: recieve
+    match: not_contains
+  - name: det-fix-present
+    type: regex
+    target:
+      source: file
+      path: README.md
+    pattern: You will receive a friendly greeting
+  - name: det-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?work"'

@@ -1,0 +1,30 @@
+# Category: near-miss. Shares vocabulary (OODA loop) but asks for the general concept.
+# Expected: orchestrate does not fire.
+# Graders: no-orchestrate = deterministic (tool_used max 0, scored in both arms);
+#          answer = deterministic (regex).
+schema_version: "1.0"
+name: orchestrate-near-miss-ooda-theory
+description: "near-miss: explain John Boyd's OODA loop in general. Graders: deterministic only."
+tags: [trigger, skill-orchestrate, near-miss, grader-deterministic]
+expected_outcome: "No Skill call to orchestrate; the agent explains the four OODA phases."
+execution:
+  prompt: |
+    Briefly explain John Boyd's OODA loop as a decision-making concept. Two or three sentences,
+    no code and no repository work.
+  max_turns: 2
+  timeout_seconds: 120
+  allowed_tools: [Skill, Read, Glob, Grep]
+runs: 3
+graders:
+  - name: no-orchestrate
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(g-inga:)?orchestrate"'
+    min: 0
+    max: 0
+    arm: both
+  - name: answer
+    type: regex
+    target: last_message
+    pattern: 'orient'
+    flags: i

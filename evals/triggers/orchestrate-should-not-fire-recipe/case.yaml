@@ -1,0 +1,26 @@
+# Category: should-not-fire. Expected: orchestrate does not fire for an off-domain request.
+# Graders: no-orchestrate = deterministic (tool_used max 0, scored in both arms); answer = deterministic (regex).
+schema_version: "1.0"
+name: orchestrate-should-not-fire-recipe
+description: "should-not-fire: unrelated conversion question. Graders: deterministic only."
+tags: [trigger, skill-orchestrate, should-not-fire, grader-deterministic]
+expected_outcome: "No Skill call to orchestrate; the agent answers with the converted value."
+execution:
+  prompt: |
+    Convert 350 degrees Fahrenheit to Celsius and round to the nearest whole number.
+  max_turns: 2
+  timeout_seconds: 120
+  allowed_tools: [Skill, Read, Glob, Grep]
+runs: 3
+graders:
+  - name: no-orchestrate
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(g-inga:)?orchestrate"'
+    min: 0
+    max: 0
+    arm: both
+  - name: answer
+    type: regex
+    target: last_message
+    pattern: '\b177\b'

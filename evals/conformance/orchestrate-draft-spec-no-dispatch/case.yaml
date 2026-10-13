@@ -1,0 +1,64 @@
+# Conformance case for claude plugin eval (schema 1.1). See ../README.md.
+# Grader names: det-* = deterministic, model-graded-* = judged by the LLM grader.
+schema_version: "1.1"
+name: orchestrate-draft-spec-no-dispatch
+description: "orchestrate, spec gate: the heavy parent's spec is still draft, so the orchestrator neither decomposes into children nor dispatches workers (artifact contracts §3.3 spec gate). Graders: deterministic only (the approval mention is lexical)."
+tags:
+  - conformance
+  - orchestrate
+expected_outcome: No child task files, no subagent dispatch, no code change; the response says the spec must be approved first.
+execution:
+  prompt: "Use the orchestrate skill: deliver task 2026-10-13-greeting-formats. Decompose it into tickets and dispatch the workers."
+  max_turns: 25
+  timeout_seconds: 400
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - Skill
+    - Bash
+    - Edit
+    - Write
+    - Agent
+context:
+  scaffold_script: fixture.sh
+graders:
+  - name: det-no-dispatch
+    type: tool_used
+    tool: Agent
+    min: 0
+    max: 0
+    weight: 2
+  - name: det-no-child-files
+    type: regex
+    target: files
+    pattern: tasks/2026-10-13-greeting-formats-\d\d-
+    match: not_contains
+    weight: 2
+  - name: det-no-child-records-written
+    type: tool_used
+    tool: Write
+    input_match: \\nparent:\s
+    min: 0
+    max: 0
+  - name: det-no-code-write
+    type: tool_used
+    tool: Write
+    input_match: src/
+    min: 0
+    max: 0
+  - name: det-no-code-edit
+    type: tool_used
+    tool: Edit
+    input_match: src/
+    min: 0
+    max: 0
+  - name: det-cites-spec-approval
+    type: regex
+    target: last_message
+    pattern: approv
+    flags: i
+  - name: det-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate"'

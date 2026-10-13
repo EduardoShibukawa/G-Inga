@@ -1,0 +1,62 @@
+# Conformance case for claude plugin eval (schema 1.1). See ../README.md.
+# Grader names: det-* = deterministic, model-graded-* = judged by the LLM grader.
+schema_version: "1.1"
+name: work-standard-valid-record
+description: "work, standard tier: a small behavioral change with no existing test routes to standard and yields a task record that the real standalone validator accepts (SC3 standard). Graders: deterministic only; the validator verdict comes from the scaffold's logging shim around the real validator and is re-checked after the run with lib/check-workspace.sh."
+tags:
+  - conformance
+  - work
+  - standard
+expected_outcome: Routes to standard, creates tasks/2026-10-13-shout-option.md (schema task/1, tier standard, required sections, a B1 row), implements the option, runs the validator, and the last validator run exits 0.
+execution:
+  prompt: "Use the work skill: add a --shout option to src/greet.js that prints the greeting in upper case. Track it as task 2026-10-13-shout-option and take it through to verified."
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - Skill
+    - Edit
+    - Write
+    - Bash
+context:
+  scaffold_script: fixture.sh
+graders:
+  - name: det-record-created
+    type: file_exists
+    path: tasks/2026-10-13-shout-option.md
+    weight: 2
+  - name: det-record-frontmatter
+    type: regex
+    target:
+      source: file
+      path: tasks/2026-10-13-shout-option.md
+    flags: m
+    pattern: "^---\\n(?=[\\s\\S]*?^schema: task/1$)(?=[\\s\\S]*?^tier: standard$)(?=[\\s\\S]*?^status: (?:active|completed|verified)$)"
+  - name: det-record-sections
+    type: regex
+    target:
+      source: file
+      path: tasks/2026-10-13-shout-option.md
+    flags: m
+    pattern: "^(?=[\\s\\S]*^## Routing and approvals$)(?=[\\s\\S]*^- tier: standard\\b)(?=[\\s\\S]*^## Objective$)(?=[\\s\\S]*^## Acceptance criteria$)(?=[\\s\\S]*^## Verification$)(?=[\\s\\S]*^\\| B1 \\|)"
+  - name: det-validator-ran
+    type: tool_used
+    tool: Bash
+    input_match: validate\.(?:js|ts)
+  - name: det-validator-accepts-last-run
+    type: regex
+    target:
+      source: file
+      path: .eval/validator-runs.log
+    pattern: validator-exit=0\s*$
+    weight: 3
+  - name: det-no-spec-created
+    type: file_exists
+    path: specs/**
+    exists: false
+  - name: det-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?work"'
