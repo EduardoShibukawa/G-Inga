@@ -2,7 +2,7 @@
 schema: task/1
 tier: standard
 status: verified
-verified_at: "357c60a"
+verified_at: "7accf23"
 ---
 
 # Implement Continuous Autonomous Driver Skill (`/drive`)
@@ -48,13 +48,13 @@ Implement the new canonical continuous autonomous driver skill `/drive` for G-In
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation suite | pass | df23fbdf987864edb2f12f573585811ef6767c1c | `mise run validate` passed on clean main branch |
-| AC1 | canonical drive skill frontmatter | pass | 357c60a | name: `drive` and exact canonical description verified |
-| AC2 | 3-layer architecture specification | pass | 357c60a | L1 Driver, L2 Orchestrator, and L3 Worker architecture documented |
-| AC3 | Gira-G indexing integration | pass | 357c60a | `gira locate`, `gira slice`, and `gira impact` documented with macro-map.json |
-| AC4 | CLI flags and circuit breaker | pass | 357c60a | `--limit`, `--dry-run`, `--tag`, `--max-tokens` and ADR 0002 E3 circuit breaker specified |
-| AC5 | markdown link validation | pass | 357c60a | local link validation passes with 0 broken links (806 refs checked) |
-| AC6 | repository validation suite | pass | 357c60a | `mise run validate` passed (80 markdown files, 0 issues) |
-| V1 | diff review against scope | pass | 357c60a | diff strictly bounded to in-scope files |
+| AC1 | canonical drive skill frontmatter | pass | 7accf23 | name: `drive` and exact canonical description verified |
+| AC2 | 3-layer architecture specification | pass | 7accf23 | L1 Driver, L2 Orchestrator, and L3 Worker architecture documented |
+| AC3 | Gira-G indexing integration | pass | 7accf23 | `gira locate`, `gira slice`, and `gira impact` documented with macro-map.json |
+| AC4 | CLI flags and circuit breaker | pass | 7accf23 | `--limit`, `--dry-run`, `--tag`, `--max-tokens` and ADR 0002 E3 circuit breaker specified |
+| AC5 | markdown link validation | pass | 7accf23 | local link validation passes with 0 broken links (806 refs checked) |
+| AC6 | repository validation suite | pass | 7accf23 | `mise run validate` passed (80 markdown files, 0 issues) |
+| V1 | diff review against scope | pass | 7accf23 | diff strictly bounded to in-scope files |
 
 ## Outcome
 
@@ -62,6 +62,6 @@ Implemented the canonical continuous autonomous backlog execution skill `/drive`
 
 ## Checkpoint
 
-- as of: 2026-10-12, branch feat/implement-drive-autonomous-skill, head 357c60a, task verified
+- as of: 2026-10-12, branch feat/implement-drive-autonomous-skill, head 7accf23, task verified
 - done: created drive skill definitions in .agents and .claude, verified all acceptance criteria, validated repository suite
 - next: squash/merge PR to main and sync
