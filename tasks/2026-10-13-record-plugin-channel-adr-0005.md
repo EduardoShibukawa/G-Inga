@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "3e6b4d5"
 ---
 
 # Record the Personal Plugin Channel in ADR 0005
@@ -38,9 +39,19 @@ Close the follow-up from `tasks/2026-10-13-plugin-marketplace-manifest.md`: reco
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate | pass | 8a82e05 | `mise run validate` Overall pass |
-| AC1 | ADR 0005 revision and FU7 section | not run | | |
-| AC2 | item 9 wording | not run | | |
-| AC3 | decision map D5 row and deferred list | not run | | |
-| AC4 | cherry-picked task record | not run | | |
-| AC5 | validate | not run | | |
-| V1 | diff read against AC1-AC4 and the out-of-scope list | not run | | |
+| AC1 | ADR 0005 revision and FU7 section | pass | 3e6b4d5 | revision bullet and `## FU7 ... (accepted 2026-10-13)` present; personal-use, versioning and V1-spec bullets present |
+| AC2 | item 9 wording | pass | 3e6b4d5 | "as a product distribution channel stays deferred ... FU7" |
+| AC3 | decision map D5 row and deferred list | pass | 3e6b4d5 | 2 FU7 mentions in `docs/decision-map.md` |
+| AC4 | cherry-picked task record | pass | 3e6b4d5 | "Owner install check" in `tasks/2026-10-13-plugin-marketplace-manifest.md` |
+| AC5 | validate | pass | 3e6b4d5 | `mise run validate` Overall pass |
+| V1 | diff read against AC1-AC4 and the out-of-scope list | pass | 3e6b4d5 | 4 files, 66 insertions, 5 deletions; 0 files under `.claude-plugin/`, `.claude/skills/`, `manifest.json`, `specs/` |
+
+## Outcome
+
+ADR 0005 records the personal plugin channel as FU7 (accepted 2026-10-13), and the decision map narrows the plugin deferral to product distribution. The install-check record that missed the PR #34 merge is on this branch.
+
+## Checkpoint
+
+- as of: 2026-10-13, branch docs/adr-0005-plugin-channel, head 3e6b4d5, task verified
+- done: ADR 0005 FU7, decision-map note, cherry-picked install check, AC1-AC5 and V1 pass
+- next: owner review and PR merge
