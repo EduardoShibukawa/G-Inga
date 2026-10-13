@@ -1,7 +1,7 @@
 ---
 name: drive
 description: Continuous backlog execution driver for G-Ingá. Scans pending tasks, resolves dependencies using Gira-G architectural indexing, partitions conflict-free execution waves, and orchestrates autonomous OODA delivery cycles with strict token budgets and circuit breakers.
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # /drive — Continuous Autonomous Backlog Driver
@@ -79,6 +79,20 @@ To ensure zero token waste and maximize tokens per verified task, query the Gira
 
 **Availability check:** run `command -v gira`. The `gira` CLI is not part of this repository and may be absent (for example in cloud sessions). If it is unavailable, apply the fallback below instead of the commands that follow.
 
+**Staleness check (only when `gira` is available):** the map is indexed at the SHA anchor in `gira.yaml` (`repositories[].sha`). Before the queries below, run from the repository root:
+
+```bash
+anchor=$(sed -n 's/^ *sha: *"\([0-9a-f]\{40\}\)".*/\1/p' gira.yaml | head -n 1)
+git cat-file -e "${anchor}^{commit}" && git rev-list --count "${anchor}..HEAD" -- .claude/skills .agents/skills tools docs/decisions
+```
+
+- The map is **stale** when the count is greater than 0: the anchor isn't `HEAD` and at least one commit since the anchor touches `.claude/skills/`, `.agents/skills/`, `tools/` or `docs/decisions/`. A count of 0, which includes an anchor equal to `HEAD`, means the map is current.
+- A stale map may still be read. Report it as `gira map: stale (anchor <short-sha>, <count> commits)` in the session ledger and in every worker prompt that carries a slice from it.
+- If `anchor` is empty or `git cat-file` fails (for example in a shallow clone), record the staleness check as `not run` with that reason and report the map's freshness as unknown.
+- When the fallback below applies, no map is read and this check isn't run.
+- Regenerate the map only where `gira` is on `PATH` (today the owner's machine), with `gira index`, never by editing the anchor alone. Commit `gira.yaml` and `docs/architecture/macro-map.json` together in the same commit.
+- This check stays a `/drive` instruction: it is not a validator layer, and nothing under `tools/` parses `gira.yaml` (ADR 0007 item 3). Gira-G output, stale or current, is context for workers and never evidence for a gate.
+
 - **Locate Target Nodes:**
 
   ```bash
@@ -148,3 +162,4 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 - Ephemeral Worktrees: [tools/gate/worktree-runner.ts](../../../tools/gate/worktree-runner.ts)
 - Token Budget Guardrail: [tools/eval/token_budget_guard.ts](../../../tools/eval/token_budget_guard.ts)
 - Gira-G Macro Architecture Map: [docs/architecture/macro-map.json](../../../docs/architecture/macro-map.json)
+- Harness Extensions Beyond V1 (Gira-G optional, staleness): [ADR 0007](../../../docs/decisions/0007-harness-extensions-beyond-v1.md)
