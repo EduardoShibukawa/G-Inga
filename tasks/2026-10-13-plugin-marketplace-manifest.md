@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "63e6aa4"
 ---
 
 # Make the Repository Installable as a Claude Code Plugin Marketplace
@@ -41,10 +42,26 @@ status: active
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate and test | pass | 075ac8b | `mise run validate` Overall pass; `mise run test` 227 pass, 0 fail |
-| AC1 | marketplace manifest fields | not run | | |
-| AC2 | plugin manifest fields | not run | | |
-| AC3 | `claude plugin validate .` | not run | | |
-| AC4 | `claude --plugin-dir . plugin details g-inga` | not run | | |
-| AC5 | README install section | not run | | |
-| AC6 | validate and test | not run | | |
-| V1 | diff read against AC1-AC5 and the out-of-scope list | not run | | |
+| AC1 | marketplace manifest fields | pass | 63e6aa4 | `name: g-inga`, one entry `g-inga`, `source: ./` |
+| AC2 | plugin manifest fields | pass | 63e6aa4 | `name: g-inga`, `skills: ["./.claude/skills/"]` |
+| AC3 | `claude plugin validate .` | pass | 63e6aa4 | `Validation passed with warnings`: no `version` (by design), `CLAUDE.md` at plugin root |
+| AC4 | `claude --plugin-dir . plugin details g-inga` | pass | 63e6aa4 | `Skills (3) drive, orchestrate, work`; ~154 tok always-on |
+| AC5 | README install section | pass | 63e6aa4 | `marketplace add`, `install g-inga@g-inga`, one-step `/plugin install` line |
+| AC6 | validate and test | pass | 63e6aa4 | `mise run validate` Overall pass; `mise run test` 227 pass, 0 fail |
+| V1 | diff read against AC1-AC5 and the out-of-scope list | pass | 63e6aa4 | 4 files, 87 insertions; no change under `.claude/skills/`, `.agents/`, `manifest.json`, `specs/`, `docs/decisions/` |
+
+## Outcome
+
+The repository is a single-plugin marketplace. `claude plugin marketplace add EduardoShibukawa/G-Inga` then `claude plugin install g-inga@g-inga` installs the `g-inga` plugin, which loads `/g-inga:work`, `/g-inga:drive` and `/g-inga:orchestrate` from `.claude/skills/`. The pinned bundle and the V1 spec are unchanged.
+
+Follow-ups (not done):
+
+- Record the plugin channel in ADR 0005 / the decision map if it becomes more than a personal convenience.
+- Inside this repository, the project skills and the plugin skills both load when the plugin is enabled (namespaced, no collision, ~154 tok extra); disable the plugin per repository if that cost matters.
+- Install from GitHub is not run until this branch reaches `main` (the marketplace clones the default branch).
+
+## Checkpoint
+
+- as of: 2026-10-13, branch feat/plugin-marketplace-manifest, head 63e6aa4, task verified
+- done: marketplace and plugin manifests, README install section, AC1-AC6 and V1 pass
+- next: owner review and PR merge; then run `claude plugin marketplace add EduardoShibukawa/G-Inga`
