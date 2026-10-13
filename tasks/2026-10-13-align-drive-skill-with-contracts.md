@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "cfd6c95"
 ---
 
 # Align the `/drive` Skill with the Artifact Contract
@@ -40,13 +41,23 @@ Make `/drive` use only task states from the artifact contract (§3.3) and run in
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate and test | pass | b1aa551720fdaf14b71d266c0be0c19a947f4d6c | full history (not shallow); `bun install --frozen-lockfile`; `bun run validate` Overall pass; `bun run typecheck` pass; `bun run test` 220 pass, 0 fail (mise not installed; Bun used directly). HEAD differs from 6e7af64 only in `.markdownlint.jsonc` |
+| AC1 | eligibility uses contract states | pass | cfd6c95 | Step 1 in both mirrors: `todo` or `active`, or `blocked` with `## Blockers` resolved (§3.3 `blocked --> active`) |
+| AC2 | worker report uses contract states | pass | cfd6c95 | Step 4 in both mirrors: record left at `completed` (or `verified` when §3.4 holds), reported to the orchestrator for the gate |
+| AC3 | gira fallback | pass | cfd6c95 | Step 2 checks `command -v gira`; fallback records `not run` (context enrichment, no gate depends on it) and derives the slice from `In scope:` files; no new tool named. `gira` absent in this session |
+| AC4 | grep and mirror diff | pass | cfd6c95 | grep for `ready_for_gate` or backticked `draft` returns no match (exit 1); `diff` shows only the two pre-existing host-specific reference lines |
+| AC5 | validate and test | pass | cfd6c95 | `bun run validate` Overall pass, exit 0; `bun run typecheck` pass; `bun run test` 220 pass, 0 fail (mise not installed; Bun used directly) |
+| V1 | diff bounded to declared scope | pass | cfd6c95 | `git diff --name-only 82fa311 cfd6c95` lists only the three in-scope files; `manifest.json` untouched and has no drive entry |
 
 ## Plan
 
 skip: three independent wording edits applied identically to both mirrors.
 
+## Outcome
+
+Both `/drive` mirrors now use only `task/1` states for eligibility and worker reporting, and Step 2 has a deterministic fallback for sessions without the `gira` CLI. The mirrors still differ only in their host-specific `/orchestrate` reference lines. `manifest.json` does not cover the drive skill, so no pin changed.
+
 ## Checkpoint
 
-- as of: 2026-10-13, branch worktree-agent-adb465176b576a39c, head b1aa551, task active
-- done: record opened with baseline B1
-- next: edit both `/drive` mirrors, verify AC1-AC5
+- as of: 2026-10-13, branch worktree-agent-adb465176b576a39c, head cfd6c95, task verified
+- done: aligned eligibility, worker reporting and the gira fallback in both mirrors; verified AC1-AC5
+- next: owner review and PR
