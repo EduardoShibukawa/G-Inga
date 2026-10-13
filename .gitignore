@@ -1,1 +1,4 @@
 node_modules/
+
+# Raw `claude plugin eval` output (prompts, transcripts, per-run JSON). ADR 0006: never committed.
+evals/results/

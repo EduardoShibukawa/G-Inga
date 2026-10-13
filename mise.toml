@@ -28,3 +28,36 @@ run = "bun run validate:external"
 description = "Type-check and test the validators themselves"
 depends = ["setup"]
 run = ["bun run typecheck", "bun run test"]
+
+[tasks."eval:skills"]
+description = "Paid skill health baseline (spec 2026-10-13-skill-health-evaluation SC7): trigger + conformance suites, 1 run per case, total ceiling SHE_BUDGET_USD (default 5), no publishing"
+run = '''
+#!/usr/bin/env bash
+# Every agent run is billed to the owner's credential; run only with owner approval.
+# The total budget is split sequentially: the trigger suite gets SHE_TRIGGER_USD, and the
+# conformance suite gets what is left minus SHE_HEADROOM_USD, because the CLI checks its
+# ceiling before each run launches and the run in flight may overrun it.
+# Raw output (prompts, transcripts) goes to the git-ignored evals/results/ (ADR 0006).
+# From a shell spawned by a Claude Code session, the nested `claude` sees itself logged out
+# (runs fail with auth_failed at $0). Clear the inherited session variables first:
+#   env -u ANTHROPIC_BASE_URL -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_CODE_CHILD_SESSION \
+#     -u CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH -u CLAUDE_CODE_SIMPLE mise run eval:skills
+set -uo pipefail
+total="${SHE_BUDGET_USD:-5}"
+trig="${SHE_TRIGGER_USD:-1.5}"
+headroom="${SHE_HEADROOM_USD:-1}"
+out="evals/results/skills-$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -p "$out/trigger" "$out/conformance"
+claude plugin eval . --tag trigger --ablation with-without --scaffold --runs 1 --no-publish \
+  --max-cost-usd "$trig" --output-dir "$out/trigger" --json "$out/trigger/result.json"
+t=$?
+spent=$(bun -e "console.log(JSON.parse(await Bun.file('$out/trigger/result.json').text()).costUsd ?? 0)" 2>/dev/null || echo "$trig")
+conf=$(bun -e "console.log(Math.max(0, $total - $spent - $headroom).toFixed(2))")
+echo "eval:skills: trigger spent \$$spent; conformance ceiling \$$conf (total \$$total, headroom \$$headroom)"
+claude plugin eval . --tag conformance --scaffold --allow-tools Write Edit Bash --ablation none --runs 1 \
+  --no-publish --max-cost-usd "$conf" --keep-temp --output-dir "$out/conformance" --json "$out/conformance/result.json"
+c=$?
+echo "eval:skills: raw results in $out (git-ignored). For the authoritative standard-case verdict run:"
+echo "  bash evals/conformance/lib/check-workspace.sh <kept work-standard-valid-record workspace>"
+exit $(( t > c ? t : c ))
+'''
