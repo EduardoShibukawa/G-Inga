@@ -40,7 +40,7 @@ Close the two gaps that [ADR 0007](../docs/decisions/0007-harness-extensions-bey
 | AC2 | spec Verification item 2: tier reconfirmation with `tools/eval/evaluate_routing.ts` | pass | 36bb4b3 | `mise exec -- bun tools/eval/evaluate_routing.ts docs/research/scenarios/r01-r17-v1.json <predictions>`: EXP-01 `records/exp01-baseline-predictions.json` 17/17, 0 critical misses, exit 0; walk-derived predictions (Tier column, final tier per row) 17/17, 0 critical misses, exit 0; `evaluate_routing.test.ts` 3 pass |
 | AC3 | spec Verification item 4: spike S2 compaction re-attachment | blocked | 36bb4b3 | not executed: the worker has no interactive Claude Code session and nested `claude` sessions are not allowed, so `/compact` can't be forced; needs the owner (see Blockers). Worker host `claude --version`: `2.1.296 (Claude Code)`; the owner's run must record its own version (ADR 0007, answered open question 3) |
 | AC4 | `mise run validate` and `mise run test` | pass | 36bb4b3 | validate Overall pass, exit 0 (markdown-lint, local-links, artifact-records pass); test: typecheck pass, 227 pass, 0 fail, exit 0 |
-| V1 | diff bounded to the two in-scope files | pass | 36bb4b3 | `git diff --name-only 36034be..36bb4b3` lists only this record and the research note; no change under `.claude/`, `.agents/`, `tools/`, `specs/` or `manifest.json` |
+| V1 | diff bounded to the two in-scope files | pass | 36bb4b3 | `git diff --name-only b38335d..36bb4b3` lists only this record and the research note; no change under `.claude/`, `.agents/`, `tools/`, `specs/` or `manifest.json` |
 
 ## Plan
 
