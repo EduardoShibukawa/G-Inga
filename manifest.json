@@ -1,14 +1,14 @@
 {
   "release": "1.0.0",
-  "commit": "8e8f2fe5f8341f8d7f3f2ad50e1a693b5964c11b",
+  "commit": "1092a44b6ef194e0e082cefce73590a9df7f0523",
   "files": {
-    ".claude/skills/work/SKILL.md": "b6e9b391ff0d88abb184c38e05bf89153667774223783d8f64dcd7b9d9e6cacf",
+    ".claude/skills/work/SKILL.md": "bce79343f48cc0a0b2969f257beaf06449e524125b0a2878116d44ce858feb60",
     ".claude/skills/work/heavy.md": "bb8c03c38515e5918da6cd2996a716ad5c6232a3c19d18d032a350313190d139",
     ".claude/skills/work/resume.md": "6cdccc200264c39287ead22aa64fa32ec0464ab159da449e0d90989280e19730",
     ".claude/skills/work/review.md": "8b5abd9e9b757f930c4e56e786fc64f83d8c5942ac2ca1cc9771d07e21cb3214",
     ".claude/skills/work/standard.md": "ebcd10521e955cd0a655b0ad2e3408a97cbbdc4e111f55e2ca86b734b81856a3",
     ".claude/skills/work/references/artifact-contracts.md": "a39eb61edf1fff1654187fdf453bd15ecd25017432a1fa9f45d093e20add68a4",
-    ".agents/skills/work/SKILL.md": "12ec8ce1bc67004edfbc70dea5b97a3ecc17f95eee6f17e62db7b542870cfb39",
+    ".agents/skills/work/SKILL.md": "e322e9f6acf09b66aa7b1444ddfe05a148ba74291c68050071a572879c97f7c8",
     ".agents/skills/work/heavy.md": "f6cac4922b62fe0475c481fdd51ae186ca6942be07315fe2bfa38c87f32c7b08",
     ".agents/skills/work/resume.md": "9cf004f6a32d3580299d05bd721124f52cf277f3de3a1cf202f7bc5008d33943",
     ".agents/skills/work/review.md": "bc7cf86ba63cc701bcbac8b63caa0e915a51ba7c3f9ece752331475bee22bda2",
