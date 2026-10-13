@@ -116,6 +116,20 @@ The Round 2 experiments investigating concurrency scaling and real-time telemetr
 - **Hypothesis:** Real-time multi-host token usage measurement with per-task cost drift calibration prevents session cost overruns in long-running SDLC tasks, detecting context bloat and runaway loops before ceiling overrun.
 - **Empirical outcome:** Verified across 12 scenarios in `docs/research/scenarios/token-budget-v1.json`. Achieved 100% detection of runaway repetitive loops (3/3), calibrated warning triggers at 80% consumption, 0 premature stops on complex tasks, and zero privacy leakage under ADR 0006. Accepted by owner.
 
+## Round 3 experimental results (EXP-07)
+
+The Round 3 experiment investigating deterministic architectural context slicing via Gira-G (`gira slice`) against blind full-repo discovery was executed, measured against the frozen scenario suite, and logged in the canonical experiment ledger ([records/autoresearch-ledger.tsv](../../records/autoresearch-ledger.tsv)):
+
+| ID | Hypothesis & target | Baseline & candidate | Scenarios | Primary metrics & outcome | Guardrails & safety gates | Owner decision |
+|---|---|---|---|---|---|---|
+| EXP-07 | Deterministic architectural context slicing via Gira-G ([tools/eval/evaluate_girag_slicing.ts](../../tools/eval/evaluate_girag_slicing.ts)) | `bd7a882` / `candidate-07` | Slicing suite (`girag-slicing-v1`, 12 scenarios) | 65.8% mean token reduction (well exceeding >= 30% target); 236k tokens saved across 12 tasks; slicing overhead ~15ms (< 500ms SLA) | 100% boundary accuracy (0 boundary misses vs 12 misses in blind discovery); zero out-of-scope hallucinations | proposed (recommended keep) |
+
+### EXP-07: Gira-G Architectural Slicing vs Full Context Exploration
+
+- **Target artifact:** Context extraction harness and architectural slicing evaluator (`tools/eval/evaluate_girag_slicing.ts` and `docs/research/scenarios/girag-slicing-v1.json`).
+- **Hypothesis:** Injecting deterministic architectural slices via Gira-G (`gira slice`) into worker contexts reduces input tokens by >= 30% compared to blind full-repo discovery while eliminating 100% of out-of-scope boundary misses on complex multi-component tasks.
+- **Empirical outcome:** Verified across 12 multi-component scenarios in `docs/research/scenarios/girag-slicing-v1.json`. Achieved 65.8% mean input token reduction (exceeding the >= 30% target by over 2x), saving 236,430 prompt tokens across the suite. Eliminated 100% of out-of-scope boundary misses (0 misses in Gira-G slices vs 12 misses in blind exploration). Measured average slicing latency of 14.9ms (max 22ms), well within the < 500ms SLA. Recommended `keep`; owner decision `proposed`.
+
 ## Required experiment report
 
 - Hypothesis and why it matters.
