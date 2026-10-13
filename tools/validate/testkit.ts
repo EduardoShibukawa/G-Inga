@@ -21,7 +21,15 @@ export function fixtureDir(files: Record<string, string>, opts: { git?: boolean 
     mkdirSync(dirname(join(dir, p)), { recursive: true });
     writeFileSync(join(dir, p), text);
   }
-  if (opts.git) git(dir, "init", "-q"), commitAll(dir);
+  if (opts.git) {
+    git(dir, "init", "-q");
+    // Repo-local identity so raw `git` calls in tests (e.g. `merge`) also work on a runner with no
+    // ambient Git identity, instead of only the `-c`-wrapped ones.
+    git(dir, "config", "user.email", "f@example.invalid");
+    git(dir, "config", "user.name", "f");
+    git(dir, "config", "commit.gpgsign", "false");
+    commitAll(dir);
+  }
   return dir;
 }
 
