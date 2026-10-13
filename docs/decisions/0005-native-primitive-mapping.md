@@ -21,6 +21,7 @@
   - FU6 settled: Matt Pocock plugin remains installed and unreferenced during transition, with no runtime dependency.
   - Authoring of the minimal V1 specification document is authorized (does not authorize product implementation).
   - Unresolved questions U2–U8 documented as non-blocking implementation details or deferred follow-ups.
+- **Revision (2026-10-13, accepted):** FU7 records the personal plugin channel shipped in [PR #34](https://github.com/EduardoShibukawa/G-Inga/pull/34) ([task](../../tasks/2026-10-13-plugin-marketplace-manifest.md)). The pinned bundle (Alternative A) stays the only distribution for target repositories and CI. Item 9 now points to FU7.
 
 ## Context
 
@@ -147,7 +148,7 @@ The items below choose mechanisms. The distribution architecture and project-loc
 9. **The Pocock plugin during the transition.**
    - No G-Ingá file refers to it (ADR 0004 §3 and §7).
    - While it's enabled, its descriptions count toward the fixed per-turn cost, outside G-Ingá's control (D6 implication 4, `P7`). This record doesn't decide whether a G-Ingá-managed repository disables it (FU6).
-   - G-Ingá's own plugin packaging stays deferred ([ADR 0001](0001-product-boundary.md), Consequences).
+   - G-Ingá's own plugin packaging as a product distribution channel stays deferred ([ADR 0001](0001-product-boundary.md), Consequences). The owner's personal plugin channel is FU7.
 10. **No mechanism for Wayfinder's capability, and no coverage claim.** When H1 and H5 both hold and the destination can't yet be one spec, `heavy.md` points to the decision-map convention this repository uses (L6). That doesn't make G-Ingá a replacement for `wayfinder`. D6's open question 5 and its replacement criteria decide coverage, and until they hold, `wayfinder` stays in the owner's flow ([D5 evidence](../research/d5-native-primitive-evidence.md) §5).
 11. **Fixed per-turn cost = the pointer from item 3 + one skill description**, plus whatever the transitional plugin adds. No numeric limit is set here: D4 decides how cost is measured.
 12. **Not used in V1:** MCP servers, output styles, `.claude/rules/`, `SessionStart`, `Stop` and `UserPromptSubmit` hooks, custom subagents, and `` !`command` `` injection in the skill. The reasons and the triggers for revisiting each are under Alternatives.
@@ -277,6 +278,18 @@ Two options:
 **Proposed:** keep the plugin installed and unreferenced until all four roles meet ADR 0004's replacement criteria on real tasks. The owner may turn it off per repository with `false` in `.claude/settings.local.json` once every role that repository needs is covered.
 
 The replacement criteria stay provisional, as ADR 0004 says. None has been shown on a real task.
+
+## FU7: personal plugin channel (accepted 2026-10-13)
+
+The G-Ingá repository is also a single-plugin marketplace. `.claude-plugin/marketplace.json` lists one plugin, `g-inga`, whose source is the repository root, and `.claude-plugin/plugin.json` adds `.claude/skills/` to the plugin's skill scan. The owner installs it with `claude plugin marketplace add EduardoShibukawa/G-Inga` and `claude plugin install g-inga@g-inga`, and gets the skills as `/g-inga:<skill>` in every project on that machine.
+
+Scope of the channel:
+
+- **Personal convenience, not distribution.** It serves the owner's machine. Target repositories and CI keep the committed pinned bundle (FU1–FU4). Alternative B's objections still hold for distribution: user-enabled plugins aren't installed in a cloud session (N12, `C15`), and the installed version follows the install, not the target repository's commit (`C19`).
+- **One source, no copy.** The plugin reads the same `.claude/skills/` files the bundle is built from. There is no second copy to keep in sync, and `manifest.json` doesn't list the plugin manifests.
+- **Version follows commits.** `plugin.json` sets no `version`, so each commit on `main` is a new plugin version and `claude plugin update g-inga@g-inga` picks it up. Pinning a version would require a manual bump per release.
+- **Fixed per-turn cost.** About 154 tokens for the three skill descriptions in every session where the plugin is enabled (`claude plugin details g-inga`, 2026-10-13). In a repository that also carries the bundle, both copies load, namespaced apart. The owner may disable the plugin per repository with `"enabledPlugins": { "g-inga@g-inga": false }` in `.claude/settings.local.json`.
+- **No change to the V1 spec.** Its non-goal "plugin packaging, marketplace distribution, or installer CLIs" covers G-Ingá as a distributed product, which stays deferred. Nothing in V1 depends on the plugin.
 
 ## H-1: is a commit-gate hook needed? (open)
 
