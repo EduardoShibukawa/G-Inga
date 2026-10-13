@@ -14,6 +14,10 @@ spec: 2026-10-13-skill-health-evaluation@1
 - decided: relation to autoresearch → complement, ledger stays the single system of record by owner (2026-10-13, "Complementar (Recommended)")
 - decided: Claude Code and Antigravity skill copies are intentionally host-specific by owner (2026-10-13, "Um é para o Claude outro para o Antigravity")
 - decided: phase 1 scope → all three skills by owner (2026-10-13, "As 3 skills (Recommended)")
+- decided: cost ceiling per baseline run → USD 5 by owner (2026-10-13, "US$ 5 (Recommended)")
+- decided: repetitions → 1× in phase 1, 3× in phase 2 by owner (2026-10-13, "1× agora, 3× na fase 2 (Recommended)")
+- approved: spec v1 by owner (2026-10-13, "Aprovo spec v1")
+- decided: finish the epic with `/orchestrate` and subagents by owner (2026-10-13, "bora usar o /orchestrate em subagents para finalizar")
 
 ## Objective
 
@@ -37,7 +41,7 @@ SC1–SC8 from `specs/2026-10-13-skill-health-evaluation.md`.
 
 1. Draft spec v1 and resolve its open questions with the owner.
 2. Owner approves spec v1. Record `approved:` and freeze the hash.
-3. Decompose into children at `@1` (created only after approval):
+3. Decompose into children at `@1` (done after approval). Wave 1 runs 01–04 in parallel; wave 2 runs 05:
    - `-01-instrument-adr`: verify `claude plugin eval`, `skill-creator` and `/skill-doctor` availability; write the proposed ADR and the D7 decision-map link (SC8).
    - `-02-trigger-cases`: trigger cases for the three skills and duplicate-registration measurement (SC1, SC2).
    - `-03-conformance-cases`: behavioral cases with validator-based graders (SC1, SC3).
@@ -54,5 +58,5 @@ No findings yet.
 - Date: 2026-10-13
 - Branch: `docs/skill-health-evaluation` (from `origin/main` at c039980)
 - Worktree: main checkout, `/home/tg/Projetos/G-Inga`
-- Done: heavy confirmed, round-1 decisions recorded, spec v1 drafted, baseline B1/B2 recorded.
-- Next action: owner answers the spec's open questions (cost ceiling, repetitions) and reviews spec v1 for approval.
+- Done: spec v1 approved and frozen, children 01–05 created at `@1`.
+- Next action: `/orchestrate` wave 1 (children 01–04), then wave 2 (child 05).

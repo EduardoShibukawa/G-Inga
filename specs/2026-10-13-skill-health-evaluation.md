@@ -1,7 +1,9 @@
 ---
 schema: spec/1
-status: draft
+status: approved
 version: 1
+approved_version: 1
+approved_hash: sha256:2c80f4e8b34a175eea295133ec1031c1c6e3cd22f8dc7e60b1ad5c93eefee930
 ---
 
 # Skill Health Evaluation
@@ -100,8 +102,10 @@ skip: no one-way door. The suite, the inventory and the ledger rows are additive
 
 ## Open questions
 
-1. What cost ceiling applies per baseline run, in USD? Proposed default: 5.
-2. Should the baseline run repeat each case (for example 3×) to report variance, or run once in phase 1?
+None. Resolved before approval:
+
+- decided: cost ceiling per baseline run → USD 5 by owner (2026-10-13, "US$ 5 (Recommended)")
+- decided: repetitions → each case runs once in phase 1; 3× variance runs belong to phase 2 by owner (2026-10-13, "1× agora, 3× na fase 2 (Recommended)")
 
 ## Revisions
 
