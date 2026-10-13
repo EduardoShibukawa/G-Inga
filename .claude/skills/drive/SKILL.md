@@ -138,8 +138,8 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 
 - Ceremony Tiers & Routing: [ADR 0002](../../../docs/decisions/0002-ceremony-tiers-and-routing.md)
 - Artifact Schema Contracts: [docs/artifact-contracts.md](../../../docs/artifact-contracts.md)
-- OODA Orchestration Harness: [.agents/skills/orchestrate/SKILL.md](../../../.agents/skills/orchestrate/SKILL.md)
-- Autonomous Verification Gate: [.agents/skills/orchestrate/gate.md](../../../.agents/skills/orchestrate/gate.md)
+- OODA Orchestration Harness: [.claude/skills/orchestrate/SKILL.md](../orchestrate/SKILL.md)
+- Autonomous Verification Gate: [.claude/skills/orchestrate/gate.md](../orchestrate/gate.md)
 - Auto-Wave Runner: [tools/gate/orchestrate-runner.ts](../../../tools/gate/orchestrate-runner.ts)
 - Ephemeral Worktrees: [tools/gate/worktree-runner.ts](../../../tools/gate/worktree-runner.ts)
 - Token Budget Guardrail: [tools/eval/token_budget_guard.ts](../../../tools/eval/token_budget_guard.ts)

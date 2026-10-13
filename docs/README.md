@@ -48,3 +48,4 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 
 - [docs/bundle.md](bundle.md): Product bundle contents, manifest `commit` semantics, target adoption and the failure-atomic update procedure.
 - [docs/development.md](development.md): Toolchain setup (`mise`, Bun), repository validation commands (`mise run validate`, `mise run test`), check layers, and troubleshooting.
+- Skill bundles (`work`, `drive`, `orchestrate`) per host: Claude Code `.claude/skills/` ([work](../.claude/skills/work/SKILL.md), [drive](../.claude/skills/drive/SKILL.md), [orchestrate](../.claude/skills/orchestrate/SKILL.md)) and Antigravity `.agents/skills/` ([work](../.agents/skills/work/SKILL.md), [drive](../.agents/skills/drive/SKILL.md), [orchestrate](../.agents/skills/orchestrate/SKILL.md)).
