@@ -1,0 +1,10 @@
+version: 1
+target_system:
+  name: g-inga
+  description: "G-Inga SDLC Harness & Autonomous Multi-Agent Orchestration System"
+repositories:
+  - id: g-inga
+    url: "file:///home/tg/Projetos/G-Inga"
+    ref: "main"
+    sha: "47cc03dbd29b0e98916105e4938c46463138a361"
+    path_scope: "."
