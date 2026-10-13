@@ -1,9 +1,10 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-13-skill-health-evaluation
 spec: 2026-10-13-skill-health-evaluation@1
+verified_at: "f21e3d9"
 ---
 
 # Cross-Host Skill Parity Inventory
@@ -29,8 +30,10 @@ Inventory every difference between the Claude Code and Antigravity copies of the
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | c039980 | parent B1/B2: `mise run validate` exit 0, `mise run test` 227 pass |
-| AC1 | `diff -r` of `.claude/skills/<s>/` vs `.agents/skills/<s>/` for work, drive, orchestrate; every difference classified in `docs/research/2026-10-13-skill-parity-inventory.md` | pass | worktree | base f67d13c; 11 files per side, 10 differ, 0 one-sided; 30/30 differences classified with one-line reason (work 9/0, drive 1/0, orchestrate 17/3 host adaptation/drift) |
-| AC2 | drift listed as follow-up candidates; skill files unchanged | pass | worktree | 2 follow-up candidates (O5+C4 worktree merge-back rule missing on Antigravity; C1 retry semantics); `git diff --stat -- .claude/skills .agents/skills` empty |
+| AC1 | `diff -r` of `.claude/skills/<s>/` vs `.agents/skills/<s>/` for work, drive, orchestrate; every difference classified in `docs/research/2026-10-13-skill-parity-inventory.md` | pass | f21e3d9 | base f67d13c; 11 files per side, 10 differ, 0 one-sided; 30/30 differences classified with one-line reason (work 9/0, drive 1/0, orchestrate 17/3 host adaptation/drift) |
+| AC2 | drift listed as follow-up candidates; skill files unchanged | pass | f21e3d9 | 2 follow-up candidates (O5+C4 worktree merge-back rule missing on Antigravity; C1 retry semantics); `git diff --stat -- .claude/skills .agents/skills` empty |
+| R2 | orchestrator gate: scope, `mise run validate`, `mise run test` on sealed commit | pass | f21e3d9 | out-of-scope files 0; Overall: pass; 227 pass, 0 fail |
+| V1 | orchestrator gate review: diff confined to declared scope, AC evidence cross-checked against worker report and rerun checks | pass | f21e3d9 | full content review deferred to the parent fresh-context review |
 
 ## Outcome
 

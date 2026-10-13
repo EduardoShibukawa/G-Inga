@@ -1,9 +1,10 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-13-skill-health-evaluation
 spec: 2026-10-13-skill-health-evaluation@1
+verified_at: "f21e3d9"
 ---
 
 # Evaluation Instrument ADR
@@ -29,8 +30,10 @@ Verify which evaluation instruments are available in the owner's Claude Code and
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | c039980 | parent B1/B2: `mise run validate` exit 0, `mise run test` 227 pass |
-| AC1 | `docs/decisions/0007-skill-evaluation-instrument.md` read against SC8; D7 row and diagram in `docs/decision-map.md` | pass | worktree | ADR 0007 `proposed`: runner `claude plugin eval`, alternatives (extend `tools/eval`, `skill-creator` alone), "Relation to autoresearch" (complement, ledger as single system of record). Linked under D7 from the diagram, the D7 row (text reference) and a new `## Extensions of settled decisions` section; the validator's decision-records check forbids a row linking an ADR of a different status, so D7 stays `accepted`. `mise run validate` exit 0 |
-| AC2 | availability probes without paid runs: `claude --version`, `claude plugin --help`, `claude plugin eval --help`, `claude plugin details --help`, `claude plugin list`, `claude --help`, skill paths under `~/.claude` | pass | worktree | Claude Code `2.1.296`. `claude plugin eval`: available (flags incl. `--ablation`, `--max-cost-usd`, `--judge-model`, `--runs`, `--json`, `--no-publish`). `skill-creator`: synced skill present, not an installed plugin. `/skill-doctor`: absent from CLI help and session skill list; binary strings show it is feature-gated, so unverified. Recorded as E1–E4 in ADR 0007 |
+| AC1 | `docs/decisions/0007-skill-evaluation-instrument.md` read against SC8; D7 row and diagram in `docs/decision-map.md` | pass | f21e3d9 | ADR 0007 `proposed`: runner `claude plugin eval`, alternatives (extend `tools/eval`, `skill-creator` alone), "Relation to autoresearch" (complement, ledger as single system of record). Linked under D7 from the diagram, the D7 row (text reference) and a new `## Extensions of settled decisions` section; the validator's decision-records check forbids a row linking an ADR of a different status, so D7 stays `accepted`. `mise run validate` exit 0 |
+| AC2 | availability probes without paid runs: `claude --version`, `claude plugin --help`, `claude plugin eval --help`, `claude plugin details --help`, `claude plugin list`, `claude --help`, skill paths under `~/.claude` | pass | f21e3d9 | Claude Code `2.1.296`. `claude plugin eval`: available (flags incl. `--ablation`, `--max-cost-usd`, `--judge-model`, `--runs`, `--json`, `--no-publish`). `skill-creator`: synced skill present, not an installed plugin. `/skill-doctor`: absent from CLI help and session skill list; binary strings show it is feature-gated, so unverified. Recorded as E1–E4 in ADR 0007 |
+| R2 | orchestrator gate: scope, `mise run validate`, `mise run test` on sealed commit | pass | f21e3d9 | out-of-scope files 0; Overall: pass; 227 pass, 0 fail |
+| V1 | orchestrator gate review: diff confined to declared scope, AC evidence cross-checked against worker report and rerun checks | pass | f21e3d9 | full content review deferred to the parent fresh-context review |
 
 ## Outcome
 

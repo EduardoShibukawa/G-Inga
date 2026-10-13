@@ -1,9 +1,10 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-13-skill-health-evaluation
 spec: 2026-10-13-skill-health-evaluation@1
+verified_at: "f21e3d9"
 ---
 
 # Skill Conformance Evaluation Cases
@@ -30,10 +31,12 @@ Author behavioral conformance cases for the three skills with deterministic grad
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | c039980 | parent B1/B2: `mise run validate` exit 0, `mise run test` 227 pass |
-| AC1 | each skill has at least two behavioral cases stating expected outcome and grader type | pass | worktree | 7 cases under `evals/conformance/` (work 3, drive 2, orchestrate 2); each `case.yaml` has `expected_outcome` and a description naming its grader types; `node evals/conformance/lib/selftest.mjs` exit 0 (shape and per-skill count checks); `claude plugin eval . --tag conformance --max-cost-usd 0 --ablation none` loaded and planned all 7 cases with no load error, exit 2 by design (no run started, $0.00) |
-| AC2 | cases cover light zero persistence, standard record the validator accepts, heavy stop for owner confirmation | pass | worktree | `work-light-zero-persistence`, `work-standard-valid-record` (scaffold wraps the real standalone validator and logs its exit code; `lib/check-workspace.sh` re-runs it on a kept workspace), `work-heavy-stops-for-confirmation`; selftest builds every scaffold (validator exit 0 on each fixture) and replays the deterministic graders on synthetic pass and fail runs: 166 checks pass, 0 fail; live model run not run here (child 05) |
-| AC3 | model-graded checks only where no deterministic check exists, and labeled | pass | worktree | 3 `llm` graders, all named `model-graded-*` (drive dependency verdict, drive empty-frontier report, orchestrate wave verdict); every other grader is `det-*`; selftest asserts the naming; labeling explained in `evals/conformance/README.md` |
-| R1 | repository validation and test suites after change | pass | worktree | `mise run validate` exit 0 (Overall: pass); `mise run test` 227 pass, 0 fail |
+| AC1 | each skill has at least two behavioral cases stating expected outcome and grader type | pass | f21e3d9 | 7 cases under `evals/conformance/` (work 3, drive 2, orchestrate 2); each `case.yaml` has `expected_outcome` and a description naming its grader types; `node evals/conformance/lib/selftest.mjs` exit 0 (shape and per-skill count checks); `claude plugin eval . --tag conformance --max-cost-usd 0 --ablation none` loaded and planned all 7 cases with no load error, exit 2 by design (no run started, $0.00) |
+| AC2 | cases cover light zero persistence, standard record the validator accepts, heavy stop for owner confirmation | pass | f21e3d9 | `work-light-zero-persistence`, `work-standard-valid-record` (scaffold wraps the real standalone validator and logs its exit code; `lib/check-workspace.sh` re-runs it on a kept workspace), `work-heavy-stops-for-confirmation`; selftest builds every scaffold (validator exit 0 on each fixture) and replays the deterministic graders on synthetic pass and fail runs: 166 checks pass, 0 fail; live model run not run here (child 05) |
+| AC3 | model-graded checks only where no deterministic check exists, and labeled | pass | f21e3d9 | 3 `llm` graders, all named `model-graded-*` (drive dependency verdict, drive empty-frontier report, orchestrate wave verdict); every other grader is `det-*`; selftest asserts the naming; labeling explained in `evals/conformance/README.md` |
+| R1 | repository validation and test suites after change | pass | f21e3d9 | `mise run validate` exit 0 (Overall: pass); `mise run test` 227 pass, 0 fail |
+| R2 | orchestrator gate: scope, `mise run validate`, `mise run test` on sealed commit | pass | f21e3d9 | out-of-scope files 0; Overall: pass; 227 pass, 0 fail |
+| V1 | orchestrator gate review: diff confined to declared scope, AC evidence cross-checked against worker report and rerun checks | pass | f21e3d9 | full content review deferred to the parent fresh-context review |
 
 ## Outcome
 
