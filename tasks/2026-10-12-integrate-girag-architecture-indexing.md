@@ -2,7 +2,7 @@
 schema: task/1
 tier: standard
 status: verified
-verified_at: "0d94714"
+verified_at: "97a0e73"
 ---
 
 # Integrate Gira-G Architecture Indexing Harness
@@ -41,11 +41,11 @@ Integrate the Gira-G architecture indexing harness into the G-Ingá repository t
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation suite | pass | 47cc03dbd29b0e98916105e4938c46463138a361 | `mise run validate` and `mise run test` pass on HEAD |
-| AC1 | canonical gira.yaml manifest | pass | 0d94714 | `gira.yaml` created with valid version 1 manifest schema |
-| AC2 | macro-map.json generation | pass | 0d94714 | `gira index` produced docs/architecture/macro-map.json (75 nodes, 217 relationships) |
-| AC3 | gira locate and slice queries | pass | 0d94714 | `gira locate` and `gira slice` succeed with zero runtime errors |
-| AC4 | repository validation suite | pass | 0d94714 | `mise run validate` passes (77 files, 0 issues) |
-| V1 | diff review against scope | pass | 0d94714 | changes strictly bounded to in-scope files |
+| AC1 | canonical gira.yaml manifest | pass | 97a0e73 | `gira.yaml` created with valid version 1 manifest schema |
+| AC2 | macro-map.json generation | pass | 97a0e73 | `gira index` produced docs/architecture/macro-map.json (75 nodes, 217 relationships) |
+| AC3 | gira locate and slice queries | pass | 97a0e73 | `gira locate` and `gira slice` succeed with zero runtime errors |
+| AC4 | repository validation suite | pass | 97a0e73 | `mise run validate` passes (77 files, 0 issues) |
+| V1 | diff review against scope | pass | 97a0e73 | changes strictly bounded to in-scope files |
 
 ## Outcome
 
@@ -53,6 +53,6 @@ Successfully integrated the Gira-G (`gira`) architecture harness into G-Ingá. C
 
 ## Checkpoint
 
-- as of: 2026-10-12, branch feat/integrate-girag-architecture-indexing, head 0d94714, task verified
+- as of: 2026-10-12, branch feat/integrate-girag-architecture-indexing, head 97a0e73, task verified
 - done: gira.yaml configured, macro-map.json generated, locate and slice verified, validate passing
 - next: squash/merge PR to main and sync
