@@ -2,7 +2,7 @@
 schema: task/1
 tier: standard
 status: verified
-verified_at: "c108722"
+verified_at: "e5e3588"
 ---
 
 # Autoresearch Experiment 07: Gira-G Architectural Slicing vs Full Context Exploration
@@ -54,13 +54,13 @@ Evaluate deterministic architectural context slicing via Gira-G (`gira slice`) v
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validation and test suite | pass | bd7a882 | `mise run validate` and full tests pass (exit 0) on ancestor commit bd7a882 |
-| AC1 | scenario dataset integrity | pass | c108722 | 12 multi-component scenarios in docs/research/scenarios/girag-slicing-v1.json |
-| AC2 | slicing evaluator implementation | pass | c108722 | evaluate_girag_slicing.ts computes reduction %, boundary accuracy, and latency SLA |
-| AC3 | slicing unit test suite | pass | c108722 | bun test evaluate_girag_slicing.test.ts passes (7 tests pass, 0 fail, 326 assertions) |
-| AC4 | autoresearch ledger entry | pass | c108722 | EXP-07 recorded in records/autoresearch-ledger.tsv with complete status |
-| AC5 | research program documentation | pass | c108722 | Round 3 EXP-07 documented in docs/research/autoresearch-program.md |
-| AC6 | repository validation and test suites | pass | c108722 | mise run validate passes (exit 0) with zero regressions |
-| V1 | diff review against scope | pass | c108722 | strictly bounded to in-scope files; approved spec hash untouched |
+| AC1 | scenario dataset integrity | pass | e5e3588 | 12 multi-component scenarios in docs/research/scenarios/girag-slicing-v1.json |
+| AC2 | slicing evaluator implementation | pass | e5e3588 | evaluate_girag_slicing.ts computes reduction %, boundary accuracy, and latency SLA |
+| AC3 | slicing unit test suite | pass | e5e3588 | bun test evaluate_girag_slicing.test.ts passes (7 tests pass, 0 fail, 326 assertions) |
+| AC4 | autoresearch ledger entry | pass | e5e3588 | EXP-07 recorded in records/autoresearch-ledger.tsv with complete status |
+| AC5 | research program documentation | pass | e5e3588 | Round 3 EXP-07 documented in docs/research/autoresearch-program.md |
+| AC6 | repository validation and test suites | pass | e5e3588 | mise run validate passes (exit 0) with zero regressions |
+| V1 | diff review against scope | pass | e5e3588 | strictly bounded to in-scope files; approved spec hash untouched |
 
 ## Outcome
 
