@@ -61,6 +61,17 @@ Stop and escalate immediately (`escalated: <from> → <to> because <E1–E5>: <e
 1. **Risk-Calibrated Independent Review:** Trigger an independent reviewer subagent for `heavy` tasks or high-risk changes (cross-module footprint, public contract changes, or sensitive behavior under S5/H4); simple, localized tasks rely on self-review.
 2. **Deterministic Verification Audit:** Never assume model or agent consensus equals correctness. Deterministic verification gates (test suites, validators, linters, schemas) strictly override model agreement.
 
+## Concurrency & Worktree Isolation (EXP-05)
+
+1. **Dynamic Git Worktree Isolation:** When executing concurrent subagents or parallel exploration waves, run workers in isolated ephemeral Git worktrees (`git worktree add --detach`) to eliminate `.git/index.lock` contention and avoid dirty working tree collisions.
+2. **Setup SLA & Cleanup:** Ephemeral worktree provisioning must maintain lightweight setup overhead (< 500ms SLA per worker), followed by clean diff extraction, merge, and automatic removal.
+
+## Token Budget & Telemetry Guardrails (EXP-06)
+
+1. **Ceremony Budget Ceilings:** Respect per-tier token consumption boundaries: `light` (< 5k tokens), `standard` (< 25k tokens), and `heavy` (< 60k tokens).
+2. **Pre-Emptive Warnings & Loop Interception:** Trigger an early warning when context consumption reaches $\ge 80\%$ of tier ceiling. Detect and halt runaway repetitive loops before budget overrun.
+3. **Telemetry Normalization & Privacy:** Monitor normalized multi-host usage metrics (`tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_read_ratio`) while strictly adhering to ADR 0006 privacy sanitization (zero persistence of prompts, secrets, or repo metadata).
+
 ## Resume Command
 
 On `resume <task-id>`: read `.claude/skills/work/resume.md`, verify git state vs `## Checkpoint`, reconcile, and resume.
