@@ -1,15 +1,16 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "f79917d"
 ---
 
-# Draft decision record 0007: Harness Extensions Beyond V1
+# Draft ADR 0007: Harness Extensions Beyond V1
 
 ## Routing and approvals
 
 - tier: standard (S1 holds: each divergence is checkable against named repo files; S2 holds: follows the existing ADR and decision-map format; S3 holds: bounded to one new ADR, `docs/decision-map.md`, `docs/README.md`, and this record; S4 holds: two-way door, the ADR stays `proposed` until the owner decides)
-- approved: owner request (2026-10-13, audit of the approved V1 spec against the repository, ticket W3 "Draft decision record 0007 harness extensions beyond V1")
+- approved: owner request (2026-10-13, audit of the approved V1 spec against the repository, ticket W3 "Draft ADR 0007 harness extensions beyond V1")
 
 ## Objective
 
@@ -36,8 +37,8 @@ Also index the ADR in `docs/decision-map.md` and `docs/README.md`, and fix the s
 ## Acceptance criteria
 
 - AC1: `docs/decisions/0007-harness-extensions-beyond-v1.md` exists with status `proposed`, the Status/Date/Deciders/Depends on header, and Context, Problem, Decision, Alternatives, Consequences and Open questions sections covering divergences 1–5, each with options and a recommendation.
-- AC2: Every factual claim in decision record 0007 matches the repository files it cites.
-- AC3: `docs/decision-map.md` has a `proposed` row linking decision record 0007, and `docs/README.md` indexes decision record 0007 and labels `tasks/2026-10-11-repo-first-operating-model.md` with its real status `accepted`.
+- AC2: Every factual claim in ADR 0007 matches the repository files it cites.
+- AC3: `docs/decision-map.md` has a `proposed` row linking ADR 0007, and `docs/README.md` indexes ADR 0007 and labels `tasks/2026-10-11-repo-first-operating-model.md` with its real status `accepted`.
 - AC4: No file outside the in-scope list changes; the approved spec and ADRs 0001–0006 are unchanged.
 - AC5: `bun run validate` passes (markdown-lint, local-links, decision-records), and `bun run typecheck` and `bun run test` pass.
 
@@ -46,15 +47,25 @@ Also index the ADR in `docs/decision-map.md` and `docs/README.md`, and fix the s
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate and test | pass | b1aa551 | `bun run validate` Overall pass (decision-records: 6 ADRs, 8 map rows); `bun run typecheck` pass; `bun run test` 220 pass, 0 fail. Full history (`git rev-parse --is-shallow-repository` false). mise not installed; Bun used directly. b1aa551 differs from 6e7af64 only in `.markdownlint.jsonc` |
+| AC1 | ADR 0007 drafted as proposed | pass | f79917d | header has Status `proposed`, Date, Deciders, Depends on; sections Context, Problem, Decision, Alternatives considered, Consequences, Open questions cover items 1–5 with options and a recommendation each |
+| AC2 | factual claims checked | pass | f79917d | checked against `bundle.json` (15 assets), `manifest.json`, SKILL.md frontmatter (descriptions 134/173/267 chars on Claude Code, 149 for Antigravity `/work`, all `disable-model-invocation: false`), `gira.yaml`, macro map (357 `commit_sha`, all `47cc03d`), `git rev-list` (12 commits, 8 non-merge, 47cc03d..b1aa551), parent task rows, ADR 0004 §7, ADR 0005 §1 and Alternatives B and D, ADR 0006 header |
+| AC3 | decision map and docs index | pass | f79917d | D8 row `proposed` links ADR 0007 under "Not on the V1 path"; `docs/README.md` indexes ADR 0007 and labels both accepted task records `accepted` (the parent record on line 31 was also stale) |
+| AC4 | scope bounded | pass | f79917d | `git diff --stat b1aa551..f79917d` touches only the 4 in-scope files; spec and ADRs 0001–0006 unchanged |
+| AC5 | validate, typecheck, test | pass | f79917d | `bun run validate` Overall pass (markdown-lint, local-links, decision-records 7 ADRs and 9 map rows); `bun run typecheck` exit 0; `bun run test` 220 pass, 0 fail |
+| V1 | diff review against ticket and governance | pass | f79917d | self-review of `b1aa551..f79917d`: ADR stays `proposed`, no edit to the approved spec, ADRs 0001–0006 or accepted task records; recommendations need owner acceptance before any follow-up task |
 
 ## Plan
 
 1. Open this record with the baseline.
-2. Draft decision record 0007; add the decision-map row and `docs/README.md` entries; fix the stale status labels.
+2. Draft ADR 0007; add the decision-map row and `docs/README.md` entries; fix the stale status labels.
 3. Run validate, typecheck and test; record results with the change commit SHA.
+
+## Outcome
+
+ADR 0007 (`proposed`) records five divergences between the approved V1 spec and the repository and recommends, per item: accept the `.agents/skills/work/**` manifest scope as a recorded SC5 deviation; keep `/orchestrate` and `/drive` outside the bundle and make them user-invocable; treat Gira-G as optional with a `not run` fallback and a staleness rule; run spec Verification items 2 and 4 in a new follow-up task and ratify the Pocock plugin retirement; leave ADR 0006's stale label as a note. The decision map gains row D8, and `docs/README.md` indexes the ADR with corrected task statuses. Nothing is enacted until the owner accepts.
 
 ## Checkpoint
 
-- as of: 2026-10-13, branch worktree-agent-a6ddbba1d1bec1974, head b1aa551, worktree clean before this record
-- done: baseline recorded
-- next: draft decision record 0007 and index entries
+- as of: 2026-10-13, branch worktree-agent-a6ddbba1d1bec1974, head f79917d, task verified
+- done: drafted ADR 0007, added D8 row and docs index entries, fixed stale task labels, verified AC1–AC5
+- next: owner review of ADR 0007 per item; on acceptance, open the follow-up tasks it names
