@@ -105,6 +105,21 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
   const ancestry = opts.ancestry ?? gitAncestry(root);
   const at = (rev: string) => (rev === WT ? WT : rev.slice(0, 7));
 
+  // A record is only deleted when a commit actually removes it relative to its parent(s). The linear
+  // `rev-list` below interleaves sibling branches, so a path present on one branch and absent on a
+  // parallel one (before their merge) must not be read as a deletion. Git's own --diff-filter=D is the
+  // DAG-aware source of truth; the working tree stays handled by the walk itself.
+  const realDeletions = new Map<string, Set<string>>();
+  if (hasHead) {
+    const out = git(root, ["log", "--full-history", "--diff-filter=D", "--name-only", "-z", "--format=%H", "HEAD", "--", "tasks", "specs"]).out;
+    let rev = "";
+    for (const token of out.split("\0")) {
+      const tok = token.trim();
+      if (/^[0-9a-f]{40}$/.test(tok)) rev = tok;
+      else if (tok && rev) (realDeletions.get(rev) ?? realDeletions.set(rev, new Set()).get(rev)!).add(tok);
+    }
+  }
+
   // Every path that was ever a record, with its state at each revision that touched it.
   const lastState = new Map<string, { rev: string; rec: Artifact }>();
   const lastStatusChange = new Map<string, string>();
@@ -123,7 +138,8 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
       const file = (now ?? before!.rec).path;
       const f = (msg: string, rule = "§7.1") => findings.push({ level: "fail", rule, file, msg: `${at(rev)}: ${msg}` });
       if (!now) {
-        f(`${file} was deleted; ${key.startsWith("spec") ? "a spec is never deleted (§4.3)" : "a committed task record is closed as cancelled, never deleted (§6.1)"}`, key.startsWith("spec") ? "§7.1" : "§6.1");
+        if (rev === WT || realDeletions.get(rev)?.has(file))
+          f(`${file} was deleted; ${key.startsWith("spec") ? "a spec is never deleted (§4.3)" : "a committed task record is closed as cancelled, never deleted (§6.1)"}`, key.startsWith("spec") ? "§7.1" : "§6.1");
         lastState.delete(key);
         continue;
       }

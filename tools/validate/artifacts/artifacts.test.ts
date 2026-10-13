@@ -237,6 +237,33 @@ describe("applicability uses Git history, so deleting every record can't turn th
     expect(r.code).toBe(1);
   }, 60000);
 
+  test("a record present on one branch and absent on a parallel one is not a deletion (§6.1)", () => {
+    const X = "tasks/2026-10-12-x.md";
+    const Y = "tasks/2026-10-12-y.md";
+    const dir = fixtureDir({ "README.md": "# R\n" }, { git: true });
+    const g = (...args: string[]) => {
+      const r = git(dir, ...args);
+      if (r.exitCode !== 0) throw new Error(`git ${args.join(" ")}: ${r.stderr.toString()}`);
+      return r.stdout.toString().trim();
+    };
+    const base = g("rev-parse", "--abbrev-ref", "HEAD");
+    mkdirSync(join(dir, "tasks"), { recursive: true });
+    // X lands on its own branch; the base branch advances with Y from the same commit; the two merge later.
+    // The linear history walk then sees X absent on the sibling branch, which git's DAG says is no deletion.
+    g("checkout", "-q", "-b", "feature-x");
+    writeFileSync(join(dir, X), task({ status: "active" }));
+    commitAll(dir);
+    const x = g("rev-parse", "HEAD");
+    g("checkout", "-q", base);
+    mkdirSync(join(dir, "tasks"), { recursive: true });
+    writeFileSync(join(dir, Y), task({ status: "active" }));
+    commitAll(dir);
+    g("merge", "-q", "--no-ff", "-m", "merge feature-x", x);
+    const r = validate(dir, NO_BROWSER);
+    expect(status("artifact-records", r.out)).toBe("pass");
+    expect(r.code).toBe(0);
+  }, 60000);
+
   test("every tracked record deleted but not committed yet: still fails", () => {
     const dir = fixtureDir({ [RECORD]: task({ status: "active" }) }, { git: true });
     rmSync(join(dir, "tasks"), { recursive: true });
