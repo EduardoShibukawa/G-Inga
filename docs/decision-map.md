@@ -30,6 +30,7 @@ flowchart TD
 | ID | Topic | Status | Record |
 |---|---|---|---|
 | B1 | Brand narrative and codename policy (codenames kept separate from milestones and SemVer) | proposed | [brand-and-roadmap.md](brand-and-roadmap.md). Doesn't block V1 |
+| D8 | Harness extensions beyond V1: manifest scope for `.agents/skills/work/`, model-invocable `/orchestrate` and `/drive`, Gira-G as optional enrichment, V1 verification follow-ups | proposed | [ADR 0007](decisions/0007-harness-extensions-beyond-v1.md). Records deviations from the approved V1 spec without changing it. Awaiting owner decision per item |
 
 ## Deferred, not rejected
 
