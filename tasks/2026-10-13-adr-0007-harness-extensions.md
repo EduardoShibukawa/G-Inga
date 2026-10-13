@@ -2,7 +2,7 @@
 schema: task/1
 tier: standard
 status: verified
-verified_at: "f79917d"
+verified_at: "a2bba4a"
 ---
 
 # Draft ADR 0007: Harness Extensions Beyond V1
@@ -47,12 +47,12 @@ Also index the ADR in `docs/decision-map.md` and `docs/README.md`, and fix the s
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate and test | pass | b1aa551 | `bun run validate` Overall pass (decision-records: 6 ADRs, 8 map rows); `bun run typecheck` pass; `bun run test` 220 pass, 0 fail. Full history (`git rev-parse --is-shallow-repository` false). mise not installed; Bun used directly. b1aa551 differs from 6e7af64 only in `.markdownlint.jsonc` |
-| AC1 | ADR 0007 drafted as proposed | pass | f79917d | header has Status `proposed`, Date, Deciders, Depends on; sections Context, Problem, Decision, Alternatives considered, Consequences, Open questions cover items 1–5 with options and a recommendation each |
-| AC2 | factual claims checked | pass | f79917d | checked against `bundle.json` (15 assets), `manifest.json`, SKILL.md frontmatter (descriptions 134/173/267 chars on Claude Code, 149 for Antigravity `/work`, all `disable-model-invocation: false`), `gira.yaml`, macro map (357 `commit_sha`, all `47cc03d`), `git rev-list` (12 commits, 8 non-merge, 47cc03d..b1aa551), parent task rows, ADR 0004 §7, ADR 0005 §1 and Alternatives B and D, ADR 0006 header |
-| AC3 | decision map and docs index | pass | f79917d | D8 row `proposed` links ADR 0007 under "Not on the V1 path"; `docs/README.md` indexes ADR 0007 and labels both accepted task records `accepted` (the parent record on line 31 was also stale) |
-| AC4 | scope bounded | pass | f79917d | `git diff --stat b1aa551..f79917d` touches only the 4 in-scope files; spec and ADRs 0001–0006 unchanged |
-| AC5 | validate, typecheck, test | pass | f79917d | `bun run validate` Overall pass (markdown-lint, local-links, decision-records 7 ADRs and 9 map rows); `bun run typecheck` exit 0; `bun run test` 220 pass, 0 fail |
-| V1 | diff review against ticket and governance | pass | f79917d | self-review of `b1aa551..f79917d`: ADR stays `proposed`, no edit to the approved spec, ADRs 0001–0006 or accepted task records; recommendations need owner acceptance before any follow-up task |
+| AC1 | ADR 0007 drafted as proposed | pass | a2bba4a | header has Status `proposed`, Date, Deciders, Depends on; sections Context, Problem, Decision, Alternatives considered, Consequences, Open questions cover items 1–5 with options and a recommendation each |
+| AC2 | factual claims checked | pass | a2bba4a | checked against `bundle.json` (15 assets), `manifest.json`, SKILL.md frontmatter (descriptions 134/173/267 chars on Claude Code, 149 for Antigravity `/work`, all `disable-model-invocation: false`), `gira.yaml`, macro map (357 `commit_sha`, all `47cc03d`), `git rev-list` (12 commits, 8 non-merge, 47cc03d..b1aa551), parent task rows, ADR 0004 §7, ADR 0005 §1 and Alternatives B and D, ADR 0006 header |
+| AC3 | decision map and docs index | pass | a2bba4a | D8 row `proposed` links ADR 0007 under "Not on the V1 path"; `docs/README.md` indexes ADR 0007 and labels both accepted task records `accepted` (the parent record on line 31 was also stale) |
+| AC4 | scope bounded | pass | a2bba4a | `git diff --stat b1aa551..a2bba4a` touches only the 4 in-scope files; spec and ADRs 0001–0006 unchanged |
+| AC5 | validate, typecheck, test | pass | a2bba4a | `bun run validate` Overall pass (markdown-lint, local-links, decision-records 7 ADRs and 9 map rows); `bun run typecheck` exit 0; `bun run test` 220 pass, 0 fail |
+| V1 | diff review against ticket and governance | pass | a2bba4a | self-review of `b1aa551..a2bba4a`: ADR stays `proposed`, no edit to the approved spec, ADRs 0001–0006 or accepted task records; recommendations need owner acceptance before any follow-up task |
 
 ## Plan
 
@@ -66,6 +66,6 @@ ADR 0007 (`proposed`) records five divergences between the approved V1 spec and 
 
 ## Checkpoint
 
-- as of: 2026-10-13, branch worktree-agent-a6ddbba1d1bec1974, head f79917d, task verified
+- as of: 2026-10-13, branch worktree-agent-a6ddbba1d1bec1974, head a2bba4a, task verified
 - done: drafted ADR 0007, added D8 row and docs index entries, fixed stale task labels, verified AC1–AC5
 - next: owner review of ADR 0007 per item; on acceptance, open the follow-up tasks it names
