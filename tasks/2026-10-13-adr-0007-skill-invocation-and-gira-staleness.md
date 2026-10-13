@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "8d50993"
 ---
 
 # Make `/orchestrate` and `/drive` User-Invocable and Add the Gira-G Staleness Rule
@@ -41,19 +42,25 @@ Restore the V1 budget of one model-invocable skill description by making `/orche
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate and test | pass | 36034be | `mise install` ok; `mise run validate` Overall pass, exit 0 (external-links `not run`, network); `mise run test` exit 0, typecheck pass, 227 pass, 0 fail |
-| AC1 | frontmatter flag on four skills | not run | | |
-| AC2 | staleness rule in `/drive` Step 2 | not run | | |
-| AC3 | mirror diffs | not run | | |
-| AC4 | staleness commands run | not run | | |
-| AC5 | validate and test | not run | | |
-| V1 | diff bounded to declared scope | not run | | |
+| AC1 | frontmatter flag on four skills | pass | 8d50993 | `grep -n '^disable-model-invocation'` over `.claude/skills/*/SKILL.md` and `.agents/skills/*/SKILL.md`: `true` for `orchestrate` and `drive` on both hosts, `false` for both `/work` copies |
+| AC2 | staleness rule in `/drive` Step 2 | pass | 8d50993 | Step 2 in both copies: anchor read from `gira.yaml`; stale when the `git rev-list --count` over the four paths is greater than 0; stale map readable, reported as `gira map: stale (anchor <short-sha>, <count> commits)` in the ledger and worker prompts; `not run` when the anchor is empty or not in history; regeneration only where `gira` is on `PATH`, committing `gira.yaml` and the map together; not a validator layer; never gate evidence. Runs only when `gira` is available, next to the existing `not run` fallback |
+| AC3 | mirror diffs | pass | 8d50993 | `/drive` diff shows only the two pre-existing host-specific reference lines; `/orchestrate` diff is byte-identical to its diff at 36034be (`cmp`), so the frontmatter flag matches on both hosts |
+| AC4 | staleness commands run | pass | 8d50993 | commands as written in the skill: anchor `47cc03d`, `git cat-file -e` ok, count 7, so the map is stale; an empty anchor makes `git cat-file` fail (the `not run` path). `gira` not on `PATH` in this session, so `/drive` itself would take the fallback |
+| AC5 | validate and test | pass | 8d50993 | `mise run validate` Overall pass, exit 0 (external-links `not run`, network); `mise run test` exit 0, typecheck pass, 227 pass, 0 fail |
+| V1 | diff bounded to declared scope | pass | 8d50993 | `git diff --name-only 36034be 8d50993` lists only the five in-scope files; `bundle.json`, `manifest.json`, `/work` and `tools/` untouched |
 
 ## Plan
 
 skip: two independent edits (frontmatter flag, one paragraph in Step 2) applied identically to both host copies.
 
+## Outcome
+
+`/orchestrate` and `/drive` are now user-invocable on both hosts, so `/work` is again the only model-invocable description per turn (ADR 0007 item 2). Step 2 of both `/drive` copies carries the ADR 0007 item 3 staleness check as a deterministic Git command, run only when `gira` is available and reported in the session ledger; it adds no validator layer. At 8d50993 the map anchored at `47cc03d` is stale (7 commits touch the watched paths); regenerating it needs the owner-local `gira` CLI.
+
+Follow-up observation: ADR 0007 item 3 also names a `gira.yaml` locator that doesn't resolve as a fallback trigger; the existing `/drive` fallback checks only `command -v gira`. Left out of this task's scope.
+
 ## Checkpoint
 
-- as of: 2026-10-13, branch work/adr0007-followup-A, head 36034be, worktree dirty (this record)
-- done: baseline B1 recorded
-- next: edit the four skill files, then verify AC1-AC5 and V1
+- as of: 2026-10-13, branch work/adr0007-followup-A, head 8d50993, task verified
+- done: flipped `disable-model-invocation` on four skills, added the staleness check to both `/drive` copies, verified AC1-AC5 and V1
+- next: owner review and PR
