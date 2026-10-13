@@ -15,7 +15,7 @@ G-Ingá solves this with:
 
 ## Current Project Status
 
-- **Status:** **Specification Approved (M0 complete); V1 Product Implementation Pending.**
+- **Status:** **V1 implemented.** The V1 child tasks (`tasks/2026-10-11-minimal-v1-specification-01..05-*.md`) are `verified` and the parent task is `accepted`; the pinned bundle (`.claude/skills/work/`, `.agents/skills/work/`, `tools/validate/`, `manifest.json` release `1.0.0`) is in the repository.
 - **Approved Specification:** The [Minimal V1 Specification](specs/2026-10-11-minimal-v1-specification.md) (`spec/1`, `approved_version: 1`, hash `sha256:09ff9d3d15f71c9ee832e401edea5c833064c64a317457121b8f6f4f64bc5bab`) is frozen and approved.
 - **Architectural Decisions Settled:**
   - Product boundary: Personal SDLC harness first ([ADR 0001](docs/decisions/0001-product-boundary.md)).
@@ -23,13 +23,13 @@ G-Ingá solves this with:
   - Artifact schemas and state machine contracts ([ADR 0003](docs/decisions/0003-minimum-artifact-schemas.md), [artifact contracts](docs/artifact-contracts.md)).
   - Reuse & coexistence strategy ([ADR 0004](docs/decisions/0004-reuse-strategy-for-existing-skills.md)).
   - Native primitive mapping and pinned bundle distribution ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)).
+  - Usage & token observability ([ADR 0006](docs/decisions/0006-usage-observability.md)).
   - Evaluation protocol for exploratory pilot ([D7 Evaluation Protocol](docs/research/d7-evaluation-protocol.md)).
 - **What Remains Open / Proposed:**
-  - Usage & token observability ([ADR 0006](docs/decisions/0006-usage-observability.md), `proposed`).
-  - Product implementation of `/work` skill and runtime bundle (to be implemented under V1 implementation tasks).
+  - The `/orchestrate` and `/drive` skills (`.claude/skills/`, `.agents/skills/`) exist beyond the V1 spec as repository-local extensions outside the bundle, governed by [ADR 0007](docs/decisions/0007-harness-extensions-beyond-v1.md) (`accepted`).
 
 > [!NOTE]
-> Implementation status is distinct from repository validation tooling: the repository development checks (`mise run validate`, `mise run test`) are fully functional and pass, validating documentation and contracts. Product runtime code has not yet been implemented.
+> Implementation status is distinct from repository validation tooling: the repository development checks (`mise run validate`, `mise run test`) are fully functional and pass, validating documentation, contracts, and the product bundle.
 
 ## Documentation Index & Reading Order
 

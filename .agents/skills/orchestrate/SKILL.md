@@ -1,7 +1,7 @@
 ---
 name: orchestrate
 description: Autonomous OODA loop orchestration harness. Manages task graphs, dispatches parallel subagents, enforces deterministic Go/No-Go verification gates, and seals atomic commits.
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # /orchestrate — Autonomous OODA Orchestration Harness

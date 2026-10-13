@@ -1,7 +1,7 @@
 ---
 name: drive
 description: Continuous backlog execution driver for G-Ingá. Scans pending tasks, resolves dependencies using Gira-G architectural indexing, partitions conflict-free execution waves, and orchestrates autonomous OODA delivery cycles with strict token budgets and circuit breakers.
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # /drive — Continuous Autonomous Backlog Driver
@@ -69,13 +69,29 @@ The `/drive` driver accepts configuration flags to control execution scope and r
 - Scan active and open tasks in `tasks/*.md` (and `map.md` if present).
 - Filter tasks by eligibility:
   - Schema is valid (`schema: task/1`).
-  - Status is `active` or `draft` (or unblocked pending implementation).
+  - Status is `todo` or `active`, or `blocked` with its `## Blockers` entry resolved (contract §3.3: `blocked --> active` when the blocker is resolved). Never `completed`, `verified`, `accepted`, `partial` or `cancelled`.
   - Dependencies listed in `depends_on` are fully `verified` or `accepted`.
 - Sort candidates topologically by dependency depth and limit candidates to `--limit <N>`.
 
 ### Step 2: Gira-G Architectural Context Extraction (L1 / L3)
 
-To ensure zero token waste and maximize tokens per verified task, query the Gira-G architectural index (`docs/architecture/macro-map.json`):
+To ensure zero token waste and maximize tokens per verified task, query the Gira-G architectural index (`docs/architecture/macro-map.json`).
+
+**Availability check:** run `command -v gira`. The `gira` CLI is not part of this repository and may be absent (for example in cloud sessions). If it is unavailable, apply the fallback below instead of the commands that follow.
+
+**Staleness check (only when `gira` is available):** the map is indexed at the SHA anchor in `gira.yaml` (`repositories[].sha`). Before the queries below, run from the repository root:
+
+```bash
+anchor=$(sed -n 's/^ *sha: *"\([0-9a-f]\{40\}\)".*/\1/p' gira.yaml | head -n 1)
+git cat-file -e "${anchor}^{commit}" && git rev-list --count "${anchor}..HEAD" -- .claude/skills .agents/skills tools docs/decisions
+```
+
+- The map is **stale** when the count is greater than 0: the anchor isn't `HEAD` and at least one commit since the anchor touches `.claude/skills/`, `.agents/skills/`, `tools/` or `docs/decisions/`. A count of 0, which includes an anchor equal to `HEAD`, means the map is current.
+- A stale map may still be read. Report it as `gira map: stale (anchor <short-sha>, <count> commits)` in the session ledger and in every worker prompt that carries a slice from it.
+- If `anchor` is empty or `git cat-file` fails (for example in a shallow clone), record the staleness check as `not run` with that reason and report the map's freshness as unknown.
+- When the fallback below applies, no map is read and this check isn't run.
+- Regenerate the map only where `gira` is on `PATH` (today the owner's machine), with `gira index`, never by editing the anchor alone. Commit `gira.yaml` and `docs/architecture/macro-map.json` together in the same commit.
+- This check stays a `/drive` instruction: it is not a validator layer, and nothing under `tools/` parses `gira.yaml` (ADR 0007 item 3). Gira-G output, stale or current, is context for workers and never evidence for a gate.
 
 - **Locate Target Nodes:**
 
@@ -97,6 +113,8 @@ To ensure zero token waste and maximize tokens per verified task, query the Gira
 
 Inject only the minimal contextual slice and bounded contract boundaries into the worker execution prompts.
 
+**Fallback when `gira` is unavailable:** record the Gira-G context step as `not run` with the note `gira not installed`. It is `not run`, not `blocked`, because the step only enriches context and no gate depends on it. Derive the context slice deterministically from the task record instead: the files listed under `In scope:` in its `## Objective`, plus the contract sections its acceptance criteria cite. Do not substitute another tool.
+
 ### Step 3: Concurrency Wave Partitioning & Orchestration (L2)
 
 Hand off candidate tasks to `/orchestrate` via the auto-runner harness:
@@ -112,7 +130,7 @@ Each worker subagent executes `/work` within its designated worktree:
 - Follow ceremony tier procedures (typically `standard`).
 - Confine edits strictly to declared `In scope` files.
 - Validate locally: `mise run validate` and `mise run test`.
-- Report completion with `status: ready_for_gate`.
+- Leave the task record at `completed` (or `verified` only when the §3.4 rule holds at `verified_at`) and report the deliverable to the orchestrator for the gate.
 
 ### Step 5: Verification Gate & Circuit Breaker (L2)
 
@@ -144,3 +162,4 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 - Ephemeral Worktrees: [tools/gate/worktree-runner.ts](../../../tools/gate/worktree-runner.ts)
 - Token Budget Guardrail: [tools/eval/token_budget_guard.ts](../../../tools/eval/token_budget_guard.ts)
 - Gira-G Macro Architecture Map: [docs/architecture/macro-map.json](../../../docs/architecture/macro-map.json)
+- Harness Extensions Beyond V1 (Gira-G optional, staleness): [ADR 0007](../../../docs/decisions/0007-harness-extensions-beyond-v1.md)

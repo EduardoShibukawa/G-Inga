@@ -13,13 +13,14 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 
 ## 2. Architecture & Decisions
 
-- [docs/decision-map.md](decision-map.md): Map of architectural decisions (D1–D7), dependencies, and current statuses.
+- [docs/decision-map.md](decision-map.md): Map of architectural decisions (D1–D8), dependencies, and current statuses.
 - [ADR 0001: Product boundary](decisions/0001-product-boundary.md) (`accepted`): Personal SDLC harness first; context map deferred.
 - [ADR 0002: Ceremony tiers and routing](decisions/0002-ceremony-tiers-and-routing.md) (`accepted`): `light`, `standard`, and `heavy` tier definitions and routing invariants.
 - [ADR 0003: Minimum artifact schemas](decisions/0003-minimum-artifact-schemas.md) (`accepted`): Minimal contracts for task, spec, checkpoint, and evidence records.
 - [ADR 0004: Reuse strategy for existing skills](decisions/0004-reuse-strategy-for-existing-skills.md) (`accepted`): Transitional coexistence with upstream plugins without runtime dependencies.
 - [ADR 0005: Native primitive mapping](decisions/0005-native-primitive-mapping.md) (`accepted`): Primitive mapping, pinned bundle distribution architecture (Alternative A), co-located validator, and CI merge gating.
 - [ADR 0006: Usage observability](decisions/0006-usage-observability.md) (`accepted`): Multi-host local usage observation signals (OpenTelemetry for Claude Code, headless JSON for Antigravity) with 6-state taxonomy.
+- [ADR 0007: Harness extensions beyond V1](decisions/0007-harness-extensions-beyond-v1.md) (`accepted`): Recorded deviations from the approved V1 spec (manifest scope, `/orchestrate` and `/drive` invocation, Gira-G fallback, verification follow-ups).
 
 ## 3. Contracts & Specifications
 
@@ -28,8 +29,8 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 
 ## 4. Active Work & Task Records
 
-- [tasks/2026-10-11-minimal-v1-specification.md](../tasks/2026-10-11-minimal-v1-specification.md) (`active`): Parent governance task for minimal V1 specification and SDLC harness governance.
-- [tasks/2026-10-11-repo-first-operating-model.md](../tasks/2026-10-11-repo-first-operating-model.md) (`active`): Active governance task establishing the repository-first operating model, status reconciliation, and validator coexistence architecture.
+- [tasks/2026-10-11-minimal-v1-specification.md](../tasks/2026-10-11-minimal-v1-specification.md) (`accepted`): Parent governance task for minimal V1 specification and SDLC harness governance.
+- [tasks/2026-10-11-repo-first-operating-model.md](../tasks/2026-10-11-repo-first-operating-model.md) (`accepted`): Governance task establishing the repository-first operating model, status reconciliation, and validator coexistence architecture.
 
 ## 5. Research & Sources
 

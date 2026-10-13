@@ -30,6 +30,7 @@ flowchart TD
 | ID | Topic | Status | Record |
 |---|---|---|---|
 | B1 | Brand narrative and codename policy (codenames kept separate from milestones and SemVer) | proposed | [brand-and-roadmap.md](brand-and-roadmap.md). Doesn't block V1 |
+| D8 | Harness extensions beyond V1: manifest scope for `.agents/skills/work/`, model-invocable `/orchestrate` and `/drive`, Gira-G as optional enrichment, V1 verification follow-ups | accepted | [ADR 0007](decisions/0007-harness-extensions-beyond-v1.md). Records deviations from the approved V1 spec without changing it. Accepted by owner (2026-10-13) in full, items 1–5: SC5 manifest scope as a recorded deviation, `/orchestrate` and `/drive` user-invocable outside the bundle, Gira-G optional with a `not run` fallback and a staleness rule kept in `/drive`, a follow-up task for spec Verification items 2 and 4, no spec v2 until another change needs reapproval |
 
 ## Deferred, not rejected
 
