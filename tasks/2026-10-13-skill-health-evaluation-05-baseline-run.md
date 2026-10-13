@@ -1,13 +1,14 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-13-skill-health-evaluation
 spec: 2026-10-13-skill-health-evaluation@1
 depends_on:
   - 2026-10-13-skill-health-evaluation-01-instrument-adr
   - 2026-10-13-skill-health-evaluation-02-trigger-cases
   - 2026-10-13-skill-health-evaluation-03-conformance-cases
+verified_at: "d450b11"
 ---
 
 # Skill Health Baseline Run
@@ -36,13 +37,13 @@ Provide one documented command that runs the suite under the USD 5 ceiling, exec
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | c039980 | parent B1/B2: `mise run validate` exit 0, `mise run test` 227 pass |
-| AC1 | `mise run eval:skills` is the single documented command: trigger suite (`--ablation with-without --scaffold`) then conformance suite (`--scaffold --allow-tools Write Edit Bash --ablation none --keep-temp`), both `--runs 1 --no-publish`, total ceiling `SHE_BUDGET_USD` default 5 split sequentially (trigger 1.5, conformance = 5 − trigger spent − 1.0 headroom for the in-flight run overrun) | pass | worktree | ran end to end twice on 2026-10-13: attempt 1 (`skills-20261013T165646Z`) came back as an `auth_failed` partial at $0, reported `blocked`, never `pass`; attempt 2 (`skills-20261013T171724Z`) completed both suites, trigger ceiling $1.50, conformance ceiling $2.68 |
-| AC2 | baseline run executed once, per-skill trigger and conformance results recorded | pass | worktree | attempt 2, model `claude-opus-5-5`, CLI 2.1.296. Trigger: trigger decisions 10/10 correct; cases 8/10 pass (score 0.90, mean delta −0.05). work 4/4 pass; drive 2/3 (`drive-near-miss-single-task` fail in both arms on model-graded `no-backlog-run`, run hit `max_turns` 3); orchestrate 2/3 (`orchestrate-should-not-fire-recipe` no Skill call, but the `177` answer regex missed in the with arm only, delta −0.5). Conformance: work-light pass, work-heavy pass, drive-dry-run pass, drive-no-eligible pass, orchestrate-draft-spec pass, orchestrate-collision pass, work-standard-valid-record eval score 0.70 (`det-validator-accepts-last-run` fail, see Outcome) and `check-workspace.sh` on its kept workspace pass (validator exit 0). Cost: trigger $1.3247 agent + $0.0224 judge, conformance $1.4011 agent + $0.0008 judge, total $2.75 (attempt 1 $0.00). Conformance tokens: input 82, output 12,454, cache read 831,911, cache write 123,060; trigger tokens unavailable (not in result JSON, traces not kept) |
-| AC3 | ledger rows appended with existing columns; raw results git-ignored | pass | worktree | `SHE-BASE-TRIGGER` and `SHE-BASE-CONFORMANCE` hold attempt 2 results (attempt 1 rows replaced, no duplicates), header unchanged, every row 27 fields; `git check-ignore -v evals/results/x.json` → `.gitignore:4:evals/results/`; `git status` shows no raw output |
-| AC4 | skill instruction files and manifest unchanged versus c039980 | pass | worktree | `git diff --stat c039980 -- .claude/skills .agents/skills manifest.json` empty |
-| AC5 | evaluation files outside the distributed bundle scope | pass | worktree | `tools/validate/bundle.json` scope is `.claude/skills/work/`, `.agents/skills/work/`, `tools/validate/`; no `evals` entry in `bundle.json` or `manifest.json` |
-| V1 | `mise run validate` after change | pass | worktree | exit 0, Overall: pass |
-| V2 | `mise run test` after change | pass | worktree | flaky by environment, not a failure of this diff: `validate.test.ts` "this repository" timed out at its 120 s limit in 2 of my runs under load ~4.5 (226 pass, 1 fail); the orchestrator gate reran it 4 times on this diff, 3 with 227 pass. The standalone validator takes 98 s on a clean clone of b7f1009 and 94 s on this worktree, close to the limit |
+| AC1 | `mise run eval:skills` is the single documented command: trigger suite (`--ablation with-without --scaffold`) then conformance suite (`--scaffold --allow-tools Write Edit Bash --ablation none --keep-temp`), both `--runs 1 --no-publish`, total ceiling `SHE_BUDGET_USD` default 5 split sequentially (trigger 1.5, conformance = 5 − trigger spent − 1.0 headroom for the in-flight run overrun) | pass | d450b11 | ran end to end twice on 2026-10-13: attempt 1 (`skills-20261013T165646Z`) came back as an `auth_failed` partial at $0, reported `blocked`, never `pass`; attempt 2 (`skills-20261013T171724Z`) completed both suites, trigger ceiling $1.50, conformance ceiling $2.68 |
+| AC2 | baseline run executed once, per-skill trigger and conformance results recorded | pass | d450b11 | attempt 2, model `claude-opus-5-5`, CLI 2.1.296. Trigger: trigger decisions 10/10 correct; cases 8/10 pass (score 0.90, mean delta −0.05). work 4/4 pass; drive 2/3 (`drive-near-miss-single-task` fail in both arms on model-graded `no-backlog-run`, run hit `max_turns` 3); orchestrate 2/3 (`orchestrate-should-not-fire-recipe` no Skill call, but the `177` answer regex missed in the with arm only, delta −0.5). Conformance: work-light pass, work-heavy pass, drive-dry-run pass, drive-no-eligible pass, orchestrate-draft-spec pass, orchestrate-collision pass, work-standard-valid-record eval score 0.70 (`det-validator-accepts-last-run` fail, see Outcome) and `check-workspace.sh` on its kept workspace pass (validator exit 0). Cost: trigger $1.3247 agent + $0.0224 judge, conformance $1.4011 agent + $0.0008 judge, total $2.75 (attempt 1 $0.00). Conformance tokens: input 82, output 12,454, cache read 831,911, cache write 123,060; trigger tokens unavailable (not in result JSON, traces not kept) |
+| AC3 | ledger rows appended with existing columns; raw results git-ignored | pass | d450b11 | `SHE-BASE-TRIGGER` and `SHE-BASE-CONFORMANCE` hold attempt 2 results (attempt 1 rows replaced, no duplicates), header unchanged, every row 27 fields; `git check-ignore -v evals/results/x.json` → `.gitignore:4:evals/results/`; `git status` shows no raw output |
+| AC4 | skill instruction files and manifest unchanged versus c039980 | pass | d450b11 | `git diff --stat c039980 -- .claude/skills .agents/skills manifest.json` empty |
+| AC5 | evaluation files outside the distributed bundle scope | pass | d450b11 | `tools/validate/bundle.json` scope is `.claude/skills/work/`, `.agents/skills/work/`, `tools/validate/`; no `evals` entry in `bundle.json` or `manifest.json` |
+| V1 | `mise run validate` after change | pass | d450b11 | exit 0, Overall: pass |
+| V2 | `mise run test` after change | pass | d450b11 | flaky by environment, not a failure of this diff: `validate.test.ts` "this repository" timed out at its 120 s limit in 2 of my runs under load ~4.5 (226 pass, 1 fail); the orchestrator gate reran it 4 times on this diff, 3 with 227 pass. The standalone validator takes 98 s on a clean clone of b7f1009 and 94 s on this worktree, close to the limit |
 
 ## Outcome
 
