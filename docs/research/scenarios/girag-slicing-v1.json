@@ -1,0 +1,698 @@
+[
+  {
+    "id": "GIRAG-01",
+    "name": "Telemetry Observability & Token Accounting Integration",
+    "category": "telemetry_observability_pipeline",
+    "description": "Integrating token budget guardrails with session usage normalizers and ADR 0006 privacy sanitization.",
+    "focal_node": "policy:0006-usage-observability",
+    "target_components": [
+      "tools/eval/token_budget_guard.ts",
+      "tools/eval/collect_usage.ts",
+      "docs/decisions/0006-usage-observability.md"
+    ],
+    "required_files": [
+      "docs/decisions/0006-usage-observability.md",
+      "tools/eval/collect_usage.ts",
+      "tools/eval/token_budget_guard.ts"
+    ],
+    "full_exploration": {
+      "strategy": "recursive_dir_scan",
+      "scanned_files": [
+        "tools/eval/collect_usage.ts",
+        "tools/eval/collect_usage.test.ts",
+        "tools/eval/evaluate_circuit_breaker.ts",
+        "tools/eval/evaluate_circuit_breaker.test.ts",
+        "tools/eval/evaluate_reviewer_trigger.ts",
+        "tools/eval/evaluate_reviewer_trigger.test.ts",
+        "tools/eval/evaluate_routing.ts",
+        "tools/eval/evaluate_routing.test.ts",
+        "tools/eval/token_budget_guard.ts",
+        "tools/eval/token_budget_guard.test.ts",
+        "tools/gate/worktree-runner.ts",
+        "tools/validate/preflight.ts",
+        "docs/research/d4-observability-evidence.md",
+        "docs/research/d4-spike-results.md"
+      ],
+      "input_tokens": 28450,
+      "out_of_scope_files": [
+        "tools/eval/evaluate_circuit_breaker.ts",
+        "tools/eval/evaluate_reviewer_trigger.ts",
+        "tools/gate/worktree-runner.ts",
+        "docs/research/d4-spike-results.md"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0006-usage-observability.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "summary",
+      "view": "governance",
+      "injected_files": [
+        "docs/decisions/0006-usage-observability.md",
+        "tools/eval/collect_usage.ts",
+        "tools/eval/token_budget_guard.ts"
+      ],
+      "input_tokens": 9650,
+      "slicing_overhead_ms": 14,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-02",
+    "name": "Autonomous Backlog Driver Skill Integration",
+    "category": "runtime_skill_integration",
+    "description": "Configuring L1 driver, L2 orchestrator, and L3 worker execution with anti-thrashing circuit breaker halts.",
+    "focal_node": "policy:0002-ceremony-tiers-and-routing",
+    "target_components": [
+      ".agents/skills/drive/SKILL.md",
+      ".claude/skills/drive/SKILL.md",
+      "docs/decisions/0002-ceremony-tiers-and-routing.md",
+      "tools/eval/evaluate_circuit_breaker.ts"
+    ],
+    "required_files": [
+      ".agents/skills/drive/SKILL.md",
+      ".claude/skills/drive/SKILL.md",
+      "docs/decisions/0002-ceremony-tiers-and-routing.md",
+      "tools/eval/evaluate_circuit_breaker.ts"
+    ],
+    "full_exploration": {
+      "strategy": "broad_grep_search",
+      "scanned_files": [
+        ".agents/skills/drive/SKILL.md",
+        ".agents/skills/orchestrate/SKILL.md",
+        ".agents/skills/work/SKILL.md",
+        ".claude/skills/drive/SKILL.md",
+        ".claude/skills/orchestrate/SKILL.md",
+        ".claude/skills/work/SKILL.md",
+        "tasks/2026-10-12-implement-drive-autonomous-skill.md",
+        "tasks/2026-10-12-orchestrate-auto-wave-runner.md",
+        "docs/research/reference-index.md"
+      ],
+      "input_tokens": 34200,
+      "out_of_scope_files": [
+        ".agents/skills/work/SKILL.md",
+        ".claude/skills/work/SKILL.md",
+        "tasks/2026-10-12-orchestrate-auto-wave-runner.md",
+        "docs/research/reference-index.md"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0002-ceremony-tiers-and-routing.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "contracts",
+      "view": "full",
+      "injected_files": [
+        ".agents/skills/drive/SKILL.md",
+        ".claude/skills/drive/SKILL.md",
+        "docs/decisions/0002-ceremony-tiers-and-routing.md",
+        "tools/eval/evaluate_circuit_breaker.ts"
+      ],
+      "input_tokens": 12280,
+      "slicing_overhead_ms": 18,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-03",
+    "name": "Dynamic Git Worktree Concurrency Runner",
+    "category": "orchestrator_subagent_boundary",
+    "description": "Isolating parallel subagent execution branches with detached git worktrees and automated cleanup.",
+    "focal_node": "task:2026-10-12-autoresearch-exp05-worktree-isolation",
+    "target_components": [
+      "tools/gate/worktree-runner.ts",
+      "tools/gate/worktree-runner.test.ts",
+      "docs/research/scenarios/worktree-concurrency-v1.json"
+    ],
+    "required_files": [
+      "tools/gate/worktree-runner.ts",
+      "tools/gate/worktree-runner.test.ts",
+      "docs/research/scenarios/worktree-concurrency-v1.json"
+    ],
+    "full_exploration": {
+      "strategy": "directory_file_dump",
+      "scanned_files": [
+        "tools/gate/worktree-runner.ts",
+        "tools/gate/worktree-runner.test.ts",
+        "tools/validate/preflight.ts",
+        "tools/validate/main.ts",
+        "tools/validate/standalone.ts",
+        "docs/research/scenarios/worktree-concurrency-v1.json",
+        "docs/research/scenarios/circuit-breaker-v1.json",
+        "docs/research/scenarios/reviewer-trigger-v1.json"
+      ],
+      "input_tokens": 25100,
+      "out_of_scope_files": [
+        "tools/validate/standalone.ts",
+        "docs/research/scenarios/circuit-breaker-v1.json",
+        "docs/research/scenarios/reviewer-trigger-v1.json"
+      ],
+      "boundary_misses": [
+        "docs/research/scenarios/worktree-concurrency-v1.json"
+      ]
+    },
+    "girag_slice": {
+      "tier": "summary",
+      "view": "architecture",
+      "injected_files": [
+        "tools/gate/worktree-runner.ts",
+        "tools/gate/worktree-runner.test.ts",
+        "docs/research/scenarios/worktree-concurrency-v1.json"
+      ],
+      "input_tokens": 8540,
+      "slicing_overhead_ms": 11,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-04",
+    "name": "Circuit Breaker Anti-Thrashing Recovery Policy",
+    "category": "cross_component_governance",
+    "description": "Tripping circuit breaker on two consecutive uninformative failures and preventing premature stops.",
+    "focal_node": "policy:0002-ceremony-tiers-and-routing",
+    "target_components": [
+      "tools/eval/evaluate_circuit_breaker.ts",
+      "tools/eval/evaluate_circuit_breaker.test.ts",
+      "docs/research/scenarios/circuit-breaker-v1.json"
+    ],
+    "required_files": [
+      "tools/eval/evaluate_circuit_breaker.ts",
+      "tools/eval/evaluate_circuit_breaker.test.ts",
+      "docs/research/scenarios/circuit-breaker-v1.json",
+      "docs/decisions/0002-ceremony-tiers-and-routing.md"
+    ],
+    "full_exploration": {
+      "strategy": "recursive_dir_scan",
+      "scanned_files": [
+        "tools/eval/evaluate_circuit_breaker.ts",
+        "tools/eval/evaluate_circuit_breaker.test.ts",
+        "tools/eval/evaluate_reviewer_trigger.ts",
+        "tools/eval/evaluate_routing.ts",
+        "tools/eval/token_budget_guard.ts",
+        "docs/research/scenarios/circuit-breaker-v1.json",
+        "docs/research/autoresearch-program.md"
+      ],
+      "input_tokens": 29800,
+      "out_of_scope_files": [
+        "tools/eval/evaluate_reviewer_trigger.ts",
+        "tools/eval/evaluate_routing.ts",
+        "tools/eval/token_budget_guard.ts"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0002-ceremony-tiers-and-routing.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "contracts",
+      "view": "governance",
+      "injected_files": [
+        "tools/eval/evaluate_circuit_breaker.ts",
+        "tools/eval/evaluate_circuit_breaker.test.ts",
+        "docs/research/scenarios/circuit-breaker-v1.json",
+        "docs/decisions/0002-ceremony-tiers-and-routing.md"
+      ],
+      "input_tokens": 10450,
+      "slicing_overhead_ms": 15,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-05",
+    "name": "Calibrated Reviewer Trigger & Deterministic Audit Gate",
+    "category": "cross_component_governance",
+    "description": "Triggering independent reviewer on cross-module or contract diffs while enforcing deterministic override.",
+    "focal_node": "policy:0002-ceremony-tiers-and-routing",
+    "target_components": [
+      "tools/eval/evaluate_reviewer_trigger.ts",
+      "tools/eval/evaluate_reviewer_trigger.test.ts",
+      "docs/research/scenarios/reviewer-trigger-v1.json",
+      "docs/decisions/0002-ceremony-tiers-and-routing.md"
+    ],
+    "required_files": [
+      "tools/eval/evaluate_reviewer_trigger.ts",
+      "tools/eval/evaluate_reviewer_trigger.test.ts",
+      "docs/research/scenarios/reviewer-trigger-v1.json",
+      "docs/decisions/0002-ceremony-tiers-and-routing.md"
+    ],
+    "full_exploration": {
+      "strategy": "broad_grep_search",
+      "scanned_files": [
+        "tools/eval/evaluate_reviewer_trigger.ts",
+        "tools/eval/evaluate_reviewer_trigger.test.ts",
+        "tools/eval/collect_usage.ts",
+        "tools/gate/worktree-runner.ts",
+        "docs/research/scenarios/reviewer-trigger-v1.json",
+        "docs/research/d7-evaluation-protocol.md"
+      ],
+      "input_tokens": 27300,
+      "out_of_scope_files": [
+        "tools/eval/collect_usage.ts",
+        "tools/gate/worktree-runner.ts",
+        "docs/research/d7-evaluation-protocol.md"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0002-ceremony-tiers-and-routing.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "contracts",
+      "view": "governance",
+      "injected_files": [
+        "tools/eval/evaluate_reviewer_trigger.ts",
+        "tools/eval/evaluate_reviewer_trigger.test.ts",
+        "docs/research/scenarios/reviewer-trigger-v1.json",
+        "docs/decisions/0002-ceremony-tiers-and-routing.md"
+      ],
+      "input_tokens": 9120,
+      "slicing_overhead_ms": 13,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-06",
+    "name": "Artifact Contract Validator & Schema Integrity",
+    "category": "spec_contract_enforcement",
+    "description": "Validating task/1 schema, baseline commit ancestry, and legal state transitions across repo docs.",
+    "focal_node": "policy:0003-minimum-artifact-schemas",
+    "target_components": [
+      "docs/artifact-contracts.md",
+      "tools/validate/artifacts/rules.ts",
+      "tools/validate/artifacts/contract.json",
+      "docs/decisions/0003-minimum-artifact-schemas.md"
+    ],
+    "required_files": [
+      "docs/artifact-contracts.md",
+      "tools/validate/artifacts/rules.ts",
+      "tools/validate/artifacts/contract.json",
+      "docs/decisions/0003-minimum-artifact-schemas.md"
+    ],
+    "full_exploration": {
+      "strategy": "directory_file_dump",
+      "scanned_files": [
+        "docs/artifact-contracts.md",
+        "tools/validate/artifacts/rules.ts",
+        "tools/validate/artifacts/contract.json",
+        "tools/validate/artifacts/fixtures.ts",
+        "tools/validate/artifacts/artifacts.test.ts",
+        "tools/validate/main.ts",
+        "tools/validate/preflight.ts",
+        "tools/validate/standalone.ts",
+        "tools/validate/contract-copy.mjs"
+      ],
+      "input_tokens": 41500,
+      "out_of_scope_files": [
+        "tools/validate/artifacts/fixtures.ts",
+        "tools/validate/standalone.ts",
+        "tools/validate/preflight.ts"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0003-minimum-artifact-schemas.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "deep",
+      "view": "governance",
+      "injected_files": [
+        "docs/artifact-contracts.md",
+        "tools/validate/artifacts/rules.ts",
+        "tools/validate/artifacts/contract.json",
+        "docs/decisions/0003-minimum-artifact-schemas.md"
+      ],
+      "input_tokens": 14200,
+      "slicing_overhead_ms": 22,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-07",
+    "name": "Skill Reuse & Product Boundary Mapping",
+    "category": "cross_component_governance",
+    "description": "Adapting host builtin skills without duplication or vendor lock-in under ADR 0004 and ADR 0005.",
+    "focal_node": "policy:0004-reuse-strategy-for-existing-skills",
+    "target_components": [
+      "docs/decisions/0004-reuse-strategy-for-existing-skills.md",
+      "docs/decisions/0005-native-primitive-mapping.md",
+      ".agents/skills/work/SKILL.md",
+      ".claude/skills/work/SKILL.md"
+    ],
+    "required_files": [
+      "docs/decisions/0004-reuse-strategy-for-existing-skills.md",
+      "docs/decisions/0005-native-primitive-mapping.md",
+      ".agents/skills/work/SKILL.md",
+      ".claude/skills/work/SKILL.md"
+    ],
+    "full_exploration": {
+      "strategy": "recursive_dir_scan",
+      "scanned_files": [
+        "docs/decisions/0004-reuse-strategy-for-existing-skills.md",
+        "docs/decisions/0001-product-boundary.md",
+        ".agents/skills/work/SKILL.md",
+        ".agents/skills/work/standard.md",
+        ".agents/skills/work/heavy.md",
+        ".claude/skills/work/SKILL.md",
+        ".claude/skills/work/standard.md",
+        ".claude/skills/work/heavy.md",
+        "docs/research/d6-reuse-evidence.md"
+      ],
+      "input_tokens": 22900,
+      "out_of_scope_files": [
+        "docs/decisions/0001-product-boundary.md",
+        ".agents/skills/work/heavy.md",
+        ".claude/skills/work/heavy.md",
+        "docs/research/d6-reuse-evidence.md"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0005-native-primitive-mapping.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "contracts",
+      "view": "architecture",
+      "injected_files": [
+        "docs/decisions/0004-reuse-strategy-for-existing-skills.md",
+        "docs/decisions/0005-native-primitive-mapping.md",
+        ".agents/skills/work/SKILL.md",
+        ".claude/skills/work/SKILL.md"
+      ],
+      "input_tokens": 7850,
+      "slicing_overhead_ms": 12,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-08",
+    "name": "Categorical Routing Evaluator Calibration",
+    "category": "multi_tier_verification",
+    "description": "Grading predictions across R01-R17 with hard guardrail enforcement for irreversible or sensitive tasks.",
+    "focal_node": "policy:0002-ceremony-tiers-and-routing",
+    "target_components": [
+      "tools/eval/evaluate_routing.ts",
+      "tools/eval/evaluate_routing.test.ts",
+      "docs/research/scenarios/r01-r17-v1.json",
+      "docs/decisions/0002-ceremony-tiers-and-routing.md"
+    ],
+    "required_files": [
+      "tools/eval/evaluate_routing.ts",
+      "tools/eval/evaluate_routing.test.ts",
+      "docs/research/scenarios/r01-r17-v1.json",
+      "docs/decisions/0002-ceremony-tiers-and-routing.md"
+    ],
+    "full_exploration": {
+      "strategy": "broad_grep_search",
+      "scanned_files": [
+        "tools/eval/evaluate_routing.ts",
+        "tools/eval/evaluate_routing.test.ts",
+        "docs/research/scenarios/r01-r17-v1.json",
+        "docs/research/d2-routing-evidence.md",
+        "docs/research/2026-10-11-r01-r17-tabletop-worksheet.md",
+        "tasks/2026-10-11-autoresearch-exp01-router-calibration.md"
+      ],
+      "input_tokens": 29600,
+      "out_of_scope_files": [
+        "docs/research/d2-routing-evidence.md",
+        "docs/research/2026-10-11-r01-r17-tabletop-worksheet.md",
+        "tasks/2026-10-11-autoresearch-exp01-router-calibration.md"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0002-ceremony-tiers-and-routing.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "contracts",
+      "view": "governance",
+      "injected_files": [
+        "tools/eval/evaluate_routing.ts",
+        "tools/eval/evaluate_routing.test.ts",
+        "docs/research/scenarios/r01-r17-v1.json",
+        "docs/decisions/0002-ceremony-tiers-and-routing.md"
+      ],
+      "input_tokens": 11300,
+      "slicing_overhead_ms": 16,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-09",
+    "name": "CI Preflight & Multi-Host Action Validation",
+    "category": "spec_contract_enforcement",
+    "description": "Verifying repository preflight checks, bun lockfile freshness, and multi-host GitHub Action workflow.",
+    "focal_node": "service:job:validate",
+    "target_components": [
+      "tools/validate/preflight.ts",
+      ".github/workflows/ci.yml",
+      "package.json"
+    ],
+    "required_files": [
+      "tools/validate/preflight.ts",
+      ".github/workflows/ci.yml",
+      "package.json"
+    ],
+    "full_exploration": {
+      "strategy": "directory_file_dump",
+      "scanned_files": [
+        "tools/validate/preflight.ts",
+        "tools/validate/main.ts",
+        "tools/validate/standalone.ts",
+        ".github/workflows/ci.yml",
+        "package.json",
+        "mise.toml",
+        "README.md"
+      ],
+      "input_tokens": 19400,
+      "out_of_scope_files": [
+        "tools/validate/main.ts",
+        "tools/validate/standalone.ts",
+        "README.md"
+      ],
+      "boundary_misses": [
+        ".github/workflows/ci.yml"
+      ]
+    },
+    "girag_slice": {
+      "tier": "summary",
+      "view": "architecture",
+      "injected_files": [
+        "tools/validate/preflight.ts",
+        ".github/workflows/ci.yml",
+        "package.json"
+      ],
+      "input_tokens": 6180,
+      "slicing_overhead_ms": 9,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-10",
+    "name": "Multi-Agent Orchestrator Wave Partitioning & Collision Guard",
+    "category": "orchestrator_subagent_boundary",
+    "description": "Partitioning conflict-free execution waves and asserting file tree disjointness before subagent dispatch.",
+    "focal_node": "policy:0001-product-boundary",
+    "target_components": [
+      ".agents/skills/orchestrate/SKILL.md",
+      "tasks/2026-10-12-orchestrate-scope-collision-gate.md",
+      "docs/decisions/0001-product-boundary.md"
+    ],
+    "required_files": [
+      ".agents/skills/orchestrate/SKILL.md",
+      "tasks/2026-10-12-orchestrate-scope-collision-gate.md",
+      "docs/decisions/0001-product-boundary.md"
+    ],
+    "full_exploration": {
+      "strategy": "recursive_dir_scan",
+      "scanned_files": [
+        ".agents/skills/orchestrate/SKILL.md",
+        ".agents/skills/drive/SKILL.md",
+        ".claude/skills/orchestrate/SKILL.md",
+        "tasks/2026-10-12-orchestrate-scope-collision-gate.md",
+        "tasks/2026-10-12-orchestrate-pre-dispatch-collision-guard.md",
+        "tasks/2026-10-12-orchestrate-task-ancestry-gate.md",
+        "tasks/2026-10-12-orchestrate-auto-wave-runner.md"
+      ],
+      "input_tokens": 36700,
+      "out_of_scope_files": [
+        ".agents/skills/drive/SKILL.md",
+        "tasks/2026-10-12-orchestrate-pre-dispatch-collision-guard.md",
+        "tasks/2026-10-12-orchestrate-task-ancestry-gate.md",
+        "tasks/2026-10-12-orchestrate-auto-wave-runner.md"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0001-product-boundary.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "contracts",
+      "view": "architecture",
+      "injected_files": [
+        ".agents/skills/orchestrate/SKILL.md",
+        "tasks/2026-10-12-orchestrate-scope-collision-gate.md",
+        "docs/decisions/0001-product-boundary.md"
+      ],
+      "input_tokens": 12850,
+      "slicing_overhead_ms": 17,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-11",
+    "name": "Autoresearch Ledger & Observability Intake",
+    "category": "telemetry_observability_pipeline",
+    "description": "Logging empirical multi-run outcomes with strict TSV tab boundaries and 6-state metric taxomomy.",
+    "focal_node": "policy:0006-usage-observability",
+    "target_components": [
+      "records/autoresearch-ledger.tsv",
+      "docs/research/autoresearch-program.md",
+      "tools/eval/collect_usage.ts",
+      "docs/decisions/0006-usage-observability.md"
+    ],
+    "required_files": [
+      "records/autoresearch-ledger.tsv",
+      "docs/research/autoresearch-program.md",
+      "tools/eval/collect_usage.ts",
+      "docs/decisions/0006-usage-observability.md"
+    ],
+    "full_exploration": {
+      "strategy": "broad_grep_search",
+      "scanned_files": [
+        "records/autoresearch-ledger.tsv",
+        "docs/research/autoresearch-program.md",
+        "tools/eval/collect_usage.ts",
+        "tools/eval/collect_usage.test.ts",
+        "tools/eval/token_budget_guard.ts",
+        "docs/research/d4-observability-evidence.md",
+        "docs/research/d5-decision-brief.md"
+      ],
+      "input_tokens": 27400,
+      "out_of_scope_files": [
+        "tools/eval/token_budget_guard.ts",
+        "docs/research/d4-observability-evidence.md",
+        "docs/research/d5-decision-brief.md"
+      ],
+      "boundary_misses": [
+        "docs/decisions/0006-usage-observability.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "contracts",
+      "view": "governance",
+      "injected_files": [
+        "records/autoresearch-ledger.tsv",
+        "docs/research/autoresearch-program.md",
+        "tools/eval/collect_usage.ts",
+        "docs/decisions/0006-usage-observability.md"
+      ],
+      "input_tokens": 8200,
+      "slicing_overhead_ms": 12,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  },
+  {
+    "id": "GIRAG-12",
+    "name": "Minimal V1 Spec Hash Distribution & Bundle Copy Transform",
+    "category": "spec_contract_enforcement",
+    "description": "Preserving approved spec body hash integrity across skill distribution transform bundles.",
+    "focal_node": "policy:2026-10-11-minimal-v1-specification",
+    "target_components": [
+      "specs/2026-10-11-minimal-v1-specification.md",
+      "tools/validate/contract-copy.mjs",
+      "docs/artifact-contracts.md"
+    ],
+    "required_files": [
+      "specs/2026-10-11-minimal-v1-specification.md",
+      "tools/validate/contract-copy.mjs",
+      "docs/artifact-contracts.md"
+    ],
+    "full_exploration": {
+      "strategy": "directory_file_dump",
+      "scanned_files": [
+        "specs/2026-10-11-minimal-v1-specification.md",
+        "tools/validate/contract-copy.mjs",
+        "docs/artifact-contracts.md",
+        ".claude/skills/work/references/artifact-contracts.md",
+        "docs/research/2026-10-11-minimal-v1-remediation-review.md",
+        "tasks/2026-10-11-minimal-v1-specification.md",
+        "tasks/2026-10-11-minimal-v1-specification-04-contract-distribution.md"
+      ],
+      "input_tokens": 38100,
+      "out_of_scope_files": [
+        ".claude/skills/work/references/artifact-contracts.md",
+        "docs/research/2026-10-11-minimal-v1-remediation-review.md",
+        "tasks/2026-10-11-minimal-v1-specification-04-contract-distribution.md"
+      ],
+      "boundary_misses": [
+        "specs/2026-10-11-minimal-v1-specification.md"
+      ]
+    },
+    "girag_slice": {
+      "tier": "contracts",
+      "view": "governance",
+      "injected_files": [
+        "specs/2026-10-11-minimal-v1-specification.md",
+        "tools/validate/contract-copy.mjs",
+        "docs/artifact-contracts.md"
+      ],
+      "input_tokens": 13400,
+      "slicing_overhead_ms": 20,
+      "boundary_misses": []
+    },
+    "expected": {
+      "min_token_reduction_pct": 30.0,
+      "scope_accuracy_pct": 100.0,
+      "max_overhead_ms": 500
+    }
+  }
+]
