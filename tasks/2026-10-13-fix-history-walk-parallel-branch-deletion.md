@@ -2,7 +2,7 @@
 schema: task/1
 tier: standard
 status: verified
-verified_at: "3652532"
+verified_at: "dcc83d4"
 ---
 
 # Fix the History Walk's Parallel-Branch Deletion False Positive
@@ -39,12 +39,12 @@ Make the history walk's deletion detection DAG-aware so a record present on one 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate | fail | 75125ab | `artifact-records` fail: §6.1 false positive; `tasks/2026-10-13-record-plugin-channel-adr-0005.md` reported deleted although it exists at HEAD |
-| AC1 | DAG-aware deletion detection | pass | 3652532 | `git log --full-history --diff-filter=D` returns no deletions on this repo, so the false positive is gone; the `H-del` fixture (real committed deletion) still fails |
-| AC2 | regression test | pass | 3652532 | new `artifacts.test.ts` case: guard disabled → the test fails, restored → passes |
-| AC3 | validate | pass | 3652532 | Overall pass; `artifact-rule-fixtures` 40/40; `artifact-records` pass |
-| AC4 | test | pass | 3652532 | 228 pass, 0 fail |
-| AC5 | manifest provenance | pass | 3652532 | `manifest.mjs --check`: pass |
-| V1 | diff read against AC1-AC5 and the out-of-scope list | pass | 3652532 | 4 files, 60 insertions, 4 deletions; 0 files under `docs/` or `.claude/skills/` |
+| AC1 | DAG-aware deletion detection | pass | dcc83d4 | `git log --full-history --diff-filter=D` returns no deletions on this repo, so the false positive is gone; the `H-del` fixture (real committed deletion) still fails |
+| AC2 | regression test | pass | dcc83d4 | new `artifacts.test.ts` case: guard disabled → the test fails, restored → passes; now also runs with no ambient Git identity (`GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null`: 66 pass, 0 fail) |
+| AC3 | validate | pass | dcc83d4 | Overall pass; `artifact-rule-fixtures` 40/40; `artifact-records` pass |
+| AC4 | test | pass | dcc83d4 | 228 pass, 0 fail at dcc83d4 in a clean checkout (no untracked files), reproducing CI; `validate` is Overall pass there |
+| AC5 | manifest provenance | pass | dcc83d4 | `manifest.mjs --check`: pass |
+| V1 | diff read against AC1-AC5 and the out-of-scope list | pass | dcc83d4 | 6 files, 124 insertions, 5 deletions; 0 files under `docs/` or `.claude/skills/` |
 
 ## Plan
 
@@ -53,3 +53,5 @@ skip: single-step fix; the acceptance criteria are the plan.
 ## Outcome
 
 The history walk no longer reads a parallel-branch absence as a deletion. Removal detection now uses git's own `--full-history --diff-filter=D` (DAG-aware), and the working-tree deletion stays handled by the walk. A regression test pins the parallel-branch topology. `mise run validate`, `mise run test` (228 pass) and `manifest.mjs --check` are all green.
+
+The first CI run caught a gap in the original verification: the regression test's raw `git merge` needs a Git identity, which passed locally only because this machine has a global one, while the runner has none. `fixtureDir` now sets `user.email`/`user.name`/`commit.gpgsign` repo-locally, so every raw `git` call in a test works on CI. Verification was refreshed at the fix commit (`dcc83d4`).
