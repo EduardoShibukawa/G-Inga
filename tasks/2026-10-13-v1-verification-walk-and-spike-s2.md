@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: completed
 ---
 
 # Run V1 Spec Verification Items 2 (R01–R17 Load Walk) and 4 (Spike S2)
@@ -36,11 +36,11 @@ Close the two gaps that [ADR 0007](../docs/decisions/0007-harness-extensions-bey
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline `mise install`, `mise run validate`, `mise run test` | pass | 36034be | full history (not shallow); validate Overall pass, exit 0; test 227 pass, 0 fail, exit 0 |
-| AC1 | spec Verification item 2: R01–R17 load walk table | not run | | |
-| AC2 | spec Verification item 2: tier reconfirmation with `tools/eval/evaluate_routing.ts` | not run | | |
-| AC3 | spec Verification item 4: spike S2 compaction re-attachment | not run | | |
-| AC4 | `mise run validate` and `mise run test` | not run | | |
-| V1 | diff bounded to the two in-scope files | not run | | |
+| AC1 | spec Verification item 2: R01–R17 load walk table | pass | 36bb4b3 | [docs/research/2026-10-13-r01-r17-load-walk.md](../docs/research/2026-10-13-r01-r17-load-walk.md) §3: 17 rows R01–R17 (`grep -cE` = 17), each with Tier, Files loaded, Files read and Tier boundary filled, cited to `.claude/skills/work/**` lines at 36034be (bundle unchanged since, hashes equal `manifest.json`); five wording findings F1–F5 recorded in §5, none changes a tier |
+| AC2 | spec Verification item 2: tier reconfirmation with `tools/eval/evaluate_routing.ts` | pass | 36bb4b3 | `mise exec -- bun tools/eval/evaluate_routing.ts docs/research/scenarios/r01-r17-v1.json <predictions>`: EXP-01 `records/exp01-baseline-predictions.json` 17/17, 0 critical misses, exit 0; walk-derived predictions (Tier column, final tier per row) 17/17, 0 critical misses, exit 0; `evaluate_routing.test.ts` 3 pass |
+| AC3 | spec Verification item 4: spike S2 compaction re-attachment | blocked | 36bb4b3 | not executed: the worker has no interactive Claude Code session and nested `claude` sessions are not allowed, so `/compact` can't be forced; needs the owner (see Blockers). Worker host `claude --version`: `2.1.296 (Claude Code)`; the owner's run must record its own version (ADR 0007, answered open question 3) |
+| AC4 | `mise run validate` and `mise run test` | pass | 36bb4b3 | validate Overall pass, exit 0 (markdown-lint, local-links, artifact-records pass); test: typecheck pass, 227 pass, 0 fail, exit 0 |
+| V1 | diff bounded to the two in-scope files | pass | 36bb4b3 | `git diff --name-only 36034be..36bb4b3` lists only this record and the research note; no change under `.claude/`, `.agents/`, `tools/`, `specs/` or `manifest.json` |
 
 ## Plan
 
@@ -50,8 +50,18 @@ Close the two gaps that [ADR 0007](../docs/decisions/0007-harness-extensions-bey
 4. Attempt spike S2; record `blocked` with the reason and `claude --version` if no interactive session is available.
 5. Run validate and test, record results, and hand off to the owner.
 
+## Blockers
+
+- AC3 (spike S2) needs an interactive Claude Code session, which the worker doesn't have. Needed from the owner: in an interactive session in this repository, run `claude --version`, invoke `/work` on any request so `SKILL.md` loads, run `/compact`, then ask the agent to quote the last step of the `/work` Light Tier Procedure ("Zero persistence", `.claude/skills/work/SKILL.md` L95) without reading the file, and compare. `pass` only if the quote matches and the whole body is present; record the version in the row's note.
+
+## Outcome
+
+Spec Verification item 2 is done: the R01–R17 load walk records tier, files loaded, files read and the tier boundary for every scenario under the current `/work` bundle, and `evaluate_routing.ts` reconfirms 17/17 tiers with 0 critical misses. The walk found five wording gaps (F1–F5 in the note) where a rule lives only in the contract or nowhere in the bundle; none changes a tier and none was fixed here. Spec Verification item 4 (spike S2) is not delivered: it stays `blocked` until the owner runs it, so the record stays `completed`, not `verified`. Follow-ups: the owner's S2 run, and an owner call on whether F1–F5 warrant a bundle task.
+
 ## Checkpoint
 
-- as of: 2026-10-13, branch work/adr0007-followup-B, head 36034be, worktree dirty (this record)
-- done: B1 recorded
-- next: write the R01–R17 load walk note
+- as of: 2026-10-13, branch work/adr0007-followup-B, head 36bb4b3 plus the commit recording this status, worktree clean after it, task completed (AC3 blocked)
+- done: B1 on 36034be; R01–R17 load walk note committed at 36bb4b3; AC1, AC2, AC4 and V1 pass at 36bb4b3; AC3 `blocked`
+- next: owner runs spike S2 per Blockers and records AC3 with `claude --version`; with AC3 `pass` on a new commit, rerun AC1, AC2, AC4 and V1 there and move the record to `verified`
+- open: whether findings F1–F5 in the note become a bundle follow-up task (owner call)
+- revalidate: B1 ran on 36034be; AC rows ran on 36bb4b3
