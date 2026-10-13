@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "3652532"
 ---
 
 # Fix the History Walk's Parallel-Branch Deletion False Positive
@@ -38,12 +39,12 @@ Make the history walk's deletion detection DAG-aware so a record present on one 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate | fail | 75125ab | `artifact-records` fail: §6.1 false positive; `tasks/2026-10-13-record-plugin-channel-adr-0005.md` reported deleted although it exists at HEAD |
-| AC1 | DAG-aware deletion detection | pass | 7ca857a | `git log --full-history --diff-filter=D` returns no deletions on this repo; the false positive is gone while `H-del` (real committed deletion) still fails |
-| AC2 | regression test | pass | 7ca857a | new `artifacts.test.ts` case: guard disabled → test fails, restored → passes |
+| AC1 | DAG-aware deletion detection | pass | 3652532 | `git log --full-history --diff-filter=D` returns no deletions on this repo, so the false positive is gone; the `H-del` fixture (real committed deletion) still fails |
+| AC2 | regression test | pass | 3652532 | new `artifacts.test.ts` case: guard disabled → the test fails, restored → passes |
 | AC3 | validate | pass | 3652532 | Overall pass; `artifact-rule-fixtures` 40/40; `artifact-records` pass |
 | AC4 | test | pass | 3652532 | 228 pass, 0 fail |
 | AC5 | manifest provenance | pass | 3652532 | `manifest.mjs --check`: pass |
-| V1 | diff read against AC1-AC5 and the out-of-scope list | pass | 7ca857a | 4 files, 60 insertions, 4 deletions; 0 files under `docs/` or `.claude/skills/` |
+| V1 | diff read against AC1-AC5 and the out-of-scope list | pass | 3652532 | 4 files, 60 insertions, 4 deletions; 0 files under `docs/` or `.claude/skills/` |
 
 ## Plan
 
