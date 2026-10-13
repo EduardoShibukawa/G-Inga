@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "g-inga",
+  "description": "G-Ingá: personal agentic SDLC harness for Claude Code favoring tokens per verified task",
+  "owner": {
+    "name": "Eduardo Shibukawa"
+  },
+  "plugins": [
+    {
+      "name": "g-inga",
+      "source": "./",
+      "description": "SDLC harness skills: /work (tiered entry point), /drive (backlog driver), /orchestrate (OODA orchestration)",
+      "category": "development"
+    }
+  ]
+}

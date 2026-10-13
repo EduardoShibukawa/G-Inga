@@ -41,6 +41,17 @@ For someone starting a new session or exploring the repository, follow this orde
 4. **Contracts & Specifications:** Read [docs/artifact-contracts.md](docs/artifact-contracts.md) and [Minimal V1 Specification](specs/2026-10-11-minimal-v1-specification.md).
 5. **Active Tasks:** Inspect active task records in [tasks/](tasks/).
 
+## Install as a Claude Code Plugin
+
+This repository is also a single-plugin marketplace ([`.claude-plugin/`](.claude-plugin/)). The `g-inga` plugin loads the skills under `.claude/skills/` (`work`, `drive`, `orchestrate`), namespaced as `/g-inga:<skill>`:
+
+```sh
+claude plugin marketplace add EduardoShibukawa/G-Inga
+claude plugin install g-inga@g-inga
+```
+
+Inside a session, `/plugin install g-inga --marketplace EduardoShibukawa/G-Inga` does both in one step. The plugin is a personal convenience channel: the pinned bundle stays the distribution for target repositories and CI ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)). The manifest sets no `version`, so updates follow the repository's commits.
+
 ## Repository Validation and Development Setup
 
 Install [mise](https://mise.jdx.dev/installing-mise.html) and Git, then from the repository root:
