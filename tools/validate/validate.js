@@ -7523,6 +7523,18 @@ function checkHistory(root, opts = {}) {
   };
   const ancestry = opts.ancestry ?? gitAncestry(root);
   const at = (rev) => rev === WT ? WT : rev.slice(0, 7);
+  const realDeletions = new Map;
+  if (hasHead) {
+    const out = git(root, ["log", "--full-history", "--diff-filter=D", "--name-only", "-z", "--format=%H", "HEAD", "--", "tasks", "specs"]).out;
+    let rev = "";
+    for (const token of out.split("\x00")) {
+      const tok = token.trim();
+      if (/^[0-9a-f]{40}$/.test(tok))
+        rev = tok;
+      else if (tok && rev)
+        (realDeletions.get(rev) ?? realDeletions.set(rev, new Set).get(rev)).add(tok);
+    }
+  }
   const lastState = new Map;
   const lastStatusChange = new Map;
   const reported = new Set;
@@ -7542,7 +7554,8 @@ function checkHistory(root, opts = {}) {
       const file = (now ?? before.rec).path;
       const f = (msg, rule = "§7.1") => findings.push({ level: "fail", rule, file, msg: `${at(rev)}: ${msg}` });
       if (!now) {
-        f(`${file} was deleted; ${key.startsWith("spec") ? "a spec is never deleted (§4.3)" : "a committed task record is closed as cancelled, never deleted (§6.1)"}`, key.startsWith("spec") ? "§7.1" : "§6.1");
+        if (rev === WT || realDeletions.get(rev)?.has(file))
+          f(`${file} was deleted; ${key.startsWith("spec") ? "a spec is never deleted (§4.3)" : "a committed task record is closed as cancelled, never deleted (§6.1)"}`, key.startsWith("spec") ? "§7.1" : "§6.1");
         lastState.delete(key);
         continue;
       }
