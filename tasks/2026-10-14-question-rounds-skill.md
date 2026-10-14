@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: heavy
-status: todo
+status: active
 spec: 2026-10-14-question-rounds-skill@1
 ---
 
@@ -11,6 +11,16 @@ spec: 2026-10-14-question-rounds-skill@1
 
 - tier: heavy (H1: ADR 0004 open questions 1 and 3 are owner calls, H4: changes harness policy text in `work/heavy.md` and `docs/principles.md` §2)
 - approved: owner request to record the gap and open this task (2026-10-14, "sim")
+- confirmed: heavy by owner (2026-10-14, "Confirmo tudo")
+- decided: question format → whole frontier per round, numbered, each with a recommended answer; `docs/principles.md` §2 aligned to it by owner (2026-10-14, "Confirmo tudo")
+- decided: glossary → plain repository doc, not a contract artifact, created lazily on the first resolved term; the skill challenges fuzzy terms and offers an ADR only when hard to reverse, surprising and a real trade-off by owner (2026-10-14, "Confirmo tudo")
+- decided: distribution → ships in the plugin bundle, referenced by `work/heavy.md` step 2 by owner (2026-10-14, "Confirmo tudo")
+- decided: name → `/sharpen` by owner (2026-10-14, "Q4. OK")
+- decided: fact-finding → the skill dispatches read-only subagents for facts, without blocking questions that don't depend on them by owner (2026-10-14, "Podemos usar subagents, nao vejo motivo de nao melhorar o que temos")
+- decided: invocation → `disable-model-invocation: true`; the agent runs it only when the owner asks or a skill that uses it says so by owner (2026-10-14, "todas skills deveriam ser disable-model-invocation: true")
+- decided: glossary location → `docs/glossary.md`; an existing `CONTEXT.md` is migrated there by owner (2026-10-14, "poderiamos só migrar para docs/gloassary.md")
+- decided: hosts → Claude Code, Antigravity (`.agents/skills/`) and OpenCode by owner (2026-10-14, "Sim e no opencvode tambem")
+- decided: standalone persistence → only glossary entries and owner-accepted ADRs; the session ends with a decision summary and an offer to open `/work` by owner (2026-10-14, "Q9. ok")
 
 ## Objective
 
@@ -33,7 +43,7 @@ Close friction F-001 and F-002 (`docs/friction-log.md`): after the owner retired
 
 ## Acceptance criteria
 
-To be fixed by the spec after the question rounds.
+SC1–SC10 from `specs/2026-10-14-question-rounds-skill.md`.
 
 ## Verification
 
@@ -55,5 +65,5 @@ None yet: the fresh-context review runs after integration (`work/review.md`).
 - branch: claude/matpock-desativacao-verificacao-7c26eb
 - HEAD: ed82275
 - worktree: .claude/worktrees/backlog-seed-tasks-e38dc9
-- done: friction F-001 and F-002 logged; task recorded as `todo`
-- next: owner confirms heavy (`confirmed: heavy by owner ...`), then question rounds on the open decisions and spec draft
+- done: friction F-001 and F-002 logged; heavy confirmed; rounds 1–2 decided; spec v1 drafted
+- next: owner approves spec v1, then decompose into children
