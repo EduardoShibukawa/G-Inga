@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: heavy
-status: todo
+status: active
 spec: 2026-10-14-spec-history-squash-creation@1
 ---
 
@@ -11,6 +11,8 @@ spec: 2026-10-14-spec-history-squash-creation@1
 
 - tier: heavy (H4: changes a validator rule, which is harness policy; H3: the contract §7.1 table is a consumed contract, delivered in the bundle copy and `validate.js`)
 - decided: open a task for an owner-approved way past the `621cd44` history failure, never rewriting `main` by owner (2026-10-14, "Sim")
+- confirmed: heavy by owner (2026-10-14, "Ok")
+- decided: resolution → a general `none → approved` row in §7.1, guarded by version 1, a matching `approved_hash` and a new parent `approved: spec v1` entry in the same commit; no exception artifact by owner (2026-10-14, "Ok")
 
 ## Objective
 
@@ -39,8 +41,8 @@ The spec fixes these after question rounds. At minimum:
 
 ## Plan
 
-1. Owner confirms heavy.
-2. Question rounds: resolution 1 or 2, and whether the contract also states a merge-mode rule.
+1. Owner confirms heavy (done).
+2. Question rounds: resolution 1 chosen (done). Merge-mode policy stays out of scope.
 3. Spec v1 draft and owner approval; decompose into one child.
 4. Integrated verification on `main` history, adversarial review, owner acceptance.
 
@@ -52,5 +54,5 @@ Not run yet: the fresh-context adversarial review runs after integrated verifica
 
 - Date: 2026-10-14
 - Branch: `task/2026-10-14-spec-history-squash-creation` from 6f2690c
-- Done: task recorded as a proposed heavy parent.
-- Next action: owner confirms heavy; question rounds on resolution 1 or 2; spec draft.
+- Done: heavy confirmed; resolution 1 decided; spec v1 drafted.
+- Next action: owner approves spec v1; decompose and implement.
