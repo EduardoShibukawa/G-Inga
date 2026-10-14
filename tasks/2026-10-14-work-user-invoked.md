@@ -16,6 +16,8 @@ spec: 2026-10-14-work-user-invoked@1
 - decided: delivered pointer → unchanged; without `/work` the agent suggests typing it by owner (2026-10-14, "Manter pointer (Recommended)")
 - decided: decision record → new ADR 0010 revising ADR 0005 item 1 and recording the V1 spec deviation by owner (2026-10-14, "ADR 0010 nova (Recommended)")
 - decided: evaluation cases → follow-up `todo` task, out of this scope by owner (2026-10-14, "Task de follow-up (Recommended)")
+- approved: spec v1 by owner (2026-10-14, "Aprovo spec v1 + ADR 0010 (Recommended)")
+- approved: ADR 0010 accepted by owner (2026-10-14, "Aprovo spec v1 + ADR 0010 (Recommended)")
 
 ## Objective
 
@@ -38,8 +40,8 @@ SC1–SC8 from `specs/2026-10-14-work-user-invoked.md`.
 ## Plan
 
 1. Question rounds: two rounds, frontier empty (done).
-2. Spec v1 and ADR 0010 drafted; owner approves the spec and accepts the ADR.
-3. Decompose at `@1` into one child, `-01-procedure-reference`, covering SC1–SC7 (one session, one footprint).
+2. Spec v1 and ADR 0010 drafted; spec v1 approved and ADR 0010 accepted by the owner (done).
+3. Decompose at `@1` into one child (done): `-01-procedure-reference` covers SC1–SC7 (one session, one footprint). SC6 acceptance is recorded on this parent.
 4. Integrated verification (SC8), adversarial review, owner acceptance, PR with a merge commit (manifest protocol).
 
 ## Notes

@@ -1,7 +1,9 @@
 ---
 schema: spec/1
-status: draft
+status: approved
 version: 1
+approved_version: 1
+approved_hash: sha256:95827cf4d4919c704f3ea108bc598bb408e20ca6c34d2aa72b7e47171db93361
 ---
 
 # User-Invoked `/work` with a Worker Procedure Reference

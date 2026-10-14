@@ -1,6 +1,6 @@
 # 0010 — User-invoked entry skills
 
-- **Status:** proposed
+- **Status:** accepted (accepted by project owner 2026-10-14)
 - **Date:** 2026-10-14
 - **Deciders:** project owner
 - **Depends on:** D5 on the [decision map](../decision-map.md), settled by [ADR 0005](0005-native-primitive-mapping.md), and D8, settled by [ADR 0007](0007-harness-extensions-beyond-v1.md). This record revises ADR 0005 item 1 and Alternative B. ADR 0005 keeps its status.
