@@ -50,6 +50,6 @@ Delivered the four docs plus this record; all AC/R/V rows pass. Merge to main vi
 
 ## Checkpoint
 
-- as of: 2026-10-13, branch docs/handoff-harness-docs, head 7bfa41d, worktree clean except unrelated untracked work
-- done: all AC + R1 + V1 pass at 7bfa41d; task verified
-- next: push, PR, CI green, merge commit to main
+- as of: 2026-10-13, branch docs/handoff-harness-docs, worktree clean except unrelated untracked work
+- done: all AC + R1 + V1 pass; history rewritten pre-merge (single record commit) so main never sees the invalid intermediate state the gate caught
+- next: PR, CI green, merge commit to main
