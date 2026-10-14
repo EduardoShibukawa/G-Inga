@@ -5,5 +5,6 @@ set -euo pipefail
 case_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$case_dir/../../.." && pwd)"
 mkdir -p .claude/skills
+# Both arms get this copy: the CLI gives the scaffold no arm signal (see case.yaml).
 cp -R "$repo_root/.claude/skills/work" .claude/skills/work
 printf 'Sample README with a typo: recieve.\n' > README.md

@@ -3,6 +3,11 @@
 # with-plugin arm BOTH registrations exist: project `work` and plugin `g-inga:work`.
 # Requires `--scaffold`; without it the case runs unstaged (plugin registration only) and the
 # registration record for SC2 must be reported as `not run`.
+# Known limitation (CLI 2.1.296): the scaffold runs before BOTH arms with a fixed environment
+# (PATH, HOME, TMP*, TERM, GIT_CONFIG_NOSYSTEM, USER_TYPE, NODE_ENV) and no arm signal, so under
+# `--ablation with-without` the no-plugin arm also holds the project `work` skill. That arm is not a
+# no-`work` baseline: its routing-line score must not be read as an ablation delta. Read only the
+# with-plugin arm's registration verdicts until the case runs under `--ablation none` (owner decision).
 # Graders: invoked-plugin-registration / invoked-project-registration = deterministic (tool_used,
 #          arm with-only: reported indicators, not scored). Exactly one is expected to pass per run;
 #          the per-run verdicts in the JSON result are the registration record.
