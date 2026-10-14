@@ -42,14 +42,14 @@ status: completed
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline `mise run validate` on clean `c5c164f` | pass | c5c164f | worktree without untracked files; Overall pass (markdown-lint 112 files, local-links 1028 refs, mermaid 54/54, decision-records, artifact checks) |
-| AC1 | plugin `setup` against a stub context (`bun run /tmp/opencode/plugin-test.ts`) | pass | 1dccaa1 | `id: g-inga`; skills work (autoinvoke true, 5199 B), drive, orchestrate from `.claude/skills/`; commands work, drive, orchestrate; `execute` preserves sessionID/delivery and prefixes the skill prompt |
-| AC2 | `packages/opencode-plugin/package.json` fields | pass | 1dccaa1 | `name: g-inga-opencode-plugin`, `private`, `type: module`, `exports: {".": "./index.ts"}`, zero dependencies |
-| AC3 | root `package.json` diff; lockfile untouched | pass | 1dccaa1 | diff c5c164f..1dccaa1 touches only `description` + `exports`; `bun.lock` absent from the diff; `bun install --frozen-lockfile` runs clean inside `mise run validate` |
-| AC4 | live registration: `/api/plugin`, `/api/command`, `/api/skill` | pass | 1dccaa1 | `g-inga` `active` (local path); commands `work`, `drive`, `orchestrate` (`G-Ingá: …`); skills served from `/home/tg/Projetos/G-Inga/.claude/skills/…` with work autoinvoke true, drive/orchestrate false |
-| AC5 | README install section | pass | 1dccaa1 | `opencode plugin add github:EduardoShibukawa/G-Inga` at README.md:60, tracking the default branch |
-| AC6 | global skill removal, backup, herdr intact | pass | 1dccaa1 | `~/.opencode/skill`, `~/.claude/skills/synced`, `~/.claude/skills/.trash` removed; backup `~/.local/share/opencode/global-skills-backup-2026-10-14.tar.gz` (360 entries); `herdr-agent-state.js`, `herdr-opencode/tui.js`, `cli.json`, `tui.jsonc` untouched |
-| AC7 | `mise run validate` and `mise run test` | fail | 1dccaa1 | validate: fails only outside this change — (a) the unrelated untracked `tasks/2026-10-13-cursor-host-bundle.md` (§7: its spec file is absent from the tree) and (b) the git-ignored `.claude/worktrees/backlog-seed-tasks-e38dc9/` populated by another parallel session (the validator scans it; all 34 markdown-lint issues and local-links failures are in there). Every check covering this change passes. test: 227 pass, 1 fail — the single fail is the `this repository` meta-test asserting validate exit code, same root causes |
-| V1 | diff read against AC1–AC7 and the out-of-scope list | pass | 1dccaa1 | 5 files, 246 insertions, 1 deletion; no change under `.claude/skills/`, `.agents/`, `manifest.json`, `specs/`, `docs/decisions/` |
+| AC1 | plugin `setup` against a stub context (`bun run /tmp/opencode/plugin-test.ts`) | pass | 00861b0 | `id: g-inga`; skills work (autoinvoke true, 5199 B), drive, orchestrate from `.claude/skills/`; commands work, drive, orchestrate; `execute` preserves sessionID/delivery and prefixes the skill prompt |
+| AC2 | `packages/opencode-plugin/package.json` fields | pass | 00861b0 | `name: g-inga-opencode-plugin`, `private`, `type: module`, `exports: {".": "./index.ts"}`, zero dependencies |
+| AC3 | root `package.json` diff; lockfile untouched | pass | 00861b0 | diff c5c164f..00861b0 touches only `description` + `exports`; `bun.lock` absent from the diff; `bun install --frozen-lockfile` runs clean inside `mise run validate` |
+| AC4 | live registration: `/api/plugin`, `/api/command`, `/api/skill` | pass | 00861b0 | `g-inga` `active` (local path); commands `work`, `drive`, `orchestrate` (`G-Ingá: …`); skills served from `/home/tg/Projetos/G-Inga/.claude/skills/…` with work autoinvoke true, drive/orchestrate false |
+| AC5 | README install section | pass | 00861b0 | `opencode plugin add github:EduardoShibukawa/G-Inga` at README.md:60, tracking the default branch |
+| AC6 | global skill removal, backup, herdr intact | pass | 00861b0 | `~/.opencode/skill`, `~/.claude/skills/synced`, `~/.claude/skills/.trash` removed; backup `~/.local/share/opencode/global-skills-backup-2026-10-14.tar.gz` (360 entries); `herdr-agent-state.js`, `herdr-opencode/tui.js`, `cli.json`, `tui.jsonc` untouched |
+| AC7 | `mise run validate` and `mise run test` | fail | 00861b0 | validate: fails only outside this change — (a) the unrelated untracked `tasks/2026-10-13-cursor-host-bundle.md` (§7: its spec file is absent from the tree) and (b) the git-ignored `.claude/worktrees/backlog-seed-tasks-e38dc9/` populated by another parallel session (the validator scans it; all 34 markdown-lint issues and local-links failures are in there). Every check covering this change passes. test: 227 pass, 1 fail — the single fail is the `this repository` meta-test asserting validate exit code, same root causes |
+| V1 | diff read against AC1–AC7 and the out-of-scope list | pass | 00861b0 | 5 files, 246 insertions, 1 deletion; no change under `.claude/skills/`, `.agents/`, `manifest.json`, `specs/`, `docs/decisions/` |
 
 ## Outcome
 
@@ -64,6 +64,6 @@ Follow-ups (not done):
 
 ## Checkpoint
 
-- as of: 2026-10-14, branch feat/opencode-plugin-package, head 1dccaa1, task completed
+- as of: 2026-10-14, branch feat/opencode-plugin-package, head 00861b0, task completed
 - done: plugin entry, package manifests, root exports, README section, global cleanup with backup, AC1–AC6 and V1 pass
 - next: owner review, PR and merge; re-run validate after the unrelated cursor spec is resolved
