@@ -1,14 +1,15 @@
 {
   "release": "1.0.0",
-  "commit": "d56241ad5afc7eed596f86a17078d56daca1052a",
+  "commit": "a5a8101c1dd5c0f1cf4d1e2873a0d60bc1d153ed",
   "files": {
     ".claude/skills/work/SKILL.md": "d3b769981048ff10fc9101a8a9e61f7e39f0b9abe66d8edc8deb06e3985ca427",
-    ".claude/skills/work/heavy.md": "2ab69efccad75c0be8190e36b8568d5fd259d4d18309f4556da1ab6b89e7848d",
+    ".claude/skills/work/heavy.md": "c9be18d67cdb9bfe09954d70f62a4df2d63aa03f69a33fff5542985fccb9889e",
     ".claude/skills/work/resume.md": "6cdccc200264c39287ead22aa64fa32ec0464ab159da449e0d90989280e19730",
-    ".claude/skills/work/review.md": "8b5abd9e9b757f930c4e56e786fc64f83d8c5942ac2ca1cc9771d07e21cb3214",
+    ".claude/skills/work/review.md": "d0d5a605790048c69acb70f03a3da246b92122131dbac9f7eb04d78551363cff",
     ".claude/skills/work/standard.md": "ebcd10521e955cd0a655b0ad2e3408a97cbbdc4e111f55e2ca86b734b81856a3",
     ".claude/skills/work/references/artifact-contracts.md": "4f25a5e6d6e293bab83093e7cb4d5c66fb2d83a84848cf2c3c1bda0241a4dbcb",
-    ".claude/skills/work/references/procedure.md": "59577b0622f9fde46146565037b79a838f631094d0c1cf181400894888997e78",
+    ".claude/skills/work/references/model-policy.md": "7264d79dc7140a2a838ca7bb691745e038dfc2bc88de28063761b8642f3f6e0f",
+    ".claude/skills/work/references/procedure.md": "50fa0095905faa12679a9736c68c6d621b0e840bb905b2f0db326ab471dfb35e",
     ".claude/skills/work/references/question-rounds.md": "4507c4244c3c12a0165d4b57ea27c8c03c43e634dbf38c8ab4bc58a7c411da0b",
     ".claude/skills/sharpen/SKILL.md": "67a8ea538fddbc991604a8fc32930f9d4bc2ba94a417d13dc76fd497ce4198f1",
     ".agents/skills/work/SKILL.md": "049ad28134ea03251099e1a2f71e7daa1c9863adf42cab11cccf78d5b9001ee5",
@@ -20,8 +21,9 @@
     ".agents/skills/work/references/procedure.md": "64069da93b8168789cd5a6006bc1009e6149d709776bbee71a64c73ca73c4e32",
     ".agents/skills/work/references/question-rounds.md": "4507c4244c3c12a0165d4b57ea27c8c03c43e634dbf38c8ab4bc58a7c411da0b",
     ".agents/skills/sharpen/SKILL.md": "047fd45d7baca075ea00c7ef2410761ccc8921986555bffbb7cddd71a8df85a6",
+    ".mise/tasks/g-inga/validate": "c527f505d4dcefd72aa7e2f873173376dfd7f878160cf935511bee89b31e2601",
     "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
-    "tools/validate/validate.js": "0ea0b353f6be270e32cf9924dccc8f2ac1cb4382d39d26f075526229ea12e31f",
+    "tools/validate/validate.js": "bc4573086806882614d2748e6c4699de015de2962a32bc3a270882d6c9261cba",
     "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
