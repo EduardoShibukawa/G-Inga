@@ -358,6 +358,10 @@ export const historyCases: Case[] = [
   historyCase("H-squash-bad-hash", "spec created approved v1 whose approved_hash doesn't match the body", "fail", [
     () => ({ ...approvedV1([]), [sp]: spec({ status: "approved", version: 1, approvedVersion: 1, hash: "sha256:" + "0".repeat(64) }) }),
   ]),
+  historyCase("H-squash-old-entry", "spec created approved v1 when the parent's approved: entry was committed earlier", "fail", [
+    () => ({ [t(P)]: parent("active", 1, { log: parentLog("approved: spec v1 by owner (2026-10-14, \"ok\")") }), "README.md": "unrelated\n" }),
+    approvedV1,
+  ]),
   historyCase("H-squash-v2", "spec created approved at version 2", "fail", [
     () => ({
       [sp]: spec({ status: "approved", version: 2, approvedVersion: 2, revisions: ["- v1: initial.", "- v2: change."] }),

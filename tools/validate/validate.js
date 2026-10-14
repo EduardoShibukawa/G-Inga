@@ -7521,6 +7521,10 @@ function checkHistory(root, opts = {}) {
       snapshots.set(rev, loadSnapshot(filesAt(root, rev)));
     return snapshots.get(rev);
   };
+  const parentSnap = (rev) => {
+    const parent = rev === WT ? hasHead ? git(root, ["rev-parse", "HEAD"]).out.trim() : "" : git(root, ["rev-parse", "--verify", "--quiet", `${rev}^`]).out.trim();
+    return parent ? snap(parent) : new Map;
+  };
   const ancestry = opts.ancestry ?? gitAncestry(root);
   const at = (rev) => rev === WT ? WT : rev.slice(0, 7);
   const realDeletions = new Map;
@@ -7561,7 +7565,7 @@ function checkHistory(root, opts = {}) {
         continue;
       }
       if (now.kind === "spec")
-        checkSpecTransition(before?.rec, now, snap(rev), before ? snap(before.rev) : new Map, f);
+        checkSpecTransition(before?.rec, now, snap(rev), before ? snap(before.rev) : parentSnap(rev), f);
       else if (before)
         checkTaskTransition(before.rec, now, f);
       if (!before || str(before.rec.fm.status) !== str(now.fm.status)) {
