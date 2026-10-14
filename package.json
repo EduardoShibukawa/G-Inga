@@ -1,8 +1,11 @@
 {
   "name": "g-inga-repo-tooling",
   "private": true,
-  "description": "Development-only validation tooling for the G-Ingá repository. Not the product runtime.",
+  "description": "Development-only validation tooling for the G-Ingá repository. Not the product runtime. Also the OpenCode plugin package entry (see packages/opencode-plugin/).",
   "type": "module",
+  "exports": {
+    ".": "./packages/opencode-plugin/index.ts"
+  },
   "scripts": {
     "validate": "bun tools/validate/preflight.ts && bun tools/validate/main.ts",
     "validate:external": "bun tools/validate/preflight.ts && bun tools/validate/main.ts --external-only",
