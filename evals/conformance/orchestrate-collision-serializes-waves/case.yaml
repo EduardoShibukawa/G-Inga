@@ -1,0 +1,55 @@
+# Conformance case for claude plugin eval (schema 1.1). See ../README.md.
+# Grader names: det-* = deterministic, model-graded-* = judged by the LLM grader.
+schema_version: "1.1"
+name: orchestrate-collision-serializes-waves
+description: "orchestrate, collision guard: two open tasks both declare src/greet.js in scope, so the wave plan serializes them instead of running them in parallel. The prompt asks for the plan only. Graders: deterministic for no-dispatch and naming; model-graded for the wave verdict."
+tags:
+  - conformance
+  - orchestrate
+expected_outcome: No dispatch and no code change; the plan names both tasks and puts 2026-10-13-add-shout-option and 2026-10-13-add-farewell-option in separate sequential waves because their scopes collide.
+execution:
+  prompt: Use the orchestrate skill on the open tasks in this repo. Show me the wave plan and stop there; do not dispatch workers yet.
+  max_turns: 25
+  timeout_seconds: 400
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - Skill
+    - Bash
+context:
+  scaffold_script: fixture.sh
+graders:
+  - name: det-no-dispatch
+    type: tool_used
+    tool: Agent
+    min: 0
+    max: 0
+    weight: 2
+  - name: det-no-code-write
+    type: tool_used
+    tool: Write
+    input_match: src/
+    min: 0
+    max: 0
+  - name: det-no-code-edit
+    type: tool_used
+    tool: Edit
+    input_match: src/
+    min: 0
+    max: 0
+  - name: det-names-both-tasks
+    type: regex
+    target: last_message
+    pattern: ^(?=[\s\S]*add-shout-option)(?=[\s\S]*add-farewell-option)
+  - name: model-graded-collision-serialized
+    type: llm
+    focus: last_message
+    weight: 2
+    criteria: |-
+      PASS if the wave plan puts 2026-10-13-add-shout-option and 2026-10-13-add-farewell-option in different, sequential waves (not concurrently), and the reason given is that both touch src/greet.js (a scope collision).
+      FAIL if both tasks are planned to run in parallel in the same wave, or the plan does not address the shared file.
+  - name: det-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate"'

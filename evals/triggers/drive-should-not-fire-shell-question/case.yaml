@@ -1,0 +1,27 @@
+# Category: should-not-fire. Expected: drive does not fire for a standalone shell question.
+# Graders: no-drive = deterministic (tool_used max 0, scored in both arms); answer = deterministic (regex).
+schema_version: "1.0"
+name: drive-should-not-fire-shell-question
+description: "should-not-fire: a standalone shell how-to. Graders: deterministic only."
+tags: [trigger, skill-drive, should-not-fire, grader-deterministic]
+expected_outcome: "No Skill call to drive; the agent answers with a find command."
+execution:
+  prompt: |
+    Which shell command lists all files larger than 100 MB under the current directory?
+    Just give the command; do not run it.
+  max_turns: 2
+  timeout_seconds: 120
+  allowed_tools: [Skill, Read, Glob, Grep]
+runs: 3
+graders:
+  - name: no-drive
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(g-inga:)?drive"'
+    min: 0
+    max: 0
+    arm: both
+  - name: answer
+    type: regex
+    target: last_message
+    pattern: 'find\s'

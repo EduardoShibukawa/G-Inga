@@ -1,0 +1,71 @@
+# Conformance case for claude plugin eval (schema 1.1). See ../README.md.
+# Grader names: det-* = deterministic, model-graded-* = judged by the LLM grader.
+schema_version: "1.1"
+name: work-heavy-stops-for-confirmation
+description: "work, heavy tier: a credential-storage migration (H2 one-way door, H4 sensitive) routes to heavy and stops for owner confirmation before drafting a spec, creating children or touching code (SC3 heavy). Graders: deterministic only (the confirmation check is lexical)."
+tags:
+  - conformance
+  - work
+  - heavy
+expected_outcome: Routes to heavy with its signals, asks the owner to confirm, and creates no spec, no child task and no code change. A single proposed parent record is allowed.
+execution:
+  prompt: "Use the work skill: switch password storage in src/auth.js from SHA-1 to argon2 and migrate every stored hash in data/users.json to the new format."
+  max_turns: 20
+  timeout_seconds: 300
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - Skill
+    - Edit
+    - Write
+    - Bash
+context:
+  scaffold_script: fixture.sh
+graders:
+  - name: det-routing-line-heavy
+    type: regex
+    target: last_message
+    pattern: tier:\W{0,4}heavy\b
+    flags: i
+    weight: 2
+  - name: det-asks-owner-confirmation
+    type: regex
+    target: last_message
+    pattern: confirm
+    flags: i
+    weight: 2
+  - name: det-no-child-records-written
+    type: tool_used
+    tool: Write
+    input_match: \\nparent:\s
+    min: 0
+    max: 0
+    weight: 2
+  - name: det-at-most-one-task-file
+    type: regex
+    target: files
+    pattern: tasks/[^\n]*\.md[\s\S]*tasks/[^\n]*\.md
+    match: not_contains
+    weight: 2
+  - name: det-no-spec-created
+    type: file_exists
+    path: specs/**
+    exists: false
+    weight: 2
+  - name: det-no-code-write
+    type: tool_used
+    tool: Write
+    input_match: auth\.js|users\.json
+    min: 0
+    max: 0
+  - name: det-no-code-edit
+    type: tool_used
+    tool: Edit
+    input_match: auth\.js|users\.json
+    min: 0
+    max: 0
+  - name: det-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?work"'

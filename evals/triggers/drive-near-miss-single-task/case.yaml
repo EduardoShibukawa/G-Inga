@@ -1,0 +1,31 @@
+# Category: near-miss. A single scoped fix shares "task"/"execute" vocabulary with drive but is
+# one deliverable, not a backlog run. Expected: drive does not fire (work may fire; not graded here).
+# Graders: no-drive = deterministic (tool_used max 0, scored in both arms);
+#          no-backlog-run = model-graded (llm).
+schema_version: "1.0"
+name: drive-near-miss-single-task
+description: "near-miss: one scoped fix, not a backlog run. Graders: deterministic + model-graded."
+tags: [trigger, skill-drive, near-miss, grader-deterministic, grader-model]
+expected_outcome: "No Skill call to drive; the agent treats the request as one task, not a backlog drain."
+execution:
+  prompt: |
+    Execute just this one task: rename the heading "Intro" to "Introduction" in README.md.
+    Nothing else from the backlog.
+  max_turns: 3
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read, Glob, Grep]
+runs: 3
+graders:
+  - name: no-drive
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(g-inga:)?drive"'
+    min: 0
+    max: 0
+    arm: both
+  - name: no-backlog-run
+    type: llm
+    focus: trace
+    criteria: |
+      The agent scopes its work to the single README heading rename. It does not scan a task
+      backlog, plan execution waves, or start other tasks.

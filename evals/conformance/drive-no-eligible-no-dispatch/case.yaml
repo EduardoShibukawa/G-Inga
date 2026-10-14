@@ -1,0 +1,58 @@
+# Conformance case for claude plugin eval (schema 1.1). See ../README.md.
+# Grader names: det-* = deterministic, model-graded-* = judged by the LLM grader.
+schema_version: "1.1"
+name: drive-no-eligible-no-dispatch
+description: "drive, empty frontier: every task is blocked or waits on a blocked task, so the driver dispatches nothing, commits nothing and reports why. Graders: deterministic for no-dispatch and no-change; model-graded for the report."
+tags:
+  - conformance
+  - drive
+expected_outcome: No subagent dispatch, no commit, no code change; the report says nothing is runnable, citing the owner blocker on 2026-10-13-greeting-language.
+execution:
+  prompt: "Use the drive skill: run the backlog and deliver whatever is ready."
+  max_turns: 25
+  timeout_seconds: 400
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - Skill
+    - Bash
+    - Edit
+    - Write
+context:
+  scaffold_script: fixture.sh
+graders:
+  - name: det-no-dispatch
+    type: tool_used
+    tool: Agent
+    min: 0
+    max: 0
+    weight: 2
+  - name: det-no-commit
+    type: tool_used
+    tool: Bash
+    input_match: git\s+commit
+    min: 0
+    max: 0
+  - name: det-no-code-edit
+    type: tool_used
+    tool: Edit
+    input_match: src/
+    min: 0
+    max: 0
+  - name: det-no-code-write
+    type: tool_used
+    tool: Write
+    input_match: src/
+    min: 0
+    max: 0
+  - name: model-graded-reports-empty-frontier
+    type: llm
+    focus: last_message
+    criteria: |-
+      PASS if the response says no task can run now and gives the reason: 2026-10-13-greeting-language is blocked on an owner decision and/or 2026-10-13-translate-greeting depends on it.
+      FAIL if the response claims it started, implemented or completed any task, or does not explain why nothing ran.
+  - name: det-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?drive"'

@@ -1,0 +1,38 @@
+# Category: near-miss. Shares vocabulary (ceremony, light/heavy process) but asks for a generic
+# explanation, not a repo deliverable. Expected: work does not fire.
+# Graders: no-work = deterministic (tool_used max 0, scored in both arms);
+#          no-routing-line = deterministic (regex not_contains); answer = model-graded (llm).
+schema_version: "1.0"
+name: work-near-miss-agile-ceremony
+description: "near-miss: generic question about light vs heavy process ceremony. Graders: deterministic + model-graded."
+tags: [trigger, skill-work, near-miss, grader-deterministic, grader-model]
+expected_outcome: "No Skill call to work and no routing line; the agent explains the concept in prose."
+execution:
+  prompt: |
+    In general software process literature, what is the difference between a "light" and a
+    "heavy" ceremony process? Answer in one short paragraph; do not change any files.
+  max_turns: 2
+  timeout_seconds: 120
+  allowed_tools: [Skill, Read, Glob, Grep]
+runs: 3
+graders:
+  - name: no-work
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(g-inga:)?work"'
+    min: 0
+    max: 0
+    arm: both
+  - name: no-routing-line
+    type: regex
+    target: last_message
+    match: not_contains
+    pattern: 'tier:\s*(light|standard|heavy)'
+    flags: i
+  - name: answer
+    type: llm
+    focus: last_message
+    criteria: |
+      The response is a short general explanation contrasting light and heavy process ceremony
+      (for example less versus more documentation, approvals or formal steps). It does not
+      classify a concrete task into a tier and does not start any repository work.
