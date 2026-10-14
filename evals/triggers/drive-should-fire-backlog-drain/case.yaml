@@ -1,6 +1,8 @@
 # Category: should-fire. Expected: the `drive` skill fires for continuous multi-task backlog execution.
 # Graders: fired-drive = deterministic (tool_used, trigger indicator, reported not scored under ablation);
 #          backlog-handling = model-graded (llm).
+# Phase 1 baseline: blocked with the plugin (`Reached maximum number of turns` at max_turns 4): the
+# Skill call plus the backlog scan and dry-run report need more turns.
 schema_version: "1.0"
 name: drive-should-fire-backlog-drain
 description: "should-fire: drain the pending task backlog continuously. Graders: deterministic + model-graded."
@@ -11,8 +13,8 @@ execution:
     Keep working through this repo's pending task backlog on your own: take every unblocked task
     in dependency order, batch what can run together, and continue until the backlog is drained
     or the token budget runs out. Start with a dry run that only shows the plan.
-  max_turns: 4
-  timeout_seconds: 240
+  max_turns: 8
+  timeout_seconds: 300
   allowed_tools: [Skill, Read, Glob, Grep]
 runs: 3
 graders:
@@ -26,4 +28,5 @@ graders:
     criteria: |
       The agent handles the request as backlog-level execution: it looks for (or reports the
       absence of) pending tasks such as a tasks/ directory or map.md, and mentions dependency
-      ordering, batches/waves or a budget. It does not just perform a single unrelated edit.
+      ordering, batches/waves or a budget. A dry-run plan that reports an empty or missing backlog
+      counts. It does not just perform a single unrelated edit.

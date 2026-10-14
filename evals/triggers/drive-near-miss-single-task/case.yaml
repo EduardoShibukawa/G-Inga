@@ -2,6 +2,9 @@
 # one deliverable, not a backlog run. Expected: drive does not fire (work may fire; not graded here).
 # Graders: no-drive = deterministic (tool_used max 0, scored in both arms);
 #          no-backlog-run = model-graded (llm).
+# Phase 1 baseline: blocked with the plugin (`Reached maximum number of turns` at max_turns 3) and
+# failed without it. The sandbox has no README.md and no Edit tool, so the agent can only locate the
+# file and report; the rubric grades scope, not whether the rename landed.
 schema_version: "1.0"
 name: drive-near-miss-single-task
 description: "near-miss: one scoped fix, not a backlog run. Graders: deterministic + model-graded."
@@ -11,8 +14,8 @@ execution:
   prompt: |
     Execute just this one task: rename the heading "Intro" to "Introduction" in README.md.
     Nothing else from the backlog.
-  max_turns: 3
-  timeout_seconds: 180
+  max_turns: 6
+  timeout_seconds: 240
   allowed_tools: [Skill, Read, Glob, Grep]
 runs: 3
 graders:
@@ -27,5 +30,7 @@ graders:
     type: llm
     focus: trace
     criteria: |
-      The agent scopes its work to the single README heading rename. It does not scan a task
-      backlog, plan execution waves, or start other tasks.
+      The agent scopes its work to the single README heading rename. Locating README.md, reporting
+      that it is missing, or reporting that no edit tool is available all count as staying in
+      scope. It fails only if it scans a task backlog (tasks/, map.md), plans execution waves, or
+      starts other tasks.
