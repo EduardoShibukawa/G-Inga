@@ -15,7 +15,7 @@ stateDiagram-v2
     claimed --> executing: OODA Act: Dispatched to worker subagent
     executing --> gating: Subagent returns: Autonomous Gate initiated
     gating --> resolved: Gate 1-4 pass: Atomic commit sealed
-    gating --> claimed: Gate fails (Attempts < 2): Re-dispatched with failure log
+    gating --> claimed: Gate fails (Attempts < 2): Failure log sent to the existing subagent
     gating --> blocked: Gate fails (Attempts >= 2): Circuit breaker trips
     blocked --> [*]: Escalated to repository owner
     resolved --> [*]: Graph frontier advances
@@ -57,7 +57,7 @@ stateDiagram-v2
 ### Phase 4: ACT
 
 - Invoke subagents concurrently via `invoke_subagent`.
-- Set `Workspace: "inherit"` (or `"share"` when isolated worktrees are supported).
+- Set `Workspace: "inherit"` (shared working tree) only when the pre-dispatch collision check passes; otherwise isolate workers (`Workspace: "share"` when isolated worktrees are supported, or `tools/gate/worktree-runner.ts`) and merge worktree results back into the orchestrator branch before Gate Layer 1.
 - Cease tool execution to let subagents run asynchronously until system wakeup.
 
 ### Phase 5: GATE
