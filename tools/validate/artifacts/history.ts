@@ -198,8 +198,11 @@ function checkSpecTransition(prev: Artifact | undefined, cur: Artifact, curSnap:
   const revisions = (r: Artifact) => (r.sections.get("Revisions") ?? "").split("\n").filter((l) => /^\s*[-*]/.test(l)).length;
 
   if (!prev) {
-    if (cs !== "draft" || cur.fm.version !== 1 || cur.fm.approved_version !== undefined || cur.fm.approved_hash !== undefined)
-      f(`spec ${cur.id} must be created as draft, version 1, without approved_* keys`);
+    const draftOk = cs === "draft" && cur.fm.version === 1 && cur.fm.approved_version === undefined && cur.fm.approved_hash === undefined;
+    // A creation and an approval squashed into one commit (§7.1): the approval evidence is the same as draft → approved.
+    const squashedOk = cs === "approved" && cur.fm.version === 1 && cur.fm.approved_version === 1 && cur.fm.approved_hash === h(cur) && newApproval();
+    if (!draftOk && !squashedOk)
+      f(`spec ${cur.id} must be created as draft, version 1, without approved_* keys, or as approved v1 with a matching approved_hash and a new "approved: spec v1" entry in the parent in the same commit`);
     return;
   }
   if (ps === "superseded") return f(`spec ${cur.id} changed after it was superseded`);

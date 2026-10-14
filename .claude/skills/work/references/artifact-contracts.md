@@ -401,6 +401,7 @@ Spec transitions:
 | `prev → cur` | Allowed only if |
 |---|---|
 | none → `draft` | `version: 1`, no `approved_*` keys |
+| none → `approved` | a creation and an approval squashed into one commit: `version: 1`, `approved_version: 1`, `approved_hash = h(cur)`, and the parent record at `cur`'s commit has an `approved: spec v1` entry that it didn't have at the previous commit |
 | `draft → draft` | `version`, `approved_version` and `approved_hash` unchanged |
 | `draft → approved` | `approved_version = version`. `approved_hash = h(cur)`. The parent record at `cur`'s commit has an `approved: spec v<version>` entry that it didn't have at `prev`'s commit |
 | `approved → approved`, same `version` | `version`, `approved_version` and `approved_hash` unchanged, and `h(cur) = h(prev)`. Only frontmatter changed, for example a migration |

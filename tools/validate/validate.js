@@ -7613,8 +7613,10 @@ function checkSpecTransition(prev, cur, curSnap, prevSnap, f) {
   const revisions = (r) => (r.sections.get("Revisions") ?? "").split(`
 `).filter((l) => /^\s*[-*]/.test(l)).length;
   if (!prev) {
-    if (cs !== "draft" || cur.fm.version !== 1 || cur.fm.approved_version !== undefined || cur.fm.approved_hash !== undefined)
-      f(`spec ${cur.id} must be created as draft, version 1, without approved_* keys`);
+    const draftOk = cs === "draft" && cur.fm.version === 1 && cur.fm.approved_version === undefined && cur.fm.approved_hash === undefined;
+    const squashedOk = cs === "approved" && cur.fm.version === 1 && cur.fm.approved_version === 1 && cur.fm.approved_hash === h(cur) && newApproval();
+    if (!draftOk && !squashedOk)
+      f(`spec ${cur.id} must be created as draft, version 1, without approved_* keys, or as approved v1 with a matching approved_hash and a new "approved: spec v1" entry in the parent in the same commit`);
     return;
   }
   if (ps === "superseded")

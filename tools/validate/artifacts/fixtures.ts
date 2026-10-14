@@ -351,6 +351,19 @@ export const historyCases: Case[] = [
       [t(P)]: parent("active", 2, { log: parentLog("approved: spec v1 by owner (2026-10-14, \"ok\")", "approved: spec v2 by owner (2026-10-15, \"ok\")") }),
     }),
   ]),
+  historyCase("H-squash-create", "spec created approved v1 with the parent's new approved: entry in the same commit (squash merge)", "pass", [approvedV1]),
+  historyCase("H-squash-no-entry", "spec created approved v1 without an approved: entry in the parent", "fail", [
+    () => ({ [t(P)]: parent("active", 1), [sp]: spec({ status: "approved", version: 1, approvedVersion: 1 }) }),
+  ]),
+  historyCase("H-squash-bad-hash", "spec created approved v1 whose approved_hash doesn't match the body", "fail", [
+    () => ({ ...approvedV1([]), [sp]: spec({ status: "approved", version: 1, approvedVersion: 1, hash: "sha256:" + "0".repeat(64) }) }),
+  ]),
+  historyCase("H-squash-v2", "spec created approved at version 2", "fail", [
+    () => ({
+      [sp]: spec({ status: "approved", version: 2, approvedVersion: 2, revisions: ["- v1: initial.", "- v2: change."] }),
+      [t(P)]: parent("active", 2, { log: parentLog("approved: spec v2 by owner (2026-10-14, \"ok\")") }),
+    }),
+  ]),
   historyCase("T12", "history walk in a shallow clone", "blocked", [draftV1, approvedV1], { shallow: true }),
   historyCase("T18a", "retired task/1 record (task/3 current), accepted, unchanged since", "frozen", [
     () => ({ [t("2026-01-01-old")]: accepted("task/1") }),
