@@ -10,8 +10,12 @@ The bundle is what a target repository commits (FU2). `tools/validate/bundle.jso
 |---|---|---|---|
 | `.claude/skills/work/SKILL.md`, `standard.md`, `heavy.md`, `resume.md`, `review.md` | `/work` skill and procedures for Claude Code | yes | yes |
 | `.claude/skills/work/references/artifact-contracts.md` | artifact contract copy for Claude Code | yes | yes |
+| `.claude/skills/work/references/question-rounds.md` | question-rounds procedure for Claude Code | yes | yes |
+| `.claude/skills/sharpen/SKILL.md` | `/sharpen` entry skill for Claude Code | yes | yes |
 | `.agents/skills/work/SKILL.md`, `standard.md`, `heavy.md`, `resume.md`, `review.md` | `/work` skill and procedures for Google Antigravity | yes | yes |
 | `.agents/skills/work/references/artifact-contracts.md` | artifact contract copy for Google Antigravity | yes | yes |
+| `.agents/skills/work/references/question-rounds.md` | question-rounds procedure for Google Antigravity | yes | yes |
+| `.agents/skills/sharpen/SKILL.md` | `/sharpen` entry skill for Google Antigravity | yes | yes |
 | `tools/validate/validate.js` | standalone validator, `node tools/validate/validate.js` | yes | yes |
 | `tools/validate/validate.ts` | Bun entry of the same validator, `bun tools/validate/validate.ts` | yes | yes |
 | `tools/validate/ci-template.yml` | CI merge-gate template (SC7) | yes | yes |
