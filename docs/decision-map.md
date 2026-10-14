@@ -30,6 +30,7 @@ flowchart TD
 
 A proposed record that extends a settled decision without reopening it. The settled decision keeps its status until the owner decides.
 
+- **D5 → [ADR 0009](decisions/0009-enforcement-primitives.md) Enforcement primitives and the commit gate (`proposed` 2026-10-14):** which primitive carries which kind of rule; settles ADR 0005 H-1 with a mise-managed hk Git hook running the `pre-commit` mise task, the `g-inga:validate` bundle step, a `--no-verify` deny rule and a required CI check. Spec: [Harness Hardening](../specs/2026-10-14-harness-hardening.md).
 - **D7 → [ADR 0008](decisions/0008-skill-evaluation-instrument.md) Skill evaluation instrument (`accepted` 2026-10-13):** `claude plugin eval` as the runner for the [Skill Health Evaluation](../specs/2026-10-13-skill-health-evaluation.md) epic, `skill-creator` as authoring aid and phase 2 candidate, `/skill-doctor` conditional. Complements the autoresearch program; the ledger stays the single system of record.
 
 ## Not on the V1 path
