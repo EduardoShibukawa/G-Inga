@@ -1,7 +1,9 @@
 ---
 schema: spec/1
-status: draft
+status: approved
 version: 1
+approved_version: 1
+approved_hash: sha256:2a246575ad38a7df03f5ca8810e94870bd988949fb256e6b9171cbffac06e8fd
 ---
 
 # Sharpen: G-Ingá Question Rounds

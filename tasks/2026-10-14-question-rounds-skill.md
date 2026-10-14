@@ -23,6 +23,7 @@ spec: 2026-10-14-question-rounds-skill@1
 - decided: standalone persistence → only glossary entries and owner-accepted ADRs; the session ends with a decision summary and an offer to open `/work` by owner (2026-10-14, "Q9. ok")
 - decided: layout → procedure once as `work/references/question-rounds.md`; `/sharpen` is a thin user-invoked entry that reads it; the heavy route reads it directly, one level from `SKILL.md` by owner (2026-10-14, "Ok. concordo.")
 - decided: invocation rule → owner-typed entry points `disable-model-invocation: true`; anything another skill or subagent reaches is a reference file; `/work` stays model-invocable until its workers stop invoking it, in a separate task by owner (2026-10-14, "Ok. concordo.")
+- approved: spec v1 by owner (2026-10-14, "Sim")
 
 ## Objective
 
@@ -55,7 +56,10 @@ SC1–SC10 from `specs/2026-10-14-question-rounds-skill.md`.
 
 ## Plan
 
-skip: heavy parent awaiting owner confirmation; plan follows spec approval.
+1. `2026-10-14-question-rounds-skill-01-procedure-and-sharpen`: procedure file, `/sharpen`, heavy route and `heavy.md` step 2 for Claude Code (SC1–SC7).
+2. `2026-10-14-question-rounds-skill-02-other-hosts`: Antigravity copies and OpenCode registration (SC8), after 01.
+3. `2026-10-14-question-rounds-skill-03-docs-and-bundle`: principles §2, ADR 0004 annotations, bundle, manifest and `docs/bundle.md` (SC9, SC10), after 02.
+4. Parent: integrated SC rows, one live `/sharpen` run, fresh-context review.
 
 ## Review
 
@@ -67,5 +71,5 @@ None yet: the fresh-context review runs after integration (`work/review.md`).
 - branch: claude/matpock-desativacao-verificacao-7c26eb
 - HEAD: ed82275
 - worktree: .claude/worktrees/backlog-seed-tasks-e38dc9
-- done: friction F-001 and F-002 logged; heavy confirmed; rounds 1–2 decided; spec v1 drafted
-- next: owner approves spec v1, then decompose into children
+- done: friction F-001 and F-002 logged; heavy confirmed; rounds 1–3 decided; spec v1 approved and decomposed
+- next: execute child 01
