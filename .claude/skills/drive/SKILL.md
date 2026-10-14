@@ -125,7 +125,7 @@ Hand off candidate tasks to `/orchestrate` via the auto-runner harness:
 
 ### Step 4: Scoped Worker Execution (L3)
 
-Each worker subagent follows the `/work` procedure within its designated worktree. Its dispatch prompt tells it to read and follow `.claude/skills/work/references/procedure.md` (ADR 0010); it never invokes the `work` skill, which is user-invoked:
+Each worker subagent follows the `/work` procedure within its designated worktree, dispatched on **Sonnet** (`model` set to `sonnet`, per the shared role-to-model table in `.claude/skills/work/references/model-policy.md`). Its dispatch prompt tells it to read and follow `.claude/skills/work/references/procedure.md` (ADR 0010); it never invokes the `work` skill, which is user-invoked:
 
 - Follow ceremony tier procedures (typically `standard`).
 - Confine edits strictly to declared `In scope` files.
@@ -141,12 +141,13 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 - **Layer 3:** Task ancestry and Git lineage check (`git merge-base --is-ancestor`).
 - **Layer 4:** Quantitative thresholds (0 lint errors, 100% schema match).
 - **Layer 5:** Anti-thrashing circuit breaker:
-  - If a task fails verification twice without new evidence, trigger immediate **Circuit Breaker Halt** (ADR 0002 §5, Trigger E3).
+  - If a Sonnet worker fails verification once, retry on **Opus** (`model` set to `opus`, per `.claude/skills/work/references/model-policy.md`).
+  - If the task then fails verification a second time without new evidence, trigger immediate **Circuit Breaker Halt** (ADR 0002 §5, Trigger E3).
   - Halt entire drive execution, mark the failing task `blocked`, and escalate to the repository owner.
 
 ### Step 6: Atomic Seal & Continuous Handoff
 
-- Update task records with verification results.
+- Update task records with verification results. Each child's verification note records the model that ran it and its token totals in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — with no prompt content (per `.claude/skills/work/references/model-policy.md`).
 - Seal atomic commit per resolved ticket wave.
 - Decrement token budget by recorded consumption.
 - If remaining budget > 0 and eligible tasks remain under `--limit`, repeat from Step 1.
@@ -155,6 +156,7 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 ## References
 
 - Ceremony Tiers & Routing: [ADR 0002](../../../docs/decisions/0002-ceremony-tiers-and-routing.md)
+- Subagent Model Policy: [.claude/skills/work/references/model-policy.md](../work/references/model-policy.md)
 - Artifact Schema Contracts: [docs/artifact-contracts.md](../../../docs/artifact-contracts.md)
 - OODA Orchestration Harness: [.claude/skills/orchestrate/SKILL.md](../orchestrate/SKILL.md)
 - Autonomous Verification Gate: [.claude/skills/orchestrate/gate.md](../orchestrate/gate.md)

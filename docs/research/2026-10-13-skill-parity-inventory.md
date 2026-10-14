@@ -9,6 +9,8 @@ The copies are host-specific by owner decision, so the bar is equivalent behavio
 
 No skill file was changed (spec SC6). Drift items are follow-up candidates only.
 
+> Host-parity note (added 2026-10-14): the subagent model policy (`2026-10-14-harness-hardening` SC4/SC5) introduced a shared role-to-model table (`work/references/model-policy.md`) and model-named dispatches in `.claude/skills/`. Mirroring those changes to `.agents/skills/` and `.opencode/skills/` is pending and not reflected in this inventory, which predates them.
+
 ## Method
 
 - Base commit: `f67d13c` (`git rev-parse --short HEAD`), worktree clean for both skill trees.

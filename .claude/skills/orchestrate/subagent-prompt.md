@@ -6,6 +6,8 @@ When dispatching concurrent workers via parallel `Agent` tool calls, the orchest
 
 ## 1. Template Structure
 
+Before each dispatch, set the `model` parameter on the `Agent` call by role from the shared table in `.claude/skills/work/references/model-policy.md`: `sonnet` for implementation workers, `haiku` for read-only `Explore` spikes, and `opus` for the retry after a Sonnet worker's first verification failure.
+
 When constructing the `prompt` for each `Agent` call, include the following structured sections:
 
 ````markdown
@@ -44,12 +46,22 @@ Ao concluir o trabalho e verificar localmente suas alterações, entregue ao orq
 ```text
 status: ready_for_gate
 ticket: #<ID>
+model: <sonnet | opus | haiku>
 summary: <1 a 2 frases resumindo a alteração realizada>
 modified_files:
   - <caminho/do/arquivo>
 checks_run:
   - <check_name>: pass / fail / blocked (<evidência resumida>)
+usage:
+  tokens_input: <n>
+  tokens_output: <n>
+  cache_read_tokens: <n>
+  cache_write_tokens: <n>
+  total_tokens: <n>
+  cache_read_ratio: <n>
 ```
+
+The `usage` block records the token totals in the ADR 0006 vocabulary; never include prompt content.
 ````
 
 ---
@@ -87,11 +99,19 @@ Corrigir o cálculo do offset de paginação em `src/parser/query.ts` para evita
 ```text
 status: ready_for_gate
 ticket: #12
+model: sonnet
 summary: Adjusted page index subtraction to 0-based offset; added boundary test for page=1.
 modified_files:
   - src/parser/query.ts
   - tests/unit/parser/query.test.ts
 checks_run:
   - bun test: pass (6 passed, 0 failed)
+usage:
+  tokens_input: 12041
+  tokens_output: 612
+  cache_read_tokens: 9844
+  cache_write_tokens: 1187
+  total_tokens: 12653
+  cache_read_ratio: 0.82
 ```
 ````

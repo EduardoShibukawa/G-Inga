@@ -4,7 +4,7 @@ Prompt template and procedure for adversarial review of completed `heavy` tasks 
 
 ## Review Subagent Prompt Template
 
-When running a fresh-context review, launch a subagent with the following prompt:
+When running a fresh-context review, launch a subagent on **Opus** (`model` set to `opus`, per `references/model-policy.md`) with the following prompt:
 
 ```text
 You are an independent, adversarial code reviewer verifying task completion against its approved specification.

@@ -55,7 +55,7 @@ Stop and escalate immediately (`escalated: <from> → <to> because <E1–E5>: <e
 
 ## Verification & Review Auditing
 
-1. **Risk-Calibrated Independent Review:** Trigger an independent reviewer subagent for `heavy` tasks or high-risk changes (cross-module footprint, public contract changes, or sensitive behavior under S5/H4); simple, localized tasks rely on self-review.
+1. **Risk-Calibrated Independent Review:** Trigger an independent reviewer subagent for `heavy` tasks or high-risk changes (cross-module footprint, public contract changes, or sensitive behavior under S5/H4); simple, localized tasks rely on self-review. Dispatch the reviewer on **Opus** (`model` set to `opus`), per the shared table in `references/model-policy.md`.
 2. **Deterministic Verification Audit:** Never assume model or agent consensus equals correctness. Deterministic verification gates (test suites, validators, linters, schemas) strictly override model agreement.
 
 ## Concurrency & Worktree Isolation (EXP-05)
