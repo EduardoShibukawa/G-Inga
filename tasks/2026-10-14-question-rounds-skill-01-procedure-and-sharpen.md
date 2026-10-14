@@ -42,3 +42,11 @@ Write `.claude/skills/work/references/question-rounds.md` and the thin `.claude/
 2. Add the `sharpen` entry.
 3. Update the heavy route and `heavy.md` step 2.
 4. Validate and test.
+
+## Checkpoint
+
+- date: 2026-10-14
+- branch: task/2026-10-14-question-rounds-01-procedure
+- HEAD: 75d3efc
+- done: procedure file, /sharpen skill, heavy route and heavy.md step 2 for Claude Code (SC1–SC7)
+- next: child 02 (Antigravity/OpenCode)

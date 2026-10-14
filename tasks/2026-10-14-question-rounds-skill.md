@@ -71,5 +71,5 @@ None yet: the fresh-context review runs after integration (`work/review.md`).
 - branch: claude/matpock-desativacao-verificacao-7c26eb
 - HEAD: ed82275
 - worktree: .claude/worktrees/backlog-seed-tasks-e38dc9
-- done: friction F-001 and F-002 logged; heavy confirmed; rounds 1–3 decided; spec v1 approved and decomposed
-- next: execute child 01
+- done: friction F-001 and F-002 logged; heavy confirmed; rounds 1–3 decided; spec v1 approved and decomposed; child 01 complete (SC1–SC7 for Claude Code)
+- next: execute child 02 (Antigravity/OpenCode)
