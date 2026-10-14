@@ -13,6 +13,7 @@ spec: 2026-10-14-spec-history-squash-creation@1
 - decided: open a task for an owner-approved way past the `621cd44` history failure, never rewriting `main` by owner (2026-10-14, "Sim")
 - confirmed: heavy by owner (2026-10-14, "Ok")
 - decided: resolution → a general `none → approved` row in §7.1, guarded by version 1, a matching `approved_hash` and a new parent `approved: spec v1` entry in the same commit; no exception artifact by owner (2026-10-14, "Ok")
+- approved: spec v1 by owner (2026-10-14, "Sim")
 
 ## Objective
 
@@ -43,7 +44,7 @@ The spec fixes these after question rounds. At minimum:
 
 1. Owner confirms heavy (done).
 2. Question rounds: resolution 1 chosen (done). Merge-mode policy stays out of scope.
-3. Spec v1 draft and owner approval; decompose into one child.
+3. Spec v1 drafted and approved by the owner (done); decomposed into one child, `-01-squash-creation-row` (SC1–SC5).
 4. Integrated verification on `main` history, adversarial review, owner acceptance.
 
 ## Review
@@ -54,5 +55,5 @@ Not run yet: the fresh-context adversarial review runs after integrated verifica
 
 - Date: 2026-10-14
 - Branch: `task/2026-10-14-spec-history-squash-creation` from 6f2690c
-- Done: heavy confirmed; resolution 1 decided; spec v1 drafted.
-- Next action: owner approves spec v1; decompose and implement.
+- Done: heavy confirmed; resolution 1 decided; spec v1 approved; child 01 decomposed.
+- Next action: implement child 01.

@@ -1,7 +1,9 @@
 ---
 schema: spec/1
-status: draft
+status: approved
 version: 1
+approved_version: 1
+approved_hash: sha256:de43a9a242f476af22092bebf5189ff8cb56d2d9629ec99f0d685283231e5195
 ---
 
 # Accept Squash-Merged Spec Creation in the History Walk
