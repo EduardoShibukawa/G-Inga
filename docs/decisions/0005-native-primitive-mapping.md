@@ -101,7 +101,7 @@ No channel is unavailable everywhere. Repository-committed files are the only ch
 
 The items below choose mechanisms. The distribution architecture and project-local bundle placement are settled under FU1–FU4 below.
 
-1. **One entry point: a skill, provisionally `work`.**
+1. **One entry point: a skill, provisionally `work`.** Revised by [ADR 0010](0010-user-invoked-entry-skills.md) (2026-10-14): the skill is user-invoked, and its procedure lives in `work/references/procedure.md`.
    - It's model-invocable, so its description is in context every turn, and it holds the ADR 0002 routing rule and the `light` floor.
    - `/work resume <task-id>` resumes. There's no separate `/resume` skill and no command per workflow type.
    - Its name avoids upstream names (`to-spec`, `to-tickets`, `grilling`, `grill-with-docs`, `wayfinder`), so a bare `/name` is never ambiguous while the plugin stays enabled (D6 implication 3, `C10`). It must also not collide with a personal skill, which would shadow a project one (N6).
@@ -340,7 +340,7 @@ Earlier drafts proposed a `PreToolUse` hook on `git commit` that runs the valida
 | ID | Option | Why not now | Revisit when |
 |---|---|---|---|
 | A | Put the ADR 0002 routing rule in `CLAUDE.md` | full text every turn (N1) | never, unless skills stop loading reliably |
-| B | User-only entry skill (`disable-model-invocation`) | zero fixed cost (N3), but a change typed without `/work` gets no routing line | D4 shows the description cost matters, or S1 shows auto-loading misfires |
+| B | User-only entry skill (`disable-model-invocation`) | zero fixed cost (N3), but a change typed without `/work` gets no routing line | D4 shows the description cost matters, or S1 shows auto-loading misfires. Adopted by [ADR 0010](0010-user-invoked-entry-skills.md) (2026-10-14) under the owner's invocation rule |
 | C | Separate `/work` and `/resume` skills | two entry points to keep consistent | resume needs a different trigger |
 | D | One skill per tier or workflow type | several descriptions every turn, and routing duplicated in each | never as entry points |
 | E | Call or wrap Pocock's skills for question rounds or decomposition | violates ADR 0004 §3 | — (D6) |

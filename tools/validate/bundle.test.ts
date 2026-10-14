@@ -121,7 +121,7 @@ describe("committed bundle in this repository", () => {
     expect(skill.length).toBeGreaterThan(0);
     for (const p of skill) expect(`${p}: ${readFileSync(join(REPO, p), "utf8")}`).not.toContain("docs/artifact-contracts.md");
     const cited = skill.filter((p) => readFileSync(join(REPO, p), "utf8").includes(CONTRACT_COPY));
-    expect(cited).toEqual(expect.arrayContaining([".claude/skills/work/SKILL.md", ".claude/skills/work/standard.md", ".claude/skills/work/resume.md"]));
+    expect(cited).toEqual(expect.arrayContaining([".claude/skills/work/references/procedure.md", ".claude/skills/work/standard.md", ".claude/skills/work/resume.md"]));
   });
 
   test("the Antigravity /work procedures cite their delivered contract copy, never docs/artifact-contracts.md", () => {
@@ -131,12 +131,12 @@ describe("committed bundle in this repository", () => {
     expect(skill.length).toBeGreaterThan(0);
     for (const p of skill) expect(`${p}: ${readFileSync(join(REPO, p), "utf8")}`).not.toContain("docs/artifact-contracts.md");
     const cited = skill.filter((p) => readFileSync(join(REPO, p), "utf8").includes(agyContract));
-    expect(cited).toEqual(expect.arrayContaining([".agents/skills/work/SKILL.md", ".agents/skills/work/standard.md", ".agents/skills/work/resume.md"]));
+    expect(cited).toEqual(expect.arrayContaining([".agents/skills/work/references/procedure.md", ".agents/skills/work/standard.md", ".agents/skills/work/resume.md"]));
   });
 
   test("every documented validator CLI path exists in the bundle", () => {
     for (const p of ["tools/validate/validate.js", "tools/validate/validate.ts"]) expect(bundle.assets).toContain(p);
-    const docs = [".claude/skills/work/SKILL.md", ".claude/skills/work/standard.md", ".agents/skills/work/SKILL.md", ".agents/skills/work/standard.md"].map((p) => readFileSync(join(REPO, p), "utf8")).join("\n");
+    const docs = [".claude/skills/work/references/procedure.md", ".claude/skills/work/standard.md", ".agents/skills/work/references/procedure.md", ".agents/skills/work/standard.md"].map((p) => readFileSync(join(REPO, p), "utf8")).join("\n");
     for (const m of docs.matchAll(/`(?:node|bun) (tools\/validate\/[\w.]+)`/g)) expect(bundle.assets).toContain(m[1]);
   });
 });

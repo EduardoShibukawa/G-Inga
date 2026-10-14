@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # /orchestrate — Autonomous OODA Orchestration Harness
 
-Macro-governor for autonomous multi-task execution over dependency graphs and task backlogs. Dispatches parallel micro-execution via subagents running `/work` and enforces deterministic Go/No-Go verification gates before any commit or frontier advancement.
+Macro-governor for autonomous multi-task execution over dependency graphs and task backlogs. Dispatches parallel micro-execution via subagents that follow the `/work` procedure and enforces deterministic Go/No-Go verification gates before any commit or frontier advancement.
 
 ## Non-Negotiable Invariants
 
@@ -14,7 +14,7 @@ Macro-governor for autonomous multi-task execution over dependency graphs and ta
 2. **Strict 4-Value Vocabulary:** Report checks strictly using `pass`, `fail`, `blocked`, or `not run`. Exit code 0 is strictly forbidden if any mandatory check is skipped or unrun.
 3. **Context Isolation:** Keep the orchestrator root context lean (< 25k tokens). Exploration, iterative editing, and tool output belong strictly inside ephemeral subagents (`Agent` tool).
 4. **Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3):** Maximum 2 verification attempts per ticket without new information. On the second consecutive failure, halt the ticket, mark it `blocked`, and escalate to the repository owner.
-5. **Macro vs Micro Division:** `/orchestrate` governs the roadmap graph (`map.md`, `tasks/`), dependency resolution, parallel concurrency, and gating. Micro-delivery within scoped boundaries is delegated to subagents running `/work`.
+5. **Macro vs Micro Division:** `/orchestrate` governs the roadmap graph (`map.md`, `tasks/`), dependency resolution, parallel concurrency, and gating. Micro-delivery within scoped boundaries is delegated to subagents that read and follow `.claude/skills/work/references/procedure.md`. They never invoke the `work` skill, which is user-invoked (ADR 0010).
 
 ## The 6-Step OODA Loop
 
@@ -82,6 +82,7 @@ flowchart TD
 - Dispatch worker subagents in parallel by issuing multiple `Agent` tool calls in a single message, each with role and scoped prompt:
   - Set `subagent_type: "general-purpose"` for implementation workers (or `subagent_type: "Explore"` for read-only spikes).
   - Include the verification contract directly in the prompt.
+  - Name `.claude/skills/work/references/procedure.md` as the procedure to follow, never the `work` skill (ADR 0010).
 - **Working Tree Selection:**
   - Default shared working tree: allowed only when the pre-dispatch collision check passes (mutually disjoint scopes).
   - Isolated worktrees: set `isolation: "worktree"` on the `Agent` call (or use `tools/gate/worktree-runner.ts`). Worktree results MUST be merged back into the orchestrator branch before Gate Layer 1.

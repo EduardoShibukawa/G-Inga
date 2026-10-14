@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # /drive — Continuous Autonomous Backlog Driver
 
-Autonomous backlog execution driver for G-Ingá. Governs multi-task continuous delivery by scanning pending task backlogs, extracting minimal architectural context slices via Gira-G (`gira`), delegating wave batching to `/orchestrate`, and driving micro-execution via `/work` with strict token frugality and anti-thrashing circuit breakers.
+Autonomous backlog execution driver for G-Ingá. Governs multi-task continuous delivery by scanning pending task backlogs, extracting minimal architectural context slices via Gira-G (`gira`), delegating wave batching to `/orchestrate`, and driving micro-execution through workers that follow the `/work` procedure with strict token frugality and anti-thrashing circuit breakers.
 
 ## Non-Negotiable Invariants
 
@@ -15,7 +15,7 @@ Autonomous backlog execution driver for G-Ingá. Governs multi-task continuous d
 3. **Layered Separation of Concerns:**
    - **L1 Driver (`/drive`):** Backlog discovery, dependency ordering, global budget tracking, and batch circuit breakers.
    - **L2 Orchestrator (`/orchestrate`):** OODA batch management, collision detection (`verify-gate.ts`), wave partitioning (`orchestrate-runner.ts`), ephemeral worktrees (`worktree-runner.ts`), and 5-layer verification gates.
-   - **L3 Worker (`/work`):** Scoped surgical task execution within isolated ephemeral worktrees using Gira-G contextual slices.
+   - **L3 Worker (`/work` procedure):** Scoped surgical task execution within isolated ephemeral worktrees using Gira-G contextual slices.
 4. **Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3):** Halt immediately if any task fails verification gate twice consecutively without new evidence. Escalate to the repository owner.
 5. **Deterministic Verification Vocabulary:** Every check in all task records and gates must strictly use `pass`, `fail`, `blocked`, or `not run`.
 6. **No Direct Unverified Commits:** Commits are sealed atomically only after all 5 layers of the Autonomous Verification Gate pass with 100% compliance.
@@ -36,7 +36,7 @@ flowchart TD
         WAVES --> WT["7. Ephemeral Worktrees (worktree-runner.ts)"]
     end
 
-    subgraph L3["L3: Worker (/work)"]
+    subgraph L3["L3: Worker (/work procedure)"]
         WT --> SLICE["8. Inject Context Slice (gira slice)"]
         SLICE --> WORK["9. Execute Surgical Scope"]
         WORK --> LOCAL_VAL["10. Local Validation (mise run validate)"]
@@ -125,7 +125,7 @@ Hand off candidate tasks to `/orchestrate` via the auto-runner harness:
 
 ### Step 4: Scoped Worker Execution (L3)
 
-Each worker subagent executes `/work` within its designated worktree:
+Each worker subagent follows the `/work` procedure within its designated worktree. Its dispatch prompt tells it to read and follow `.agents/skills/work/references/procedure.md` (ADR 0010); it never invokes the `work` skill, which is user-invoked:
 
 - Follow ceremony tier procedures (typically `standard`).
 - Confine edits strictly to declared `In scope` files.

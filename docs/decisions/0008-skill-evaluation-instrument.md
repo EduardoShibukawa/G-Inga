@@ -8,7 +8,7 @@
 
 ## Context
 
-G-Ingá ships three model-invoked skills (`work`, `drive`, `orchestrate`). Their trigger accuracy and behavioral conformance are asserted, not measured. The [autoresearch program](../research/autoresearch-program.md) runs deterministic evaluators over frozen scenario sets (EXP-01 to EXP-07) and records every run in [the ledger](../../records/autoresearch-ledger.tsv), but none of those experiments drives a skill end to end inside the host.
+G-Ingá ships three skills (`work`, `drive`, `orchestrate`). When this record was written, `work` was the only model-invoked one ([ADR 0007](0007-harness-extensions-beyond-v1.md)). Since [ADR 0010](0010-user-invoked-entry-skills.md), all three are user-invoked. Their trigger accuracy and behavioral conformance are asserted, not measured. The [autoresearch program](../research/autoresearch-program.md) runs deterministic evaluators over frozen scenario sets (EXP-01 to EXP-07) and records every run in [the ledger](../../records/autoresearch-ledger.tsv), but none of those experiments drives a skill end to end inside the host.
 
 The owner's environment was checked on 2026-10-13 without running any paid evaluation:
 
