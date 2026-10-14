@@ -18,9 +18,9 @@ The routing criteria and what each tier loads are decided in [ADR 0002](decision
 
 ## 2. Align before building on ambiguity
 
-*Source: Matt Pocock `grilling` (installed); brief §3 "human owns significant decisions". Source check: current `grilling` asks the whole frontier of answerable questions per round, each with a recommended answer. "One question at a time" comes from Osmani's `interview-me`. Which style to adopt is still open.*
+*Source: Matt Pocock `grilling` (retired with the Pocock plugin, [ADR 0007](decisions/0007-harness-extensions-beyond-v1.md)); brief §3 "human owns significant decisions". Style settled 2026-10-14: whole frontier of answerable questions per round, each with a recommended answer — the [question-rounds procedure](../specs/2026-10-14-question-rounds-skill.md). "One question at a time" (Osmani's `interview-me`) was the rejected alternative.*
 
-When requirements or domain terms are ambiguous, interrogate until shared understanding exists. Ask one focused question at a time. Don't invent behavior.
+When requirements or domain terms are ambiguous, interrogate until shared understanding exists. Ask the whole frontier of answerable questions each round — each with a recommended answer — and defer questions that depend on an open answer to a later round. Don't invent behavior.
 
 ## 3. "Build passed" is not proof
 

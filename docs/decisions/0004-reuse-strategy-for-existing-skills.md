@@ -109,9 +109,9 @@ These are inputs to D5, not answers.
 
 These didn't block acceptance: none changes items 1–6. Questions 2–5 shape the transition and the criteria in evidence §10.
 
-1. For `heavy` question rounds, whole frontier with recommended answers (`grilling`) or one question at a time (Osmani's `interview-me`)? This is [principles](../principles.md) §2, and it shapes the text G-Ingá writes under item 5.
+1. For `heavy` question rounds, whole frontier with recommended answers (`grilling`) or one question at a time (Osmani's `interview-me`)? This is [principles](../principles.md) §2, and it shapes the text G-Ingá writes under item 5. **Resolved 2026-10-14:** whole frontier with recommended answers, adopted by [spec 2026-10-14-question-rounds-skill](../../specs/2026-10-14-question-rounds-skill.md).
 2. Which capabilities of the four skills do you actually rely on? Evidence §10 infers them from the skills' own text. Correct a row where it's wrong.
-3. `grill-with-docs` keeps a domain glossary. Does G-Ingá need one, and as a contract artifact or as plain repository docs? Add it only if the transition logs a friction without it.
+3. `grill-with-docs` keeps a domain glossary. Does G-Ingá need one, and as a contract artifact or as plain repository docs? Add it only if the transition logs a friction without it. **Resolved 2026-10-14:** plain repository docs at `docs/glossary.md`, created lazily on the first resolved term; adopted by [spec 2026-10-14-question-rounds-skill](../../specs/2026-10-14-question-rounds-skill.md).
 4. `to-tickets` asks you to approve the breakdown, while ADR 0002 gates the spec and then splits without a second gate. If you rely on that approval, it needs an amendment to ADR 0002, outside D6.
 5. Does the `heavy` route plus the decision-map process cover what `wayfinder` does for you, or does G-Ingá need a dedicated multi-session discovery mechanism? The transition should answer this through the friction log. Until then `wayfinder` stays in your flow.
 6. Your installed plugin version, update setting and any `#ref` pin, and whether you've enabled skills on your claude.ai account, weren't checked (evidence §8). They matter for the transition, not for this decision.

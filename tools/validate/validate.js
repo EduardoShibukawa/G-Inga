@@ -7670,7 +7670,9 @@ var bundle_default = {
   release: "1.0.0",
   scope: [
     ".claude/skills/work/",
+    ".claude/skills/sharpen/",
     ".agents/skills/work/",
+    ".agents/skills/sharpen/",
     "tools/validate/"
   ],
   assets: [
@@ -7681,6 +7683,8 @@ var bundle_default = {
     ".claude/skills/work/standard.md",
     ".claude/skills/work/references/artifact-contracts.md",
     ".claude/skills/work/references/procedure.md",
+    ".claude/skills/work/references/question-rounds.md",
+    ".claude/skills/sharpen/SKILL.md",
     ".agents/skills/work/SKILL.md",
     ".agents/skills/work/heavy.md",
     ".agents/skills/work/resume.md",
@@ -7688,6 +7692,8 @@ var bundle_default = {
     ".agents/skills/work/standard.md",
     ".agents/skills/work/references/artifact-contracts.md",
     ".agents/skills/work/references/procedure.md",
+    ".agents/skills/work/references/question-rounds.md",
+    ".agents/skills/sharpen/SKILL.md",
     "tools/validate/ci-template.yml",
     "tools/validate/validate.js",
     "tools/validate/validate.ts"
