@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Deterministic post-run classifier for `claude plugin eval --json` results
- * (spec 2026-10-13-skill-health-evaluation SC7, ADR 0007).
+ * (spec 2026-10-13-skill-health-evaluation SC7, ADR 0008).
  *
  * The CLI's own `passed` flag can be true for a run that ended with an error
  * (for example "Reached maximum number of turns"), and negative graders pass on

@@ -1,4 +1,4 @@
-# 0007 — Skill evaluation instrument
+# 0008 — Skill evaluation instrument
 
 - **Status:** accepted (accepted by project owner 2026-10-13)
 - **Date:** 2026-10-13

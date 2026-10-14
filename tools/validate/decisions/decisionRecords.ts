@@ -8,7 +8,7 @@ const ADR_RE = /^docs\/decisions\/(\d{4})-[^/]+\.md$/;
 /**
  * Cross-document consistency of decisions, limited to rules the docs state explicitly:
  * - status values come from the vocabulary declared in the decision map;
- * - each ADR has a numbered H1 and Status, Date and Deciders lines;
+ * - each ADR has a unique number, a numbered H1 and Status, Date and Deciders lines;
  * - each decision-map row has a valid status and resolvable dependencies, and its diagram edges match;
  * - a row that links an ADR has the same status as that ADR, and every ADR is linked from the map;
  * - a document whose Status line cites "decision Dn" carries the same status as row Dn.
@@ -27,6 +27,8 @@ export function decisions(files: MdFile[]): CheckResult {
     const m = ADR_RE.exec(f.path);
     if (!m) continue;
     const status = /^- \*\*Status:\*\* ([a-z ]+?)(?:\s*[(.]|$)/m.exec(f.text)?.[1];
+    const dup = adrs.get(m[1]);
+    if (dup) findings.push(`${f.path}: ADR number ${m[1]} is already used by ${dup.file.path}`);
     adrs.set(m[1], { file: f, status });
     if (!new RegExp(`^# ${m[1]} — \\S`).test(f.lines[0] ?? "")) findings.push(`${f.path}:1 H1 must start with "# ${m[1]} — "`);
     if (!status) findings.push(`${f.path}: missing "- **Status:** <status>" line`);

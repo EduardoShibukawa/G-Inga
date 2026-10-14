@@ -77,5 +77,5 @@ Fresh-context adversarial review of c039980..311732f (2026-10-13).
 
 - Date: 2026-10-13
 - Branch: `docs/skill-health-evaluation`, rebased onto `origin/main` at c2a0633 (worktree `/home/tg/Projetos/G-Inga-she`; the main checkout is used by another session)
-- Done: children 01–04 verified, child 05 completed with AC6 under an owner exception, baseline recorded (USD 2.75), review findings F1–F6 resolved, ADR 0007 accepted. Parent stays `completed` because SC2 is `blocked` under the exception; the validator does not lift a `blocked` row to `verified` on an exception.
+- Done: children 01–04 verified, child 05 completed with AC6 under an owner exception, baseline recorded (USD 2.75), review findings F1–F6 resolved, ADR 0008 (filed as 0007 until renumbered) accepted. Parent stays `completed` because SC2 is `blocked` under the exception; the validator does not lift a `blocked` row to `verified` on an exception.
 - Next action: owner reviews the PR; merging records final acceptance. Phase 2 (3× runs with `--keep-temp`, registration measurement, git in the eval sandbox, drift follow-ups) goes through a new `/work` task.
