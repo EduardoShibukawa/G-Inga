@@ -331,8 +331,8 @@ export const stateCases: Case[] = [
   }),
 ];
 
-const draftV1: Step = () => ({ [t(P)]: parent("active", 1), [sp]: spec({ status: "draft", version: 1 }) });
-const approvedV1: Step = () => ({ [t(P)]: parent("active", 1, { log: parentLog("approved: spec v1 by owner (2026-10-14, \"ok\")") }), [sp]: spec({ status: "approved", version: 1, approvedVersion: 1 }) });
+export const draftV1: Step = () => ({ [t(P)]: parent("active", 1), [sp]: spec({ status: "draft", version: 1 }) });
+export const approvedV1: Step = () => ({ [t(P)]: parent("active", 1, { log: parentLog("approved: spec v1 by owner (2026-10-14, \"ok\")") }), [sp]: spec({ status: "approved", version: 1, approvedVersion: 1 }) });
 const v1Hash = /approved_hash: (\S+)/.exec(spec({ status: "approved", version: 1, approvedVersion: 1 }))![1];
 const accepted = (schema: string) => task({ schema, status: "accepted", verifiedAt: "2222222", log: ["tier: standard (S2 fails)", "accepted: by owner (2026-10-12, \"ok\")"], rows: [] });
 

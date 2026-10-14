@@ -6,7 +6,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cleanupFixtures, commitAll, fixtureDir, git, NO_BROWSER, REPO, status, validate } from "../testkit.ts";
-import { allCases, task } from "./fixtures.ts";
+import { allCases, approvedV1, draftV1, task } from "./fixtures.ts";
 import { CONTRACT_COPY, HEADER, LINK_PREFIX, renderContractCopy } from "../contract-copy.mjs";
 import { contractCopy } from "./checks.ts";
 import { reachable, recordHistory } from "./history.ts";
@@ -260,6 +260,45 @@ describe("applicability uses Git history, so deleting every record can't turn th
     commitAll(dir);
     g("merge", "-q", "--no-ff", "-m", "merge feature-x", x);
     const r = validate(dir, NO_BROWSER);
+    expect(status("artifact-records", r.out)).toBe("pass");
+    expect(r.code).toBe(0);
+  }, 60000);
+
+  test("a record absent at a sibling-branch commit doesn't reappear as newly created after the merge (§4.3)", () => {
+    const dir = fixtureDir({ "README.md": "# R\n" }, { git: true });
+    const g = (...args: string[]) => {
+      const r = git(dir, ...args);
+      if (r.exitCode !== 0) throw new Error(`git ${args.join(" ")}: ${r.stderr.toString()}`);
+      return r.stdout.toString().trim();
+    };
+    // Fixed dates order the linear walk: feature draft, feature approval, then the base commit without the spec.
+    const commitAt = (date: string) => {
+      g("add", "-A");
+      const env = { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date };
+      const r = Bun.spawnSync(["git", "-c", "user.email=f@example.invalid", "-c", "user.name=f", "-c", "commit.gpgsign=false", "commit", "-q", "-m", "fixture"], { cwd: dir, env, stderr: "pipe" });
+      if (r.exitCode !== 0) throw new Error(r.stderr.toString());
+    };
+    const write = (files: Record<string, string | null>) => {
+      for (const [path, body] of Object.entries(files)) {
+        mkdirSync(join(dir, path, ".."), { recursive: true });
+        writeFileSync(join(dir, path), body!);
+      }
+    };
+    const base = g("rev-parse", "--abbrev-ref", "HEAD");
+    g("checkout", "-q", "-b", "feature-spec");
+    write(draftV1([]));
+    commitAt("2026-10-14T10:00:00Z");
+    write(approvedV1([]));
+    commitAt("2026-10-14T11:00:00Z");
+    const feature = g("rev-parse", "HEAD");
+    g("checkout", "-q", base);
+    write({ "tasks/2026-10-12-y.md": task({ status: "active" }) });
+    commitAt("2026-10-14T12:00:00Z");
+    const env = { ...process.env, GIT_AUTHOR_DATE: "2026-10-14T13:00:00Z", GIT_COMMITTER_DATE: "2026-10-14T13:00:00Z" };
+    const m = Bun.spawnSync(["git", "-c", "user.email=f@example.invalid", "-c", "user.name=f", "merge", "-q", "--no-ff", "-m", "merge feature-spec", feature], { cwd: dir, env, stderr: "pipe" });
+    if (m.exitCode !== 0) throw new Error(m.stderr.toString());
+    const r = validate(dir, NO_BROWSER);
+    expect(r.out).not.toContain("must be created as draft");
     expect(status("artifact-records", r.out)).toBe("pass");
     expect(r.code).toBe(0);
   }, 60000);

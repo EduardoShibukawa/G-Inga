@@ -7554,9 +7554,10 @@ function checkHistory(root, opts = {}) {
       const file = (now ?? before.rec).path;
       const f = (msg, rule = "§7.1") => findings.push({ level: "fail", rule, file, msg: `${at(rev)}: ${msg}` });
       if (!now) {
-        if (rev === WT || realDeletions.get(rev)?.has(file))
+        if (rev === WT || realDeletions.get(rev)?.has(file)) {
           f(`${file} was deleted; ${key.startsWith("spec") ? "a spec is never deleted (§4.3)" : "a committed task record is closed as cancelled, never deleted (§6.1)"}`, key.startsWith("spec") ? "§7.1" : "§6.1");
-        lastState.delete(key);
+          lastState.delete(key);
+        }
         continue;
       }
       if (now.kind === "spec")
