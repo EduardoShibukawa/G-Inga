@@ -291,7 +291,7 @@ Scope of the channel:
 - **Fixed per-turn cost.** About 154 tokens for the three skill descriptions in every session where the plugin is enabled (`claude plugin details g-inga`, 2026-10-13). In a repository that also carries the bundle, both copies load, namespaced apart. The owner may disable the plugin per repository with `"enabledPlugins": { "g-inga@g-inga": false }` in `.claude/settings.local.json`.
 - **No change to the V1 spec.** Its non-goal "plugin packaging, marketplace distribution, or installer CLIs" covers G-Ingá as a distributed product, which stays deferred. Nothing in V1 depends on the plugin.
 
-## H-1: is a commit-gate hook needed? (open)
+## H-1: is a commit-gate hook needed? (settled by [ADR 0009](0009-enforcement-primitives.md), 2026-10-14)
 
 Earlier drafts proposed a `PreToolUse` hook on `git commit` that runs the validator. It's withdrawn. It's an open follow-up, not part of V1 and not implicitly accepted.
 
