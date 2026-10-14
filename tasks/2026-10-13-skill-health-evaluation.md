@@ -21,6 +21,7 @@ spec: 2026-10-13-skill-health-evaluation@1
 
 - approved: exception SC2 registration part (which registration fires when project `work` and plugin `g-inga:work` both exist) deferred to phase 2 (3× runs with `--keep-temp` after fixing scaffold contamination) by owner (2026-10-13, "Exceção → fase 2 (Recommended)")
 - approved: ADR 0007 accepted by owner (2026-10-13, "Aceitar (Recommended)")
+
 ## Objective
 
 Establish a repeatable, measured health baseline for the `work`, `drive` and `orchestrate` skills, covering trigger accuracy, behavioral conformance and cross-host parity, recorded in the autoresearch ledger.
