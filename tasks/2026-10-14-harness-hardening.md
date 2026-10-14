@@ -19,6 +19,8 @@ spec: 2026-10-14-harness-hardening@1
 - decided: G-Ingá validator step → namespaced mise file task in the bundle by owner (2026-10-14, "File task no bundle (recomendado)")
 - decided: branch protection → require the CI check on `main` by owner (2026-10-14, "Sim, check obrigatório (recomendado)")
 - decided: model policy → Haiku for read-only search, Sonnet for implementation, Opus for spec and adversarial review, one escalation to Opus by owner (2026-10-14, "Haiku/Sonnet/Opus + escalada (recomendado)")
+- approved: spec v1 by owner (2026-10-14, "Aprovo spec v1 + ADR 0009 (recomendado)")
+- approved: ADR 0009 accepted by owner (2026-10-14, "Aprovo spec v1 + ADR 0009 (recomendado)")
 
 ## Objective
 
@@ -36,7 +38,7 @@ Turn the recurring friction found by `/insights` and `/doctor` (2026-10-14) into
 
 ## Acceptance criteria
 
-To be replaced by the SC rows of the spec once it is approved.
+SC1–SC10 from `specs/2026-10-14-harness-hardening.md`.
 
 ## Verification
 
@@ -48,8 +50,8 @@ To be replaced by the SC rows of the spec once it is approved.
 ## Plan
 
 1. Research the commit-gate mechanism and model tiering: [research note](../docs/research/2026-10-14-enforcement-and-model-policy.md) (done).
-2. ADR 0009 `proposed` and spec v1 `draft` (done); owner approves the spec and accepts the ADR.
-3. Decompose into children at `@1`:
+2. ADR 0009 and spec v1 written; spec v1 approved and ADR 0009 accepted by the owner (done).
+3. Decompose into children at `@1` (done):
    - `-01-commit-gate`: spike file-task `depends`; mise + hk + `pre-commit` task here; deny rule; CI job (SC1, SC3 except branch protection).
    - `-02-bundle-validate-step`: `g-inga:validate` in the bundle and manifest; fixture target repo (SC2). Depends on 01.
    - `-03-model-policy`: role table and dispatch models in the three skills; per-child cost note (SC4, SC5).
@@ -67,5 +69,5 @@ Not run yet: the fresh-context adversarial review runs after integrated verifica
 
 - Date: 2026-10-14
 - Branch: `claude/backlog-seed-tasks-e38dc9` at 2edf21e (worktree `.claude/worktrees/backlog-seed-tasks-e38dc9`)
-- Done: heavy confirmed; all owner decisions recorded; research note, ADR 0009 (proposed) and spec v1 (draft) written; baseline B1 and B2 recorded.
-- Next action: owner reviews spec v1 and ADR 0009; on approval, freeze the hash, decompose children 01–06 and run `/drive`.
+- Done: heavy confirmed; all owner decisions recorded; research note written; ADR 0009 accepted; spec v1 approved and frozen; children 01–06 decomposed `todo` at `@1`; baseline B1 and B2 recorded.
+- Next action: owner runs `/drive`; wave 1 is children 01 and 03 (no dependencies). Owner action pending: branch protection on `main` requiring the CI job (SC3).

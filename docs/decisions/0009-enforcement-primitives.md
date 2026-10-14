@@ -1,6 +1,6 @@
 # 0009 — Enforcement primitives and the commit gate
 
-- **Status:** proposed
+- **Status:** accepted (accepted by project owner 2026-10-14)
 - **Date:** 2026-10-14
 - **Deciders:** project owner
 - **Depends on:** D5 on the [decision map](../decision-map.md), settled by [ADR 0005](0005-native-primitive-mapping.md). This record extends D5 and settles its open follow-up H-1. ADR 0005 keeps its status until the owner decides.
@@ -11,7 +11,7 @@
 
 ADR 0005 put guidance where judgment lives and enforcement where rules are checkable, then left the commit gate open (H-1). Its revisit condition required a logged friction where an invalid record commit reached a pull request. `/insights` (2026-09-01 to 2026-10-14) shows that it happened in at least four sessions, through `validate | tail && git commit` chains that tested the wrong exit code (E1). The owner has since allowed the agent to merge its own pull requests, and `main` has no branch protection (E7), so nothing deterministic stands between an invalid commit and `main`.
 
-## Decision (proposed)
+## Decision
 
 ### 1. Which primitive for which kind of rule
 

@@ -1,7 +1,9 @@
 ---
 schema: spec/1
-status: draft
+status: approved
 version: 1
+approved_version: 1
+approved_hash: sha256:61bf693bfbb2dcdfd506fde0b0d05151eba0a086c25c2e5a694a16d6dbc2dfc9
 ---
 
 # Harness Hardening
