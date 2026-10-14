@@ -11,5 +11,5 @@ Read `.agents/skills/work/references/procedure.md` and follow it for the request
 The tier files sit next to this one and are read only when the procedure routes to them:
 
 - `.agents/skills/work/standard.md` for `standard`;
-- `.agents/skills/work/heavy.md` for `heavy`, with `.agents/skills/work/review.md` for its review;
+- `.agents/skills/work/heavy.md` for `heavy`, with `.agents/skills/work/references/question-rounds.md` for its question rounds and `.agents/skills/work/review.md` for its review;
 - `.agents/skills/work/resume.md` for `/work resume <task-id>`.

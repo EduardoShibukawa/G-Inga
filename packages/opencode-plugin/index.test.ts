@@ -22,13 +22,13 @@ async function setup() {
 describe("opencode plugin", () => {
   test("registers every G-Ingá skill as user-invoked (autoinvoke false)", async () => {
     const { skills } = await setup();
-    expect(skills.map((s) => s.id).sort()).toEqual(["drive", "orchestrate", "work"]);
+    expect(skills.map((s) => s.id).sort()).toEqual(["drive", "orchestrate", "sharpen", "work"]);
     for (const s of skills) expect(`${s.id}: ${s.autoinvoke}`).toBe(`${s.id}: false`);
   });
 
   test("each command prompt names its skill id", async () => {
     const { commands, prompts } = await setup();
-    expect(commands.map((c) => c.name).sort()).toEqual(["drive", "orchestrate", "work"]);
+    expect(commands.map((c) => c.name).sort()).toEqual(["drive", "orchestrate", "sharpen", "work"]);
     for (const c of commands) {
       await c.execute({ sessionID: "s1", prompt: { text: "do it" } });
       const text = String(prompts.at(-1)?.text);
