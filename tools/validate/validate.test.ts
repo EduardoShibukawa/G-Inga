@@ -103,6 +103,20 @@ describe("decision-record checks apply to decision records", () => {
     expect(r.code).toBe(1);
   }, 60000);
 
+  test("two ADRs sharing a number fail", () => {
+    const adr = (t: string) => `# 0001 — ${t}\n\n- **Status:** open\n- **Date:** 2026-10-10\n- **Deciders:** owner\n`;
+    const r = validate(
+      fixtureDir({
+        "docs/decision-map.md": DECISION_MAP.replace("| open | none | none |", "| open | none | [ADR 0001](decisions/0001-one.md), [ADR 0001](decisions/0001-two.md) |"),
+        "docs/decisions/0001-one.md": adr("One"),
+        "docs/decisions/0001-two.md": adr("Two"),
+      }),
+    );
+    expect(r.out).toContain("ADR number 0001 is already used by");
+    expect(status("decision-records", r.out)).toBe("fail");
+    expect(r.code).toBe(1);
+  }, 60000);
+
   test("ADRs without a decision map are blocked, not passed", () => {
     const r = validate(fixtureDir({ "docs/decisions/0001-one.md": "# 0001 — One\n\n- **Status:** open\n- **Date:** 2026-10-10\n- **Deciders:** owner\n" }));
     expect(status("decision-records", r.out)).toBe("blocked");

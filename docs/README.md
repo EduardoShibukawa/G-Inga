@@ -21,6 +21,7 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 - [ADR 0005: Native primitive mapping](decisions/0005-native-primitive-mapping.md) (`accepted`): Primitive mapping, pinned bundle distribution architecture (Alternative A), co-located validator, and CI merge gating.
 - [ADR 0006: Usage observability](decisions/0006-usage-observability.md) (`accepted`): Multi-host local usage observation signals (OpenTelemetry for Claude Code, headless JSON for Antigravity) with 6-state taxonomy.
 - [ADR 0007: Harness extensions beyond V1](decisions/0007-harness-extensions-beyond-v1.md) (`accepted`): Recorded deviations from the approved V1 spec (manifest scope, `/orchestrate` and `/drive` invocation, Gira-G fallback, verification follow-ups).
+- [ADR 0008: Skill evaluation instrument](decisions/0008-skill-evaluation-instrument.md) (`accepted`): `claude plugin eval` as the skill health runner, `skill-creator` as authoring aid, `/skill-doctor` conditional (extends D7).
 
 ## 3. Contracts & Specifications
 

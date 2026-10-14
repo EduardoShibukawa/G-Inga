@@ -30,7 +30,7 @@ Provide one documented command that runs the suite under the USD 5 ceiling, exec
 
 - AC1 = SC7: a single documented command reruns the suite with `--max-cost-usd 5`; unexecuted cases report `blocked` or `not run`, and a run that ended with an error, a partial suite or a missing run is never `pass` (deterministic classifier, not the CLI `passed` flag).
 - AC2 = SC2, SC3: baseline run executed once; per-skill trigger and conformance results recorded.
-- AC3 = SC5: ledger rows appended with existing columns, unobserved values marked `absent` or `unsupported` (ADR 0006, ADR 0007); raw results ignored by git, no prompts or transcripts committed.
+- AC3 = SC5: ledger rows appended with existing columns, unobserved values marked `absent` or `unsupported` (ADR 0006, ADR 0008); raw results ignored by git, no prompts or transcripts committed.
 - AC4 = SC6: skill instruction files and their manifest hashes unchanged versus c039980.
 - AC5: evaluation files stay outside the distributed bundle scope.
 - AC6 = SC2 (registration part): where both registrations exist, the run records which one (project or plugin) was invoked.
