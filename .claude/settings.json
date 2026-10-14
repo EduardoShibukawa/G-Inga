@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Bash(git commit --no-verify*)",
+      "Bash(git commit * --no-verify*)",
+      "Bash(git commit -n)",
+      "Bash(git commit -n *)",
+      "Bash(git commit * -n)",
+      "Bash(git commit * -n *)",
+      "Bash(git commit -nm*)",
+      "Bash(git commit * -nm*)",
+      "Bash(HK=0 *)",
+      "Bash(* HK=0 *)",
+      "Bash(git -c core.hooksPath*)",
+      "Bash(git config *core.hooksPath*)"
+    ]
+  }
+}

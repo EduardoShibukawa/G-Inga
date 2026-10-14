@@ -1,0 +1,17 @@
+// Git hooks for this repository (ADR 0009 §2). The steps live in the `pre-commit` mise
+// task, so CI and hosts without hk run the same checks with `mise run pre-commit`.
+amends "package://github.com/jdx/hk/releases/download/v1.24.0/hk@1.24.0#/Config.pkl"
+
+hooks {
+  ["pre-commit"] {
+    // Unstaged and untracked changes are stashed while the step runs, so the
+    // validator sees what the commit will contain.
+    stash = "git"
+    steps {
+      ["pre-commit"] {
+        check = "mise run pre-commit"
+        exclusive = true
+      }
+    }
+  }
+}
