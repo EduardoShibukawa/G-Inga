@@ -1,6 +1,6 @@
 {
   "release": "1.0.0",
-  "commit": "27a375560526ed6a8037855674ca08a746f7d636",
+  "commit": "190fb897b4c24757bd43fa995a7fcd105e6e1186",
   "files": {
     ".claude/skills/work/SKILL.md": "99b67593a1edddf87237f37c1a8f3d4a8193e4f3bd05aa9f03b8fa8e2e712a9d",
     ".claude/skills/work/heavy.md": "2ab69efccad75c0be8190e36b8568d5fd259d4d18309f4556da1ab6b89e7848d",
@@ -19,7 +19,7 @@
     ".agents/skills/work/references/question-rounds.md": "4507c4244c3c12a0165d4b57ea27c8c03c43e634dbf38c8ab4bc58a7c411da0b",
     ".agents/skills/sharpen/SKILL.md": "047fd45d7baca075ea00c7ef2410761ccc8921986555bffbb7cddd71a8df85a6",
     "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
-    "tools/validate/validate.js": "ae9d872d72be27ee594f5be79ab14444a25b6b004e13f8c39a4273425928d168",
+    "tools/validate/validate.js": "fbdf94b11dbdc4e73dd92dfc908e0fadb88766b0d9b7fd04c4c1aeb0b35465a7",
     "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
