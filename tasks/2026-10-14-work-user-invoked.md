@@ -36,6 +36,15 @@ SC1–SC8 from `specs/2026-10-14-work-user-invoked.md`.
 |---|---|---|---|---|
 | B1 | repository validation suite before change | pass | ed82275 | `mise run validate` exit 0 (Overall: pass) |
 | B2 | repository test suite before change | pass | ed82275 | `mise run test` exit 0: 242 pass, 0 fail |
+| SC1 | flag on every skill, both hosts | pass | 19c24dd | child AC1 |
+| SC2 | procedure layout, one-level tier files, host parity | pass | 19c24dd | child AC2 |
+| SC3 | workers name the procedure file, never the skill | pass | 19c24dd | child AC3 |
+| SC4 | OpenCode evidence and regression test | pass | 19c24dd | child AC4; Notes |
+| SC5 | bundle and two-commit manifest | pass | 19c24dd | child AC5 |
+| SC6 | ADR 0010 accepted, ADR 0005, 0008 and decision map | pass | 19c24dd | child AC6; acceptance in the log above |
+| SC7 | evaluation follow-up task | pass | 19c24dd | child AC7 |
+| SC8 | `mise run validate` and `mise run test` at the integrated head | pass | 19c24dd | validate exit 0; test 244 pass, 0 fail |
+| R1 | integrated regression | pass | 19c24dd | same run as SC8; `manifest.mjs --check` pass |
 
 ## Plan
 
@@ -57,7 +66,9 @@ So "Load the `<id>` skill" in a command prompt resolves with `autoinvoke: false`
 
 ## Review
 
-Not run yet: the fresh-context adversarial review runs after integrated verification.
+Fresh-context adversarial review of `ed82275..19c24dd` against spec v1 (2026-10-14): no correctness bug and no SC1–SC7 violation.
+
+- [F1] minor: with only the OpenCode plugin installed (no bundle in the target), `/work` used to carry routing inline. It now carries a pointer to `.claude/skills/work/references/procedure.md`, which doesn't resolve there -> rejected: the plugin header already limits deep references to repositories where the bundle is present, and the spec's "behaves as before" covers repositories with the bundle. Reported to the owner as a known limitation for plugin-only targets.
 
 ## Checkpoint
 

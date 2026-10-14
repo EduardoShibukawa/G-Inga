@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: completed
 parent: 2026-10-14-work-user-invoked
 spec: 2026-10-14-work-user-invoked@1
 ---
@@ -34,10 +34,18 @@ Make `/work` user-invoked on both hosts, with its procedure in `work/references/
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | ed82275 | parent B1 and B2: `mise run validate` exit 0; `mise run test` 242 pass, 0 fail |
+| AC1 | `grep '^disable-model-invocation'` over all six `SKILL.md` files | pass | 19c24dd | `true` for `work`, `drive`, `orchestrate` on `.claude/` and `.agents/` |
+| AC2 | procedure layout and parity | pass | 19c24dd | `## Invariants` to the end of `procedure.md` matches `ed82275:<host>/skills/work/SKILL.md` on both hosts; host-normalized `diff` of the two `procedure.md` copies is empty; thin `SKILL.md` names `standard.md`, `heavy.md`, `review.md`, `resume.md` |
+| AC3 | worker instructions | pass | 19c24dd | `git grep` finds `references/procedure.md` in both hosts' `drive/SKILL.md`, `orchestrate/SKILL.md` and `subagent-prompt.md` (template and example); 0 matches for a worker that runs, executes or invokes `/work` |
+| AC4 | OpenCode evidence and test | pass | 19c24dd | evidence in parent Notes; `bun test packages/opencode-plugin` 2 pass, wired into `mise run test` |
+| AC5 | bundle and manifest | pass | 19c24dd | `bundle.json`, `docs/bundle.md` and `validate.js` list both copies; assets commit 772ec86, manifest commit 2ff89d1; `manifest.mjs --check` pass |
+| AC6 | decision records | pass | 19c24dd | ADR 0005 item 1 and Alternative B point to ADR 0010; decision map lists it; ADR 0008 context corrected |
+| AC7 | follow-up task | pass | 19c24dd | `tasks/2026-10-14-evals-user-invoked-skills.md`, `todo` |
+| R1 | `mise run validate` and `mise run test` | pass | 19c24dd | validate exit 0 (Overall: pass); test exit 0: 244 pass, 0 fail |
 
 ## Checkpoint
 
 - Date: 2026-10-14
 - Branch: `feat/work-user-invoked` (worktree `.claude/worktrees/epic-bell-e24599`)
-- Done: decomposed at `@1`.
-- Next action: implement AC1–AC7.
+- Done: AC1–AC7 implemented and checked at 19c24dd; R1 pass.
+- Next action: parent integrated verification.
