@@ -50,6 +50,11 @@ const SKILLS: SkillSpec[] = [
     id: "orchestrate",
     command: "Run the G-Ingá `/orchestrate` OODA harness. Load the `orchestrate` skill and follow it.",
   },
+  {
+    id: "sharpen",
+    command:
+      "Run the G-Ingá `/sharpen` question-rounds procedure. Load the `sharpen` skill and follow `.agents/skills/work/references/question-rounds.md` in standalone mode.",
+  },
 ];
 
 const SKILL_ROOTS = [
