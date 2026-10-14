@@ -38,7 +38,7 @@ Evaluate S1–S8:
    - **H4:** S5 holds (sensitive behavior changes).
    - **H5:** S8 fails (multi-session decomposition required).
    - **H6:** S6 fails AND S7 fails (weak baseline and undetected error).
-   *Action:* Stop. Read `.claude/skills/work/heavy.md`. Propose heavy to owner and await confirmation.
+   *Action:* Stop. Read `.claude/skills/work/heavy.md` and `.claude/skills/work/references/question-rounds.md`. Propose heavy to owner and await confirmation.
 2. **`light`** if ALL hold: S1, S2, S3, S4, S6 (or non-behavioral prose/formatting), S7, and NOT S5.
    *Action:* Follow light procedure below.
 3. **`standard`** otherwise (default when in doubt).
