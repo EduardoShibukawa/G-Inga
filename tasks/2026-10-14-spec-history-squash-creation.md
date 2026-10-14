@@ -39,6 +39,13 @@ The spec fixes these after question rounds. At minimum:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation suite before change | fail | 6f2690c | `artifact-records` §7.1 at `621cd44`: `2026-10-14-question-rounds-skill` must be created as draft |
+| SC1 | contract row and bundle copies | pass | f889d39 | child AC1 |
+| SC2 | check accepts exactly the two creation forms | pass | f889d39 | child AC2 |
+| SC3 | history fixtures | pass | f889d39 | child AC3: the four spec cases plus the review's earlier-entry case |
+| SC4 | this repository passes with `621cd44` in history | pass | f889d39 | child AC4 |
+| SC5 | validator rebuilt, manifest two-commit | pass | f889d39 | child AC5 |
+| V1 | self-review of the integrated diff against SC1–SC5 | pass | f889d39 | consistent with the review below |
+| R1 | integrated regression | pass | f889d39 | `mise run validate` exit 0; `mise run test` 247 pass, 0 fail |
 
 ## Plan
 
@@ -49,7 +56,9 @@ The spec fixes these after question rounds. At minimum:
 
 ## Review
 
-Not run yet: the fresh-context adversarial review runs after integrated verification.
+Fresh-context adversarial review of `6f2690c..f0eed84` against spec v1 (2026-10-14):
+
+- [F1] major: for a new spec, the approval-entry check compared against an empty snapshot, so an `approved: spec v1` entry committed earlier counted as new (SC2) -> fixed in 98ba2bd (compare with the commit's Git parent; fixture `H-squash-old-entry`)
 
 ## Checkpoint
 
