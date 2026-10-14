@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: active
 parent: 2026-10-14-work-user-invoked
 spec: 2026-10-14-work-user-invoked@1
 ---

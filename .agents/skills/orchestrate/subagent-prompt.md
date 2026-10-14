@@ -22,6 +22,7 @@ ATENÇÃO: Você só tem autorização para criar ou modificar estritamente os a
 - `<caminho/do/arquivo/2>`
 
 ## 3. Restrições Herdadas & Mandatos
+- Procedimento: leia e siga `.agents/skills/work/references/procedure.md` para esta entrega. Não invoque a skill `work`: ela é só do owner (ADR 0010).
 - Repositório é a fonte canônica da verdade: consulte `docs/artifact-contracts.md` e decisões em `docs/decisions/`.
 - Vocabulário factual estrito: reporte checagens usando apenas `pass`, `fail`, `blocked` e `not run`.
 - Comunicação: Código e commits em inglês; relatórios executivos em português.
@@ -68,6 +69,7 @@ Corrigir o cálculo do offset de paginação em `src/parser/query.ts` para evita
 - `tests/unit/parser/query.test.ts`
 
 ## 3. Restrições Herdadas & Mandatos
+- Procedimento: leia e siga `.agents/skills/work/references/procedure.md` para esta entrega. Não invoque a skill `work`: ela é só do owner (ADR 0010).
 - Repositório é a fonte canônica da verdade: consulte `docs/artifact-contracts.md`.
 - Vocabulário factual estrito: use `pass`, `fail`, `blocked` ou `not run`.
 - Não altere assinaturas de métodos públicos existentes.
