@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: completed
 ---
 
 # Make the Repository Installable as an OpenCode Plugin Package
@@ -41,22 +41,29 @@ status: active
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | baseline validate before the first edit | not run | | |
-| AC1 | plugin setup against a stub context | not run | | |
-| AC2 | package manifest fields | not run | | |
-| AC3 | root package diff and lockfile | not run | | |
-| AC4 | live plugin, command and skill registration | not run | | |
-| AC5 | README install section | not run | | |
-| AC6 | global removal and backup | not run | | |
-| AC7 | validate and test | not run | | |
-| V1 | diff read against AC1–AC7 and the out-of-scope list | not run | | |
+| B1 | baseline `mise run validate` on clean `c5c164f` | pass | c5c164f | worktree without untracked files; Overall pass (markdown-lint 112 files, local-links 1028 refs, mermaid 54/54, decision-records, artifact checks) |
+| AC1 | plugin `setup` against a stub context (`bun run /tmp/opencode/plugin-test.ts`) | pass | 1dccaa1 | `id: g-inga`; skills work (autoinvoke true, 5199 B), drive, orchestrate from `.claude/skills/`; commands work, drive, orchestrate; `execute` preserves sessionID/delivery and prefixes the skill prompt |
+| AC2 | `packages/opencode-plugin/package.json` fields | pass | 1dccaa1 | `name: g-inga-opencode-plugin`, `private`, `type: module`, `exports: {".": "./index.ts"}`, zero dependencies |
+| AC3 | root `package.json` diff; lockfile untouched | pass | 1dccaa1 | diff c5c164f..1dccaa1 touches only `description` + `exports`; `bun.lock` absent from the diff; `bun install --frozen-lockfile` runs clean inside `mise run validate` |
+| AC4 | live registration: `/api/plugin`, `/api/command`, `/api/skill` | pass | 1dccaa1 | `g-inga` `active` (local path); commands `work`, `drive`, `orchestrate` (`G-Ingá: …`); skills served from `/home/tg/Projetos/G-Inga/.claude/skills/…` with work autoinvoke true, drive/orchestrate false |
+| AC5 | README install section | pass | 1dccaa1 | `opencode plugin add github:EduardoShibukawa/G-Inga` at README.md:60, tracking the default branch |
+| AC6 | global skill removal, backup, herdr intact | pass | 1dccaa1 | `~/.opencode/skill`, `~/.claude/skills/synced`, `~/.claude/skills/.trash` removed; backup `~/.local/share/opencode/global-skills-backup-2026-10-14.tar.gz` (360 entries); `herdr-agent-state.js`, `herdr-opencode/tui.js`, `cli.json`, `tui.jsonc` untouched |
+| AC7 | `mise run validate` and `mise run test` | fail | 1dccaa1 | validate: only `artifact-records` fails, solely on the unrelated untracked `tasks/2026-10-13-cursor-host-bundle.md` (§7: its spec file is absent from the tree); every check covering this change passes (markdown-lint 114 files, local-links 1031 refs, mermaid, decision-records, contract checks). test: 227 pass, 1 fail — the single fail is the `this repository` meta-test asserting validate exit code, same root cause |
+| V1 | diff read against AC1–AC7 and the out-of-scope list | pass | 1dccaa1 | 5 files, 246 insertions, 1 deletion; no change under `.claude/skills/`, `.agents/`, `manifest.json`, `specs/`, `docs/decisions/` |
 
 ## Outcome
 
-Pending verification.
+The repository is an installable OpenCode plugin package and the global skills are gone. `g-inga` loads `active` with `/work`, `/drive`, `/orchestrate` and the three skills served from the plugin. AC1–AC6 and V1 pass. AC7 fails only on the unrelated untracked cursor-host-bundle task (missing spec file, outside this change); everything this change owns passes.
+
+Follow-ups (not done):
+
+- Merge to `main` (via PR) so `opencode plugin add github:EduardoShibukawa/G-Inga` resolves; until then the global install points at the local checkout directory.
+- Owner install check from GitHub after merge.
+- Re-run `mise run validate` once the cursor-host-bundle spec situation is resolved; then this record can move to `verified`.
+- Record the OpenCode plugin channel in ADR 0005 / the decision map if it becomes more than a personal convenience (same standing as the Claude Code marketplace channel).
 
 ## Checkpoint
 
-- as of: 2026-10-14, branch feat/opencode-plugin-package, task active
-- done: plugin entry, package manifests, root exports, README section, global cleanup with backup
-- next: run AC1–AC7 and V1, set verified_at, commit
+- as of: 2026-10-14, branch feat/opencode-plugin-package, head 1dccaa1, task completed
+- done: plugin entry, package manifests, root exports, README section, global cleanup with backup, AC1–AC6 and V1 pass
+- next: owner review, PR and merge; re-run validate after the unrelated cursor spec is resolved
