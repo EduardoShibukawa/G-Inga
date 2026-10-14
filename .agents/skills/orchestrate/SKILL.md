@@ -82,6 +82,9 @@ flowchart TD
 - Dispatch worker subagents in a single `invoke_subagent` batch call with role and scoped prompt:
   - Set `TypeName: "self"` (or `"research"` for read-only spikes).
   - Include the verification contract directly in the prompt.
+- **Working Tree Selection:**
+  - Shared working tree (`Workspace: "inherit"`): allowed only when the pre-dispatch collision check passes (mutually disjoint scopes).
+  - Isolated worktrees otherwise: set `Workspace: "share"` when the host supports isolated worktrees, or use `tools/gate/worktree-runner.ts`. Worktree results MUST be merged back into the orchestrator branch before Gate Layer 1.
 - **Dynamic Git Worktree Isolation (EXP-05):**
   - When running concurrent workers locally or through the auto-runner, workers execute inside isolated ephemeral git worktrees (`tools/gate/worktree-runner.ts`), eliminating `.git/index.lock` contention and ensuring setup overhead < 500ms.
 - **Token Budget Guardrail (EXP-06):**
