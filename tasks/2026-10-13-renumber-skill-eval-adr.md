@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "0d91f6b"
 ---
 
 # Renumber the Skill Evaluation ADR to 0008
@@ -49,7 +50,21 @@ Left as recorded history; each one means the skill evaluation instrument, now AD
 |---|---|---|---|---|
 | B1 | baseline validate | pass | 43ca06a | Overall pass; `decision-records` reports "7 ADRs" for 8 files (the duplicate collapsed silently) |
 | B2 | baseline test | pass | 43ca06a | 240 pass, 0 fail |
+| AC1 | one ADR per number | pass | 0d91f6b | `ls docs/decisions/`: 0001–0008, one file each; H1 `# 0008 — Skill evaluation instrument` |
+| AC2 | no live 0007 reference to the skill evaluation ADR | pass | 0d91f6b | `grep -rn 0007-skill-evaluation` hits only this record and the verified child 01 (listed as stale); map, docs index and `classify_plugin_eval.ts` cite 0008 |
+| AC3 | duplicate ADR number fails | pass | 0d91f6b | new `validate.test.ts` case passes; before the rename `mise run validate` failed with "0007-skill-evaluation-instrument.md: ADR number 0007 is already used by ...0007-harness-extensions-beyond-v1.md" |
+| AC4 | validate | pass | 0d91f6b | Overall pass; `decision-records` "8 ADRs, 9 map rows" |
+| AC5 | test | pass | 0d91f6b | 241 pass, 0 fail |
+| V1 | diff read against AC1-AC5 and the out-of-scope list | pass | 0d91f6b | 9 files; rename detected by git; no change to the approved spec or any `verified` record |
 
 ## Plan
 
 skip: rename, update references, add the check; the acceptance criteria are the plan.
+
+## Outcome
+
+The skill evaluation instrument is ADR 0008; the decision map, docs index and the eval classifier comment cite it, and the two `completed` skill health records use the new number in prose. `decision-records` now rejects two ADRs sharing a number, so the collision can't recur silently. Recorded history keeps 0007 and is listed under Known stale references.
+
+## Checkpoint
+
+- as of: 2026-10-13, branch work/renumber-skill-eval-adr, head 0d91f6b plus the commit recording this status, worktree clean after it, task verified; next: owner review of the PR
