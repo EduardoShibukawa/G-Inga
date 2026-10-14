@@ -17,10 +17,8 @@ When both H1 and H5 hold and the destination cannot yet be captured in a single 
      `confirmed: heavy by owner (<date>, "<ref>")`.
 
 2. **Question Rounds & Spec Authoring:**
-   - Investigate technical facts inline.
-   - For product or preference decisions, conduct structured question rounds with recommended answers:
-     Present the question, options, trade-offs, and recommend one option with clear rationale.
-   - Record owner decisions: `decided: <question> → <answer> by owner (<date>, "<ref>")`.
+   - Execute the procedure in `.claude/skills/work/references/question-rounds.md` (heavy mode).
+   - Every owner answer is recorded as a `decided:` line in the parent task record.
    - Author specification in `specs/<id>.md` (`schema: spec/1`, `status: draft`, `version: 1`).
    - Run validator preflight before approval.
    - Owner formally approves spec:
