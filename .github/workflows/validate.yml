@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  test:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
@@ -27,7 +27,20 @@ jobs:
         env:
           MERMAID_BROWSER: /usr/bin/google-chrome
           G_INGA_REQUIRE_RUNTIMES: "1"
-      - run: mise run validate
+
+  # The same task the Git pre-commit hook runs (ADR 0009 §2). Branch protection on main
+  # requires this job, so a commit made without the hook still can't merge red.
+  pre-commit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          # The task/spec record history walk (docs/artifact-contracts.md §7.1) is blocked in a shallow clone.
+          fetch-depth: 0
+      - uses: jdx/mise-action@v5.1.1
+        with:
+          version: 2026.10.7
+      - run: mise run pre-commit
         env:
           # Preinstalled on GitHub's Ubuntu runners; Mermaid is rendered in it.
           MERMAID_BROWSER: /usr/bin/google-chrome

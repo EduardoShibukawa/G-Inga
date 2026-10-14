@@ -8,8 +8,9 @@ The toolchain is [mise](https://mise.jdx.dev/) plus [Bun](https://bun.sh/). Node
 
 | File | Pins |
 |---|---|
-| `mise.toml` | Bun version and the `mise run` tasks. `locked = true`: mise installs only what `mise.lock` pins |
-| `mise.lock` | Bun download URL and checksum per platform |
+| `mise.toml` | Bun, hk and Pkl versions, the `postinstall` hook and the `mise run` tasks. `locked = true`: mise installs only what `mise.lock` pins |
+| `mise.lock` | Bun, hk and Pkl download URLs and checksums per platform |
+| `hk.pkl` | the Git hooks hk installs: `pre-commit` runs `mise run pre-commit` ([commit gate](#commit-gate)) |
 | `package.json`, `bun.lock` | development dependencies, installed with `bun install --frozen-lockfile` |
 
 Mermaid diagrams are rendered in a headless Chromium or Chrome, which mise doesn't manage. The validator looks for `MERMAID_BROWSER` (or `PUPPETEER_EXECUTABLE_PATH`), then `PLAYWRIGHT_BROWSERS_PATH`, then the usual system paths. Without a browser the Mermaid check is `blocked`, never `pass`. Bun trusts Puppeteer's install script by default, which would download about 670 MB of Chrome; `.puppeteerrc.json` (`skipDownload: true`) turns that off for every `bun install`.
@@ -35,7 +36,7 @@ Its recommended script installs the executable at `~/.local/bin/mise`, which isn
 From the repository root:
 
 ```sh
-mise install                 # Bun, as pinned in mise.lock
+mise install                 # Bun, hk and Pkl, as pinned in mise.lock; installs the Git pre-commit hook
 ```
 
 The first `mise` command in the repository may ask you to trust `mise.toml`, because it has `[settings]`. Read the file (and its tasks), then accept, or run `mise trust`. `mise run` installs the npm dependencies itself through its `setup` task.
@@ -47,9 +48,10 @@ mise run validate            # every applicable deterministic check
 mise run test                # type-check and test the validators
 mise run validate:external   # external URL availability (network)
 mise run setup               # only install dependencies (bun install --frozen-lockfile)
+mise run pre-commit          # what the Git pre-commit hook and the CI pre-commit job run
 ```
 
-`mise run validate` is the canonical entry point. It runs `bun install --frozen-lockfile` first, then `bun run validate`. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run validate` in `.github/workflows/validate.yml`, after installing the pinned mise with `jdx/mise-action`; it doesn't rely on a Bun or mise already on the runner. It also sets up Node 22 and sets `G_INGA_REQUIRE_RUNTIMES=1`, so the product bundle tests in `tools/validate/bundle.test.ts` fail instead of skipping when Node 22 or later is missing.
+`mise run validate` is the canonical entry point. It runs `bun install --frozen-lockfile` first, then `bun run validate`. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run pre-commit` (which runs `validate`) in `.github/workflows/validate.yml`, after installing the pinned mise with `jdx/mise-action`; it doesn't rely on a Bun or mise already on the runner. It also sets up Node 22 and sets `G_INGA_REQUIRE_RUNTIMES=1`, so the product bundle tests in `tools/validate/bundle.test.ts` fail instead of skipping when Node 22 or later is missing.
 
 The product's standalone validator, manifest and update procedure are separate from this tooling; see [bundle](bundle.md). After changing `tools/validate/standalone.ts`, run `bun run build:validator`, commit the bundle assets, then regenerate `manifest.json` (`bun run manifest`) and commit it alone.
 
@@ -65,6 +67,15 @@ Every `bun run` script starts with `tools/validate/preflight.ts`. If `node_modul
 - dependencies aren't installed for you. Run `bun install --frozen-lockfile` first, or the preflight stops with exit `2`.
 
 A result from this route is evidence only when it ran on the pinned Bun. CI is the reference.
+
+### Commit gate
+
+[ADR 0009](decisions/0009-enforcement-primitives.md) §2. `mise install` runs the `postinstall` hook, `hk install --mise`, which writes `pre-commit` into the clone's shared hooks directory, so every worktree of the clone is covered. The hook runs `mise x -- hk run pre-commit`, so it works without shell activation. hk stashes unstaged and untracked changes, runs the `pre-commit` mise task, and restores them, so the validator sees what the commit will contain. A non-zero task aborts the commit and the hook prints the findings. A shell chain such as `mise run validate | tail -1 && git commit` can't get past it.
+
+- The steps live in the `pre-commit` mise task (today: `validate`), not in `hk.pkl`, so CI and hosts without hk run the same checks with `mise run pre-commit`.
+- `[hooks]` is experimental before mise 2026.10, so `mise.toml` sets `experimental = true`. With an older mise and that setting off, `mise install` warns and installs no hook. A failed `postinstall` is only a warning too: `mise install` still exits `0`, so read its output, or check that `.git/hooks/pre-commit` exists.
+- The agent's checked-in permissions (`.claude/settings.json`) deny `git commit --no-verify`, `-n` and `HK=0`. The owner keeps those bypasses. CI runs the `pre-commit` job on every pull request; branch protection on `main` requiring it is an owner setting.
+- Remove the gate with `mise x -- hk uninstall`.
 
 No check edits a document. A failure is fixed in the document or, if the rule is wrong, in the validator, never by the validator.
 
@@ -158,3 +169,7 @@ These checks test the contract during development. They aren't the product's art
 | `bun install --frozen-lockfile` fails | `bun.lock` doesn't match `package.json`. Update the lockfile in the change that edits `package.json` |
 | `mermaid` is `blocked` | No browser found. Set `MERMAID_BROWSER` to a Chromium or Chrome executable |
 | `artifact-records` is `blocked` in a shallow clone | Run `git fetch --unshallow` |
+| A commit is rejected while every finding is `blocked` | The gate rejects exit `2` as well as `1`. Fix the prerequisite, for example `MERMAID_BROWSER` for `mermaid` |
+| A commit fails with `"hk" couldn't exec process` | The hook is installed in the clone, but this worktree's branch predates the gate, so its `mise.toml` has no hk. Merge `main` into the branch and run `mise install` |
+| `mise install` warns `hooks is experimental` | mise older than 2026.10 without `experimental = true`. Update mise (`mise self-update`) or keep the setting |
+| `mise lock` in a worktree under `.claude/worktrees/` also rewrites the main clone's `mise.lock` | mise updates the lockfile of every config in the directory hierarchy. Run `mise lock` from a copy of `mise.toml` and `mise.lock` outside the clone, then copy the lockfile back |
