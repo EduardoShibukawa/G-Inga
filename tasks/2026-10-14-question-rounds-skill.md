@@ -21,6 +21,8 @@ spec: 2026-10-14-question-rounds-skill@1
 - decided: glossary location → `docs/glossary.md`; an existing `CONTEXT.md` is migrated there by owner (2026-10-14, "poderiamos só migrar para docs/gloassary.md")
 - decided: hosts → Claude Code, Antigravity (`.agents/skills/`) and OpenCode by owner (2026-10-14, "Sim e no opencvode tambem")
 - decided: standalone persistence → only glossary entries and owner-accepted ADRs; the session ends with a decision summary and an offer to open `/work` by owner (2026-10-14, "Q9. ok")
+- decided: layout → procedure once as `work/references/question-rounds.md`; `/sharpen` is a thin user-invoked entry that reads it; the heavy route reads it directly, one level from `SKILL.md` by owner (2026-10-14, "Ok. concordo.")
+- decided: invocation rule → owner-typed entry points `disable-model-invocation: true`; anything another skill or subagent reaches is a reference file; `/work` stays model-invocable until its workers stop invoking it, in a separate task by owner (2026-10-14, "Ok. concordo.")
 
 ## Objective
 
