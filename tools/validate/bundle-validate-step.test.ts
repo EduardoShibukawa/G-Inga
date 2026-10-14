@@ -11,9 +11,9 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { task } from "../validate/artifacts/fixtures.ts";
-import { REPO } from "../validate/testkit.ts";
-import { updateBundle } from "../validate/update.mjs";
+import { task } from "./artifacts/fixtures.ts";
+import { REPO } from "./testkit.ts";
+import { updateBundle } from "./update.mjs";
 
 const temps: string[] = [];
 afterAll(() => temps.splice(0).forEach((d) => rmSync(d, { recursive: true, force: true })));
