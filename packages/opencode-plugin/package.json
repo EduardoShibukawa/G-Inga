@@ -1,0 +1,9 @@
+{
+  "name": "g-inga-opencode-plugin",
+  "private": true,
+  "description": "G-Ingá OpenCode plugin entry. Dependency-free: the OpenCode runtime executes index.ts directly.",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  }
+}

@@ -52,6 +52,16 @@ claude plugin install g-inga@g-inga
 
 Inside a session, `/plugin install g-inga --marketplace EduardoShibukawa/G-Inga` does both in one step. The plugin is a personal convenience channel: the pinned bundle stays the distribution for target repositories and CI ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)). The manifest sets no `version`, so updates follow the repository's commits.
 
+## Install as an OpenCode Plugin
+
+This repository is also an OpenCode plugin package. The dependency-free entry (`packages/opencode-plugin/index.ts`, wired through the root `package.json` `exports`) registers the `work`, `drive` and `orchestrate` skills from `.claude/skills/` and the `/work`, `/drive` and `/orchestrate` slash commands:
+
+```sh
+opencode plugin add github:EduardoShibukawa/G-Inga
+```
+
+The command tracks the repository's default branch. The plugin is a personal convenience channel: the pinned bundle stays the distribution for target repositories and CI ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)). A local checkout works too by listing the package directory in the `plugin` array of `opencode.json`.
+
 ## Repository Validation and Development Setup
 
 Install [mise](https://mise.jdx.dev/installing-mise.html) and Git, then from the repository root:
