@@ -1,13 +1,13 @@
 {
   "release": "1.0.0",
-  "commit": "190fb897b4c24757bd43fa995a7fcd105e6e1186",
+  "commit": "98ba2bdc26e7ea2b224b6f9dc5cbc8403c5c3deb",
   "files": {
     ".claude/skills/work/SKILL.md": "99b67593a1edddf87237f37c1a8f3d4a8193e4f3bd05aa9f03b8fa8e2e712a9d",
     ".claude/skills/work/heavy.md": "2ab69efccad75c0be8190e36b8568d5fd259d4d18309f4556da1ab6b89e7848d",
     ".claude/skills/work/resume.md": "6cdccc200264c39287ead22aa64fa32ec0464ab159da449e0d90989280e19730",
     ".claude/skills/work/review.md": "8b5abd9e9b757f930c4e56e786fc64f83d8c5942ac2ca1cc9771d07e21cb3214",
     ".claude/skills/work/standard.md": "ebcd10521e955cd0a655b0ad2e3408a97cbbdc4e111f55e2ca86b734b81856a3",
-    ".claude/skills/work/references/artifact-contracts.md": "a39eb61edf1fff1654187fdf453bd15ecd25017432a1fa9f45d093e20add68a4",
+    ".claude/skills/work/references/artifact-contracts.md": "4f25a5e6d6e293bab83093e7cb4d5c66fb2d83a84848cf2c3c1bda0241a4dbcb",
     ".claude/skills/work/references/question-rounds.md": "4507c4244c3c12a0165d4b57ea27c8c03c43e634dbf38c8ab4bc58a7c411da0b",
     ".claude/skills/sharpen/SKILL.md": "67a8ea538fddbc991604a8fc32930f9d4bc2ba94a417d13dc76fd497ce4198f1",
     ".agents/skills/work/SKILL.md": "2299c37f7d24351a8927244762d09ab331086365185245de2f48cd3040e306f8",
@@ -15,11 +15,11 @@
     ".agents/skills/work/resume.md": "9cf004f6a32d3580299d05bd721124f52cf277f3de3a1cf202f7bc5008d33943",
     ".agents/skills/work/review.md": "bc7cf86ba63cc701bcbac8b63caa0e915a51ba7c3f9ece752331475bee22bda2",
     ".agents/skills/work/standard.md": "e9b4e80c30d8384b090aefcba65d67d7442f5f934a1a87e90d14f001c8e24e51",
-    ".agents/skills/work/references/artifact-contracts.md": "a39eb61edf1fff1654187fdf453bd15ecd25017432a1fa9f45d093e20add68a4",
+    ".agents/skills/work/references/artifact-contracts.md": "4f25a5e6d6e293bab83093e7cb4d5c66fb2d83a84848cf2c3c1bda0241a4dbcb",
     ".agents/skills/work/references/question-rounds.md": "4507c4244c3c12a0165d4b57ea27c8c03c43e634dbf38c8ab4bc58a7c411da0b",
     ".agents/skills/sharpen/SKILL.md": "047fd45d7baca075ea00c7ef2410761ccc8921986555bffbb7cddd71a8df85a6",
     "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
-    "tools/validate/validate.js": "fbdf94b11dbdc4e73dd92dfc908e0fadb88766b0d9b7fd04c4c1aeb0b35465a7",
+    "tools/validate/validate.js": "d4061ae82f87fab09cf8e4e671fb511d20d64d969f289f5876b1aa2a4c4de2c4",
     "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
