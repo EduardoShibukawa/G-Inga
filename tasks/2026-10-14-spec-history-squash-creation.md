@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: heavy
-status: verified
+status: accepted
 verified_at: "f889d39"
 spec: 2026-10-14-spec-history-squash-creation@1
 ---
@@ -15,6 +15,7 @@ spec: 2026-10-14-spec-history-squash-creation@1
 - confirmed: heavy by owner (2026-10-14, "Ok")
 - decided: resolution → a general `none → approved` row in §7.1, guarded by version 1, a matching `approved_hash` and a new parent `approved: spec v1` entry in the same commit; no exception artifact by owner (2026-10-14, "Ok")
 - approved: spec v1 by owner (2026-10-14, "Sim")
+- accepted: by owner (2026-10-14, "Feito")
 
 ## Objective
 
@@ -60,11 +61,12 @@ Fresh-context adversarial review of `6f2690c..f0eed84` against spec v1 (2026-10-
 
 ## Outcome
 
-The §7.1 walk accepts a spec created already approved in one squashed commit when its parent gains `approved: spec v1` in that commit. `main`'s history, including `621cd44`, passes `mise run validate` and `mise run test` again. Pending: owner acceptance. After merge, open branches such as PR #51 merge `main` to clear the inherited red check.
+The §7.1 walk accepts a spec created already approved in one squashed commit when its parent gains `approved: spec v1` in that commit. `main`'s history, including `621cd44`, passes `mise run validate` and `mise run test` again. Accepted by the owner (PR #53 merged into `main` at e9aa41d). PR #51 merged `main` and passed before its own merge.
 
 ## Checkpoint
 
 - Date: 2026-10-14
 - Branch: `task/2026-10-14-spec-history-squash-creation`; verified at f889d39
 - Done: spec v1 approved; child 01 verified; SC1–SC5, V1 and R1 pass; review F1 fixed.
-- Next action: owner reviews PR #53 (merge commit, never squash, to keep manifest commits) and records `accepted:`; then merge `main` into PR #51.
+- Merged: PR #53 into `main` at e9aa41d (merge commit); owner accepted (2026-10-14).
+- Next action: none on this record.

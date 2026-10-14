@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: heavy
-status: verified
+status: accepted
 verified_at: "19c24dd"
 spec: 2026-10-14-work-user-invoked@1
 ---
@@ -19,6 +19,7 @@ spec: 2026-10-14-work-user-invoked@1
 - decided: evaluation cases → follow-up `todo` task, out of this scope by owner (2026-10-14, "Task de follow-up (Recommended)")
 - approved: spec v1 by owner (2026-10-14, "Aprovo spec v1 + ADR 0010 (Recommended)")
 - approved: ADR 0010 accepted by owner (2026-10-14, "Aprovo spec v1 + ADR 0010 (Recommended)")
+- accepted: by owner (2026-10-14, "Feito")
 
 ## Objective
 
@@ -74,11 +75,12 @@ Fresh-context adversarial review of `ed82275..19c24dd` against spec v1 (2026-10-
 
 ## Outcome
 
-`/work` is user-invoked on Claude Code and Antigravity, and every G-Ingá skill now is (ADR 0010). Workers of `/drive` and `/orchestrate` read `work/references/procedure.md`. OpenCode commands keep working with `autoinvoke: false`, and a test pins that. Known limitation (review F1): a target with only the OpenCode plugin and no bundle gets no routing from `/work`. Pending: owner acceptance; the evaluation follow-up `2026-10-14-evals-user-invoked-skills` (`todo`); Gira-G map regeneration (owner-local).
+`/work` is user-invoked on Claude Code and Antigravity, and every G-Ingá skill now is (ADR 0010). Workers of `/drive` and `/orchestrate` read `work/references/procedure.md`. OpenCode commands keep working with `autoinvoke: false`, and a test pins that. Known limitation (review F1): a target with only the OpenCode plugin and no bundle gets no routing from `/work`. Accepted by the owner (PR #51 merged into `main` at 005bdb1). Pending: the evaluation follow-up `2026-10-14-evals-user-invoked-skills` (`todo`); Gira-G map regeneration (owner-local).
 
 ## Checkpoint
 
 - Date: 2026-10-14
 - Branch: `feat/work-user-invoked` (worktree `.claude/worktrees/epic-bell-e24599`); verified at 19c24dd
 - Done: spec v1 approved, ADR 0010 accepted; child 01 verified; SC1–SC8, R1 and V1 pass; review F1 resolved.
-- Next action: owner reviews the PR (merge with a merge commit, never squash, to keep manifest commit 772ec86) and records `accepted:`.
+- Merged: PR #51 into `main` at 005bdb1 (merge commit); owner accepted (2026-10-14).
+- Next action: none on this record. Follow-ups: `2026-10-14-evals-user-invoked-skills` (`todo`); Gira-G map regeneration on the owner's machine (`gira index`).
