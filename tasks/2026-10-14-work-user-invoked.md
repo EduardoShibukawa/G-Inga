@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: heavy
-status: completed
+status: verified
+verified_at: "19c24dd"
 spec: 2026-10-14-work-user-invoked@1
 ---
 
@@ -52,7 +53,7 @@ SC1–SC8 from `specs/2026-10-14-work-user-invoked.md`.
 1. Question rounds: two rounds, frontier empty (done).
 2. Spec v1 and ADR 0010 drafted; spec v1 approved and ADR 0010 accepted by the owner (done).
 3. Decompose at `@1` into one child (done): `-01-procedure-reference` covers SC1–SC7 (one session, one footprint). SC6 acceptance is recorded on this parent.
-4. Integrated verification (SC8), adversarial review, owner acceptance, PR with a merge commit (manifest protocol).
+4. Integrated verification (SC8) and adversarial review (done); PR with a merge commit (manifest protocol); owner acceptance.
 
 ## Notes
 
@@ -71,9 +72,13 @@ Fresh-context adversarial review of `ed82275..19c24dd` against spec v1 (2026-10-
 
 - [F1] minor: with only the OpenCode plugin installed (no bundle in the target), `/work` used to carry routing inline. It now carries a pointer to `.claude/skills/work/references/procedure.md`, which doesn't resolve there -> rejected: the plugin header already limits deep references to repositories where the bundle is present, and the spec's "behaves as before" covers repositories with the bundle. Reported to the owner as a known limitation for plugin-only targets.
 
+## Outcome
+
+`/work` is user-invoked on Claude Code and Antigravity, and every G-Ingá skill now is (ADR 0010). Workers of `/drive` and `/orchestrate` read `work/references/procedure.md`. OpenCode commands keep working with `autoinvoke: false`, and a test pins that. Known limitation (review F1): a target with only the OpenCode plugin and no bundle gets no routing from `/work`. Pending: owner acceptance; the evaluation follow-up `2026-10-14-evals-user-invoked-skills` (`todo`); Gira-G map regeneration (owner-local).
+
 ## Checkpoint
 
 - Date: 2026-10-14
-- Branch: `feat/work-user-invoked` from ed82275 (worktree `.claude/worktrees/epic-bell-e24599`)
-- Done: heavy confirmed; two question rounds decided; spec v1 drafted; ADR 0010 proposed; baseline B1 and B2 recorded.
-- Next action: owner approves spec v1 and accepts ADR 0010; then decompose and implement child 01.
+- Branch: `feat/work-user-invoked` (worktree `.claude/worktrees/epic-bell-e24599`); verified at 19c24dd
+- Done: spec v1 approved, ADR 0010 accepted; child 01 verified; SC1–SC8, R1 and V1 pass; review F1 resolved.
+- Next action: owner reviews the PR (merge with a merge commit, never squash, to keep manifest commit 772ec86) and records `accepted:`.
