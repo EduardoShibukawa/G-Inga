@@ -1,6 +1,6 @@
 # 0007 — Skill evaluation instrument
 
-- **Status:** proposed (only the project owner accepts it)
+- **Status:** accepted (accepted by project owner 2026-10-13)
 - **Date:** 2026-10-13
 - **Deciders:** project owner
 - **Depends on:** D7 on the [decision map](../decision-map.md), `accepted` through the [evaluation protocol](../research/d7-evaluation-protocol.md). This record extends D7 for skill health and doesn't reopen it. Constrained by [ADR 0006](0006-usage-observability.md) (privacy boundary, cost semantics) and [ADR 0005](0005-native-primitive-mapping.md) (pinned bundle scope, personal plugin channel FU7), both `accepted`.

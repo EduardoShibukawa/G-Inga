@@ -19,6 +19,8 @@ spec: 2026-10-13-skill-health-evaluation@1
 - approved: spec v1 by owner (2026-10-13, "Aprovo spec v1")
 - decided: finish the epic with `/orchestrate` and subagents by owner (2026-10-13, "bora usar o /orchestrate em subagents para finalizar")
 
+- approved: exception SC2 registration part (which registration fires when project `work` and plugin `g-inga:work` both exist) deferred to phase 2 (3× runs with `--keep-temp` after fixing scaffold contamination) by owner (2026-10-13, "Exceção → fase 2 (Recommended)")
+- approved: ADR 0007 accepted by owner (2026-10-13, "Aceitar (Recommended)")
 ## Objective
 
 Establish a repeatable, measured health baseline for the `work`, `drive` and `orchestrate` skills, covering trigger accuracy, behavioral conformance and cross-host parity, recorded in the autoresearch ledger.
@@ -69,10 +71,6 @@ Fresh-context adversarial review of c039980..311732f (2026-10-13).
 - [F4] minor, SC5: trigger tokens discarded; non-ADR-0006 vocabulary -> fixed in ffe90d2
 - [F5] minor, SC7: ceiling fallback could overspend; judge cost outside ceiling -> fixed in ffe90d2 (conformance skipped when trigger result missing; judge cost documented)
 - [F6] minor, scope: duplicate-listing cost not measured -> fixed in ffe90d2 (~242 tok always-on per registration set, listed twice when both active)
-
-## Blockers
-
-- SC2 registration part is `blocked`: the baseline kept no trigger traces, so nothing proves both the project `work` and the plugin `g-inga:work` were listed. Owner options: (a) accept an `approved: exception` and move the registration measurement to phase 2 (3× runs with `--keep-temp`); (b) authorize one more paid trigger run now (≤ USD 1.5) after fixing the scaffold contamination.
 
 ## Checkpoint
 

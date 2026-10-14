@@ -17,6 +17,7 @@ depends_on:
 - tier: standard (decomposed from heavy parent 2026-10-13-skill-health-evaluation after spec v1 approval)
 - reopened: review findings F1–F6 from fresh-context epic review (2026-10-13)
 
+- approved: exception SC2 registration part (which registration fires when project `work` and plugin `g-inga:work` both exist) deferred to phase 2 (3× runs with `--keep-temp` after fixing scaffold contamination) by owner (2026-10-13, "Exceção → fase 2 (Recommended)")
 ## Objective
 
 Provide one documented command that runs the suite under the USD 5 ceiling, execute the phase 1 baseline once, and record aggregated results in the autoresearch ledger (spec SC2, SC3, SC5, SC6, SC7).
