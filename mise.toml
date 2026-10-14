@@ -4,11 +4,23 @@
 
 [tools]
 bun = "1.4.2"
+# Installs and runs the Git pre-commit hook (ADR 0009 §2); hk.pkl runs `mise run pre-commit`.
+hk = "1.24.0"
+# hk reads hk.pkl through the Pkl CLI.
+pkl = "0.32.1"
 
 [settings]
 lockfile = true
 # Install only what mise.lock pins (URL and checksum).
 locked = true
+# `[hooks]` is experimental before mise 2026.10; CI pins 2026.10.7, where it's stable.
+experimental = true
+
+[hooks]
+# `mise install` is the only setup step: it installs the Git hook in the clone's shared
+# hooks directory, so every worktree is covered. --mise runs hk through `mise x`, so the
+# hook works in a shell without mise activated.
+postinstall = "hk install --mise"
 
 [tasks.setup]
 description = "Install dev dependencies exactly as locked in bun.lock"
@@ -18,6 +30,10 @@ run = "bun install --frozen-lockfile"
 description = "Run every required deterministic repository check"
 depends = ["setup"]
 run = "bun run validate"
+
+[tasks.pre-commit]
+description = "Steps the Git pre-commit hook runs (hk.pkl); CI runs the same task (ADR 0009 §2)"
+depends = ["validate"]
 
 [tasks."validate:external"]
 description = "Check external URL availability (network; separate from validate)"

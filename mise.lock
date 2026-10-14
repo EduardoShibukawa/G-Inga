@@ -50,3 +50,113 @@ url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x
 [tools.bun."platforms.windows-x64-baseline"]
 checksum = "sha256:78c221c2376f79731ccf4e4af0b3bb46d81fefa3296c5abee09ad8a1b21e68c6"
 url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x64-baseline.zip"
+
+[[tools.hk]]
+version = "1.24.0"
+backend = "aqua:jdx/hk"
+specifiers = ["1.24.0"]
+
+[tools.hk."platforms.linux-arm64"]
+checksum = "sha256:9b165f2dc14504ffa5d1ab5ba695f518ddf664fa4ddf32b8719216a1b2dabda7"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409584"
+
+[tools.hk."platforms.linux-arm64-musl"]
+checksum = "sha256:9b165f2dc14504ffa5d1ab5ba695f518ddf664fa4ddf32b8719216a1b2dabda7"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409584"
+
+[tools.hk."platforms.linux-x64"]
+checksum = "sha256:95685da921c2f8aa8b29d602c612ed73cd8f43a68fd44abedafb8b61c682bbb0"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409587"
+
+[tools.hk."platforms.linux-x64-baseline"]
+checksum = "sha256:95685da921c2f8aa8b29d602c612ed73cd8f43a68fd44abedafb8b61c682bbb0"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409587"
+
+[tools.hk."platforms.linux-x64-musl"]
+checksum = "sha256:95685da921c2f8aa8b29d602c612ed73cd8f43a68fd44abedafb8b61c682bbb0"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409587"
+
+[tools.hk."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:95685da921c2f8aa8b29d602c612ed73cd8f43a68fd44abedafb8b61c682bbb0"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409587"
+
+[tools.hk."platforms.macos-arm64"]
+checksum = "sha256:073fee890264fd798e2f0b8ff90b5eec1345d0b9a5658665330996cdb392b5c4"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409586"
+
+[tools.hk."platforms.windows-x64"]
+checksum = "sha256:6d0911752a226bb653c32281b65f2ec751f2eda66e36b85ac9e798d8a9440b2b"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409583"
+
+[tools.hk."platforms.windows-x64-baseline"]
+checksum = "sha256:6d0911752a226bb653c32281b65f2ec751f2eda66e36b85ac9e798d8a9440b2b"
+url = "https://github.com/jdx/hk/releases/download/v1.24.0/hk-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/jdx/hk/releases/assets/319409583"
+
+[[tools.pkl]]
+version = "0.32.1"
+backend = "aqua:apple/pkl"
+specifiers = ["0.32.1"]
+
+[tools.pkl."platforms.linux-arm64"]
+checksum = "sha256:a76d2dd47da435a8f911b0347373f47c7e59ea54fb75ff846d20b8df10dba058"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-linux-aarch64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426568"
+
+[tools.pkl."platforms.linux-arm64-musl"]
+checksum = "sha256:a76d2dd47da435a8f911b0347373f47c7e59ea54fb75ff846d20b8df10dba058"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-linux-aarch64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426568"
+
+[tools.pkl."platforms.linux-x64"]
+checksum = "sha256:3180b62da95c0cad1d904e9bb6c5f4a8f9032413c21e53194bb91ff1ee5f3211"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-linux-amd64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426567"
+
+[tools.pkl."platforms.linux-x64-baseline"]
+checksum = "sha256:3180b62da95c0cad1d904e9bb6c5f4a8f9032413c21e53194bb91ff1ee5f3211"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-linux-amd64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426567"
+
+[tools.pkl."platforms.linux-x64-musl"]
+checksum = "sha256:3180b62da95c0cad1d904e9bb6c5f4a8f9032413c21e53194bb91ff1ee5f3211"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-linux-amd64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426567"
+
+[tools.pkl."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:3180b62da95c0cad1d904e9bb6c5f4a8f9032413c21e53194bb91ff1ee5f3211"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-linux-amd64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426567"
+
+[tools.pkl."platforms.macos-arm64"]
+checksum = "sha256:563eb51c9a20b16a3625464ed745c675ed9750381f2126722696a0d7cac1d9d3"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-macos-aarch64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426570"
+
+[tools.pkl."platforms.macos-x64"]
+checksum = "sha256:5b74b903234047960144f66f2cebdd12d267d9b98e8155ed91d2ae5ed27e2d1f"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-macos-amd64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426599"
+
+[tools.pkl."platforms.macos-x64-baseline"]
+checksum = "sha256:5b74b903234047960144f66f2cebdd12d267d9b98e8155ed91d2ae5ed27e2d1f"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-macos-amd64"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426599"
+
+[tools.pkl."platforms.windows-x64"]
+checksum = "sha256:8550a00fcf027335e42c5e2cd553b88e98845408cb1880b3e3d1860caf46d22a"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-windows-amd64.exe"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426668"
+
+[tools.pkl."platforms.windows-x64-baseline"]
+checksum = "sha256:8550a00fcf027335e42c5e2cd553b88e98845408cb1880b3e3d1860caf46d22a"
+url = "https://github.com/apple/pkl/releases/download/0.32.1/pkl-windows-amd64.exe"
+url_api = "https://api.github.com/repos/apple/pkl/releases/assets/487426668"
