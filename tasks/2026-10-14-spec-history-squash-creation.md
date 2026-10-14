@@ -1,0 +1,56 @@
+---
+schema: task/1
+tier: heavy
+status: todo
+spec: 2026-10-14-spec-history-squash-creation@1
+---
+
+# Accept Squash-Merged Spec Creation in the History Walk
+
+## Routing and approvals
+
+- tier: heavy (H4: changes a validator rule, which is harness policy; H3: the contract §7.1 table is a consumed contract, delivered in the bundle copy and `validate.js`)
+- decided: open a task for an owner-approved way past the `621cd44` history failure, never rewriting `main` by owner (2026-10-14, "Sim")
+
+## Objective
+
+`main` fails `mise run validate` and `mise run test` since `621cd44` (PR #49, squash-merged). In that commit, `specs/2026-10-14-question-rounds-skill.md` first appears already `approved`. The §7.1 walk allows only `none → draft`, so it reports "must be created as draft, version 1, without approved_* keys". Every open pull request inherits the red `validate` check, for example #51. The approval itself is recorded: the parent task has `approved: spec v1 by owner`.
+
+Candidate resolutions, settled in question rounds:
+
+1. **General squash row.** Add `none → approved` to the §7.1 table. It is allowed only when `version: 1`, `approved_version: 1`, `approved_hash = h(cur)`, and the parent record at `cur`'s commit has an `approved: spec v1` entry. This mirrors the existing row for a reopen and reapproval squashed into one commit.
+2. **Explicit exception.** A recorded, owner-approved exception naming the spec and commit `621cd44`, which the validator reads. It is narrow, but it adds a new artifact kind.
+
+- In scope: `docs/artifact-contracts.md` §7.1 and its bundle copy, `tools/validate/artifacts/history.ts` with fixtures and tests, the rebuilt `validate.js`, and the manifest (two-commit protocol).
+- Out of scope: rewriting `main` history; the merge-mode policy (squash versus merge commit) for future pull requests.
+
+## Acceptance criteria
+
+The spec fixes these after question rounds. At minimum:
+
+- AC1: `mise run validate` and `mise run test` pass on `main` with `621cd44` in history.
+- AC2: a spec created directly as `approved` without a matching parent `approved:` entry still fails.
+
+## Verification
+
+| ID | Check | Result | Ref | Note |
+|---|---|---|---|---|
+| B1 | repository validation suite before change | fail | 6f2690c | `artifact-records` §7.1 at `621cd44`: `2026-10-14-question-rounds-skill` must be created as draft |
+
+## Plan
+
+1. Owner confirms heavy.
+2. Question rounds: resolution 1 or 2, and whether the contract also states a merge-mode rule.
+3. Spec v1 draft and owner approval; decompose into one child.
+4. Integrated verification on `main` history, adversarial review, owner acceptance.
+
+## Review
+
+Not run yet: the fresh-context adversarial review runs after integrated verification.
+
+## Checkpoint
+
+- Date: 2026-10-14
+- Branch: `task/2026-10-14-spec-history-squash-creation` from 6f2690c
+- Done: task recorded as a proposed heavy parent.
+- Next action: owner confirms heavy; question rounds on resolution 1 or 2; spec draft.
