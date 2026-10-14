@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: heavy
-status: active
+status: completed
 spec: 2026-10-14-work-user-invoked@1
 ---
 
@@ -44,6 +44,7 @@ SC1–SC8 from `specs/2026-10-14-work-user-invoked.md`.
 | SC6 | ADR 0010 accepted, ADR 0005, 0008 and decision map | pass | 19c24dd | child AC6; acceptance in the log above |
 | SC7 | evaluation follow-up task | pass | 19c24dd | child AC7 |
 | SC8 | `mise run validate` and `mise run test` at the integrated head | pass | 19c24dd | validate exit 0; test 244 pass, 0 fail |
+| V1 | self-review: integrated diff `ed82275..19c24dd` read against SC1–SC8 | pass | 19c24dd | matches the fresh-context review |
 | R1 | integrated regression | pass | 19c24dd | same run as SC8; `manifest.mjs --check` pass |
 
 ## Plan

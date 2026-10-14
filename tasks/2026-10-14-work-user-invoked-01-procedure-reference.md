@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "19c24dd"
 parent: 2026-10-14-work-user-invoked
 spec: 2026-10-14-work-user-invoked@1
 ---
@@ -41,7 +42,12 @@ Make `/work` user-invoked on both hosts, with its procedure in `work/references/
 | AC5 | bundle and manifest | pass | 19c24dd | `bundle.json`, `docs/bundle.md` and `validate.js` list both copies; assets commit 772ec86, manifest commit 2ff89d1; `manifest.mjs --check` pass |
 | AC6 | decision records | pass | 19c24dd | ADR 0005 item 1 and Alternative B point to ADR 0010; decision map lists it; ADR 0008 context corrected |
 | AC7 | follow-up task | pass | 19c24dd | `tasks/2026-10-14-evals-user-invoked-skills.md`, `todo` |
+| V1 | self-review: `git diff ed82275..19c24dd` read against AC1–AC7 | pass | 19c24dd | no out-of-scope file; moved procedure text unchanged apart from the intro and the two added notes |
 | R1 | `mise run validate` and `mise run test` | pass | 19c24dd | validate exit 0 (Overall: pass); test exit 0: 244 pass, 0 fail |
+
+## Outcome
+
+`/work` is user-invoked on both hosts. Its procedure lives in `work/references/procedure.md`, and `SKILL.md` is a thin entry. `/drive` and `/orchestrate` workers are pointed at that file. The bundle and manifest cover both copies, and an OpenCode test pins `autoinvoke: false`. Evaluation cases are tracked in `2026-10-14-evals-user-invoked-skills`.
 
 ## Checkpoint
 
