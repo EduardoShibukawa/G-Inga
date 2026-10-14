@@ -37,7 +37,15 @@ run = '''
 # The total budget is split sequentially: the trigger suite gets SHE_TRIGGER_USD, and the
 # conformance suite gets what is left minus SHE_HEADROOM_USD, because the CLI checks its
 # ceiling before each run launches and the run in flight may overrun it.
-# Raw output (prompts, transcripts) goes to the git-ignored evals/results/ (ADR 0006).
+# The CLI's costUsd and --max-cost-usd cover agent runs only: model-graded judge calls are
+# billed outside the ceiling (judge $0.0232 across both suites in the 2026-10-13 baseline,
+# against $2.73 agent cost). The classifier prints the judge cost per suite.
+# If trigger/result.json is missing or unreadable, the spend is unknown: the conformance
+# suite does not run (remaining ceiling 0) and reports `not run`.
+# Verdicts come from tools/eval/classify_plugin_eval.ts, not from the CLI's `passed` flag:
+# a run with an error, a partial suite or a missing run is `blocked` or `not run`, never `pass`.
+# Raw output (prompts, transcripts, kept workspaces) stays in the git-ignored evals/results/
+# and the CLI temp dirs (ADR 0006). Both suites use --keep-temp so traces (tokens) survive.
 # From a shell spawned by a Claude Code session, the nested `claude` sees itself logged out
 # (runs fail with auth_failed at $0). Clear the inherited session variables first:
 #   env -u ANTHROPIC_BASE_URL -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_CODE_CHILD_SESSION \
@@ -46,18 +54,35 @@ set -uo pipefail
 total="${SHE_BUDGET_USD:-5}"
 trig="${SHE_TRIGGER_USD:-1.5}"
 headroom="${SHE_HEADROOM_USD:-1}"
+classify="tools/eval/classify_plugin_eval.ts"
 out="evals/results/skills-$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$out/trigger" "$out/conformance"
 claude plugin eval . --tag trigger --ablation with-without --scaffold --runs 1 --no-publish \
-  --max-cost-usd "$trig" --output-dir "$out/trigger" --json "$out/trigger/result.json"
+  --max-cost-usd "$trig" --keep-temp --output-dir "$out/trigger" --json "$out/trigger/result.json"
+bun "$classify" "$out/trigger/result.json" --label trigger --out "$out/trigger/verdict.json"
 t=$?
-spent=$(bun -e "console.log(JSON.parse(await Bun.file('$out/trigger/result.json').text()).costUsd ?? 0)" 2>/dev/null || echo "$trig")
-conf=$(bun -e "console.log(Math.max(0, $total - $spent - $headroom).toFixed(2))")
-echo "eval:skills: trigger spent \$$spent; conformance ceiling \$$conf (total \$$total, headroom \$$headroom)"
-claude plugin eval . --tag conformance --scaffold --allow-tools Write Edit Bash --ablation none --runs 1 \
-  --no-publish --max-cost-usd "$conf" --keep-temp --output-dir "$out/conformance" --json "$out/conformance/result.json"
-c=$?
-echo "eval:skills: raw results in $out (git-ignored). For the authoritative standard-case verdict run:"
-echo "  bash evals/conformance/lib/check-workspace.sh <kept work-standard-valid-record workspace>"
+spent=$(bun -e "const v = JSON.parse(await Bun.file('$out/trigger/result.json').text()).costUsd; if (typeof v !== 'number') process.exit(1); console.log(v)" 2>/dev/null) || spent=""
+if [[ -z "$spent" ]]; then
+  echo "eval:skills: trigger result missing or unreadable; spend unknown, conformance ceiling \$0"
+  echo "classify conformance: not run (trigger spend unknown)"
+  c=2
+else
+  conf=$(bun -e "console.log(Math.max(0, $total - $spent - $headroom).toFixed(2))")
+  echo "eval:skills: trigger spent \$$spent; conformance ceiling \$$conf (total \$$total, headroom \$$headroom)"
+  claude plugin eval . --tag conformance --scaffold --allow-tools Write Edit Bash --ablation none --runs 1 \
+    --no-publish --max-cost-usd "$conf" --keep-temp --output-dir "$out/conformance" --json "$out/conformance/result.json"
+  # git is denied inside the eval sandbox, so the in-run validator of the standard case exits 2:
+  # that grader is environment-blocked, and check-workspace.sh below is the separate post-run verdict.
+  bun "$classify" "$out/conformance/result.json" --label conformance \
+    --env-blocked work-standard-valid-record:det-validator-accepts-last-run --out "$out/conformance/verdict.json"
+  c=$?
+  ws=$(bun "$classify" "$out/conformance/result.json" --workspace work-standard-valid-record) || ws=""
+  if [[ -n "$ws" ]]; then
+    bash evals/conformance/lib/check-workspace.sh "$ws" | tail -n 1
+  else
+    echo "check-workspace: not run (no kept work-standard-valid-record workspace in the result)"
+  fi
+fi
+echo "eval:skills: raw results and verdict.json files in $out (git-ignored)"
 exit $(( t > c ? t : c ))
 '''
