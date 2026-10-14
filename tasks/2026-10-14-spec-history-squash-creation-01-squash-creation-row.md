@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "f889d39"
 parent: 2026-10-14-spec-history-squash-creation
 spec: 2026-10-14-spec-history-squash-creation@1
 ---

@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: heavy
-status: active
+status: completed
 spec: 2026-10-14-spec-history-squash-creation@1
 ---
 
@@ -29,10 +29,7 @@ Candidate resolutions, settled in question rounds:
 
 ## Acceptance criteria
 
-The spec fixes these after question rounds. At minimum:
-
-- AC1: `mise run validate` and `mise run test` pass on `main` with `621cd44` in history.
-- AC2: a spec created directly as `approved` without a matching parent `approved:` entry still fails.
+SC1–SC5 from `specs/2026-10-14-spec-history-squash-creation.md`.
 
 ## Verification
 
@@ -52,7 +49,7 @@ The spec fixes these after question rounds. At minimum:
 1. Owner confirms heavy (done).
 2. Question rounds: resolution 1 chosen (done). Merge-mode policy stays out of scope.
 3. Spec v1 drafted and approved by the owner (done); decomposed into one child, `-01-squash-creation-row` (SC1–SC5).
-4. Integrated verification on `main` history, adversarial review, owner acceptance.
+4. Integrated verification on `main` history and adversarial review (done); owner acceptance.
 
 ## Review
 
@@ -60,9 +57,13 @@ Fresh-context adversarial review of `6f2690c..f0eed84` against spec v1 (2026-10-
 
 - [F1] major: for a new spec, the approval-entry check compared against an empty snapshot, so an `approved: spec v1` entry committed earlier counted as new (SC2) -> fixed in 98ba2bd (compare with the commit's Git parent; fixture `H-squash-old-entry`)
 
+## Outcome
+
+The §7.1 walk accepts a spec created already approved in one squashed commit when its parent gains `approved: spec v1` in that commit. `main`'s history, including `621cd44`, passes `mise run validate` and `mise run test` again. Pending: owner acceptance. After merge, open branches such as PR #51 merge `main` to clear the inherited red check.
+
 ## Checkpoint
 
 - Date: 2026-10-14
-- Branch: `task/2026-10-14-spec-history-squash-creation` from 6f2690c
-- Done: heavy confirmed; resolution 1 decided; spec v1 approved; child 01 decomposed.
-- Next action: implement child 01.
+- Branch: `task/2026-10-14-spec-history-squash-creation`; verified at f889d39
+- Done: spec v1 approved; child 01 verified; SC1–SC5, V1 and R1 pass; review F1 fixed.
+- Next action: owner reviews PR #53 (merge commit, never squash, to keep manifest commits) and records `accepted:`; then merge `main` into PR #51.
