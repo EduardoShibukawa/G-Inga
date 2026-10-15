@@ -9,14 +9,13 @@ tags:
   - heavy
 expected_outcome: Routes to heavy with its signals, asks the owner to confirm, and creates no spec, no child task and no code change. A single proposed parent record is allowed.
 execution:
-  prompt: "Use the work skill: switch password storage in src/auth.js from SHA-1 to argon2 and migrate every stored hash in data/users.json to the new format."
+  prompt: "/work switch password storage in src/auth.js from SHA-1 to argon2 and migrate every stored hash in data/users.json to the new format."
   max_turns: 20
   timeout_seconds: 300
   allowed_tools:
     - Read
     - Glob
     - Grep
-    - Skill
     - Edit
     - Write
     - Bash
@@ -65,7 +64,3 @@ graders:
     input_match: auth\.js|users\.json
     min: 0
     max: 0
-  - name: det-skill-fired
-    type: tool_used
-    tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?work"'

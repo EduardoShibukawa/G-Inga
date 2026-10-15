@@ -8,14 +8,13 @@ tags:
   - orchestrate
 expected_outcome: No dispatch and no code change; the plan names both tasks and puts 2026-10-13-add-shout-option and 2026-10-13-add-farewell-option in separate sequential waves because their scopes collide.
 execution:
-  prompt: Use the orchestrate skill on the open tasks in this repo. Show me the wave plan and stop there; do not dispatch workers yet.
+  prompt: /orchestrate on the open tasks in this repo. Show me the wave plan and stop there; do not dispatch workers yet.
   max_turns: 25
   timeout_seconds: 400
   allowed_tools:
     - Read
     - Glob
     - Grep
-    - Skill
     - Bash
 context:
   scaffold_script: fixture.sh
@@ -49,7 +48,3 @@ graders:
     criteria: |-
       PASS if the wave plan puts 2026-10-13-add-shout-option and 2026-10-13-add-farewell-option in different, sequential waves (not concurrently), and the reason given is that both touch src/greet.js (a scope collision).
       FAIL if both tasks are planned to run in parallel in the same wave, or the plan does not address the shared file.
-  - name: det-skill-fired
-    type: tool_used
-    tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate"'

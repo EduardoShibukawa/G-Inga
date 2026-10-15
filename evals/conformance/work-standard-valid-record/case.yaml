@@ -9,14 +9,13 @@ tags:
   - standard
 expected_outcome: Routes to standard, creates tasks/2026-10-13-shout-option.md (schema task/1, tier standard, required sections, a B1 row), implements the option, runs the validator, and the last validator run exits 0.
 execution:
-  prompt: "Use the work skill: add a --shout option to src/greet.js that prints the greeting in upper case. Track it as task 2026-10-13-shout-option and take it through to verified."
+  prompt: "/work add a --shout option to src/greet.js that prints the greeting in upper case. Track it as task 2026-10-13-shout-option and take it through to verified."
   max_turns: 40
   timeout_seconds: 900
   allowed_tools:
     - Read
     - Glob
     - Grep
-    - Skill
     - Edit
     - Write
     - Bash
@@ -56,7 +55,3 @@ graders:
     type: file_exists
     path: specs/**
     exists: false
-  - name: det-skill-fired
-    type: tool_used
-    tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?work"'

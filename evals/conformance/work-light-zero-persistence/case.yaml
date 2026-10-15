@@ -9,14 +9,13 @@ tags:
   - light
 expected_outcome: "Routes to light, fixes the typo in README.md, the final report contains `tier: light (...)`, and no file under tasks/ or specs/ is created or written."
 execution:
-  prompt: 'Use the work skill: fix the typo "recieve" in README.md.'
+  prompt: '/work fix the typo "recieve" in README.md.'
   max_turns: 20
   timeout_seconds: 300
   allowed_tools:
     - Read
     - Glob
     - Grep
-    - Skill
     - Edit
     - Write
     - Bash
@@ -65,7 +64,3 @@ graders:
       source: file
       path: README.md
     pattern: You will receive a friendly greeting
-  - name: det-skill-fired
-    type: tool_used
-    tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?work"'

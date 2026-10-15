@@ -1,6 +1,7 @@
-# Category: should-fire + registration record (spec SC2).
-# The scaffold copies the repo's project skill into the sandbox as .claude/skills/work, so in the
-# with-plugin arm BOTH registrations exist: project `work` and plugin `g-inga:work`.
+# Category: registration record (spec SC2). The scaffold copies the repo's project skill into the
+# sandbox as .claude/skills/work, so in the with-plugin arm BOTH registrations exist: project
+# `work` and plugin `g-inga:work`. The prompt types `/work` (the user-invoked entry, ADR 0010); the
+# per-run verdicts record which registration the typed command resolved to.
 # Requires `--scaffold`; without it the case runs unstaged (plugin registration only) and the
 # registration record for SC2 must be reported as `not run`.
 # Known limitation (CLI 2.1.296): the scaffold runs before BOTH arms with a fixed environment
@@ -14,15 +15,14 @@
 #          routing-line = deterministic (regex, scored in both arms).
 schema_version: "1.0"
 name: work-registration-precedence
-description: "registration record: which of project `work` or plugin `g-inga:work` is invoked when both exist. Graders: deterministic only."
-tags: [trigger, skill-work, should-fire, registration, grader-deterministic]
-expected_outcome: "work fires; per-run verdicts show which registration (project or plugin) was invoked. No preferred winner is asserted."
+description: "registration record: which of project `work` or plugin `g-inga:work` a typed `/work` resolves to when both exist. Graders: deterministic only."
+tags: [trigger, skill-work, registration, grader-deterministic]
+expected_outcome: "The typed `/work` resolves to one registration; per-run verdicts show which registration (project or plugin) was invoked. No preferred winner is asserted."
 context:
   scaffold_script: scaffold.sh
 execution:
   prompt: |
-    New task for this repo: fix the typo "recieve" -> "receive" in README.md. Route it through
-    the right ceremony tier first.
+    /work fix the typo "recieve" -> "receive" in README.md.
   max_turns: 4
   timeout_seconds: 240
   allowed_tools: [Skill, Read, Glob, Grep]

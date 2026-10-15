@@ -8,14 +8,13 @@ tags:
   - drive
 expected_outcome: No subagent dispatch, no commit, no code change; the report says nothing is runnable, citing the owner blocker on 2026-10-13-greeting-language.
 execution:
-  prompt: "Use the drive skill: run the backlog and deliver whatever is ready."
+  prompt: "/drive run the backlog and deliver whatever is ready."
   max_turns: 25
   timeout_seconds: 400
   allowed_tools:
     - Read
     - Glob
     - Grep
-    - Skill
     - Bash
     - Edit
     - Write
@@ -52,7 +51,3 @@ graders:
     criteria: |-
       PASS if the response says no task can run now and gives the reason: 2026-10-13-greeting-language is blocked on an owner decision and/or 2026-10-13-translate-greeting depends on it.
       FAIL if the response claims it started, implemented or completed any task, or does not explain why nothing ran.
-  - name: det-skill-fired
-    type: tool_used
-    tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?drive"'
