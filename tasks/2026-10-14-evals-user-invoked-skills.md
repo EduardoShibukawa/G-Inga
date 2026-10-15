@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "adb6dcc"
 ---
 
 # Align Evaluation Cases with User-Invoked Skills
@@ -40,8 +41,14 @@ Since ADR 0010, every G-Ingá skill is user-invoked. The model can't invoke `wor
 |---|---|---|---|---|
 | B1 | `mise run validate` before edits | pass | d80069c | exit 0, Overall pass (159 files, 0 issues) |
 | B2 | `mise run test` before edits | pass | d80069c | exit 0, 253 pass, 0 fail |
-| AC1 | grep: no case prompt names a G-Ingá skill | not run | | conformance prompts type `/work`, `/drive`, `/orchestrate` |
-| AC2 | grep: no trigger case scores a model-initiated `Skill` call as pass | not run | | should-fire cases retired |
-| AC3 | `mise run validate` and `mise run test` | not run | | both exit 0 |
-| R1 | `bun tools/validate/validate.ts` | not run | | exit 0 |
-| V1 | diff read against AC1–AC3 | not run | | |
+| AC1 | grep: no case prompt names a G-Ingá skill | pass | adb6dcc | `Use the <skill> skill` gone; seven conformance prompts type `/work`, `/drive`, `/orchestrate` |
+| AC2 | grep: no trigger case scores a model-initiated `Skill` call as pass | pass | adb6dcc | three should-fire cases retired; remaining `Skill` graders are `min: 0, max: 0` or `with-only` indicators |
+| AC3 | `mise run validate` and `mise run test` | pass | adb6dcc | validate exit 0 (Overall pass); test exit 0 (253 pass, 0 fail) |
+| R1 | `bun tools/validate/validate.ts` | pass | adb6dcc | exit 0; manifest-integrity + artifact-records pass, history walk 0 frozen |
+| V1 | diff read against AC1–AC3 | pass | adb6dcc | 7 conformance prompt+grader edits, 3 trigger deletions, `/work` retype, 2 READMEs + ADR 0008 reviewed |
+
+## Outcome
+
+Aligned the evaluation cases with the user-invoked contract (ADR 0010): the seven conformance prompts now type the slash command and no longer ask the model to use a skill by name, their `det-skill-fired` (`tool_used: Skill`) graders are removed, the three should-fire trigger cases are retired (model-initiated firing is now a defect), and `work-registration-precedence` types `/work`. The conformance and trigger READMEs and the ADR 0008 consequences no longer assume model invocation. `mise run validate`, `mise run test` and the standalone validator all exit 0 at `adb6dcc`.
+
+Follow-ups: none in scope. Whether a typed `/work` still surfaces which registration wins (`work-registration-precedence`) is confirmed by the next owner-approved paid baseline run.
