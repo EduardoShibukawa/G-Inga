@@ -12,6 +12,8 @@ No skill file was changed (spec SC6). Drift items are follow-up candidates only.
 > Host-parity note (added 2026-10-14): the subagent model policy (`2026-10-14-harness-hardening` SC4/SC5) introduced a shared role-to-model table (`work/references/model-policy.md`) and model-named dispatches in `.claude/skills/`. Mirroring those changes to `.agents/skills/` and `.opencode/skills/` is pending and not reflected in this inventory, which predates them.
 >
 > Host-parity note (added 2026-10-15): the parent checkpoint and resume step (`2026-10-14-harness-hardening` SC6) added a section to `work/resume.md` and steps to `drive` and `orchestrate` in `.claude/skills/`. Mirroring them to `.agents/skills/` and `.opencode/skills/` is pending and not reflected in this inventory.
+>
+> Host-parity note (added 2026-10-15): the session close and merge rule (`2026-10-14-harness-hardening` SC7) added a "Session Close and Merge" section to `work/references/procedure.md` and references to it from `drive`, `orchestrate` and `work/standard.md` in `.claude/skills/`. Mirroring them to `.agents/skills/` and `.opencode/skills/` is pending and not reflected in this inventory.
 
 ## Method
 
