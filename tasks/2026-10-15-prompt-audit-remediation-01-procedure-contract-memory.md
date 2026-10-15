@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: completed
 parent: 2026-10-15-prompt-audit-remediation
 spec: 2026-10-15-prompt-audit-remediation@1
 depends_on: []
@@ -32,6 +32,10 @@ Remove the session-level token ceilings from `/work`'s procedure, correct the ar
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | 48e1949 | parent B1/B2: `mise run validate` Overall pass, `mise run test` 257 pass |
+| AC1 | AC1: contract status line states validator coverage, checked against `tools/validate/` (secrets scan §7 absent in code); `contract-copy` check | pass | fc4cc16 | `mise run validate` Overall pass |
+| AC2 | AC2: no ceiling/ratio/SLA in either procedure.md; `token_budget_guard.ts` and ADR 0006 present | pass | fc4cc16 | `grep -nE` for the old terms: no matches |
+| AC3 | AC3: `CLAUDE.md` rule 2 says auto-memory is a hint | pass | fc4cc16 | `grep -n 'Auto-memory is a hint' CLAUDE.md` matches line 10 |
+| AC4 | AC4: manifest regenerated; `mise run validate` and `mise run test` | pass | fc4cc16 | `bun run manifest`, `mise run validate`, `mise run test` |
 
 ## Plan
 
