@@ -67,3 +67,10 @@ Follow-ups (not done):
 - as of: 2026-10-14, branch feat/opencode-plugin-package, head 00861b0, task completed
 - done: plugin entry, package manifests, root exports, README section, global cleanup with backup, AC1–AC6 and V1 pass
 - next: owner review, PR and merge; re-run validate after the unrelated cursor spec is resolved
+- Update 2026-10-15: re-run on `main` at 48e1949 to promote to `verified`; the record stays `completed` because AC6 no longer holds.
+  - AC1: pass (stub `setup`: `id: g-inga`; skills and commands `work`, `drive`, `orchestrate`, `sharpen`; `execute` keeps sessionID and delivery).
+  - AC4: pass (live OpenCode v2.0.29 `opencode serve` on 127.0.0.1 with a session-local password: `/api/plugin` lists `g-inga` `active` from the local package path; `/api/command` lists the four G-Ingá commands; `/api/skill` serves them from `.claude/skills/`, all `autoinvoke` false since ADR 0010).
+  - AC2, AC3, AC5: pass (files unchanged in substance; AC3 is a property of the c5c164f..00861b0 diff).
+  - AC7: pass (`mise run validate` exit 0 locally; CI `pre-commit` and `test` success on 48e1949).
+  - AC6: fail. `~/.opencode/skill` and `~/.claude/skills/.trash` are absent and the backup tarball exists, but `~/.claude/skills/synced` was recreated on 2026-10-15 at 13:45 with one account-synced skill bucket, which is outside this task's control.
+- Next (owner): decide whether AC6 still applies to Claude Code's own account-skill sync directory. If not, revise AC6 to the two OpenCode-side paths and promote at 48e1949.
