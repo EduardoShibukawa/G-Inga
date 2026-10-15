@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Run the G-Ingá standalone validator (ADR 0009 §2 bundle step, composed into a target's pre-commit task)"
+set -euo pipefail
+node tools/validate/validate.js "$@"

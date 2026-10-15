@@ -21,6 +21,7 @@ The bundle is what a target repository commits (FU2). `tools/validate/bundle.jso
 | `tools/validate/validate.js` | standalone validator, `node tools/validate/validate.js` | yes | yes |
 | `tools/validate/validate.ts` | Bun entry of the same validator, `bun tools/validate/validate.ts` | yes | yes |
 | `tools/validate/ci-template.yml` | CI merge-gate template (SC7) | yes | yes |
+| `.mise/tasks/g-inga/validate` | namespaced mise file task `g-inga:validate`, runs the standalone validator as a composable commit step (ADR 0009 §2) | yes | yes |
 | `manifest.json` | integrity manifest; excludes itself (SC5) | yes | no |
 
 Not delivered (`proposed` classification, source-repository utilities that run from a G-Ingá checkout):
@@ -75,8 +76,16 @@ node tools/validate/update.mjs /path/to/target      # or: bun tools/validate/upd
 
 Then, in the target:
 
-1. Copy `tools/validate/ci-template.yml` to `.github/workflows/g-inga.yml`. That copy belongs to the target; the update procedure never writes it. Re-copy it when a release changes the template.
-2. Add the delimited pointer to the target's `CLAUDE.md` (for Claude Code) or `GEMINI.md` / `AGENTS.md` (for Google Antigravity), leaving content outside the block untouched:
+1. Compose the commit gate: the shipped `g-inga:validate` mise file task is the one step a target adds to its own `pre-commit` task, so `mise run pre-commit` (and a Git hook that runs it) rejects an invalid record before it commits. In the target's `mise.toml`:
+
+   ```toml
+   [tasks.pre-commit]
+   depends = ["g-inga:validate"]
+   ```
+
+   This is the whole change a target repository makes to adopt the gate; no fallback is needed, because the child-01 spike showed a TOML `depends` can name a namespaced mise file task (the fallback ADR 0009 §2 names — a one-line `run` calling `node tools/validate/validate.js` — was therefore never chosen, and ADR 0009 stays unrevised).
+2. Copy `tools/validate/ci-template.yml` to `.github/workflows/g-inga.yml`. That copy belongs to the target; the update procedure never writes it. Re-copy it when a release changes the template.
+3. Add the delimited pointer to the target's `CLAUDE.md` (for Claude Code) or `GEMINI.md` / `AGENTS.md` (for Google Antigravity), leaving content outside the block untouched:
 
    ```markdown
    <!-- g-inga:pointer -->
@@ -86,8 +95,8 @@ Then, in the target:
    <!-- /g-inga:pointer -->
    ```
 
-3. Run `node tools/validate/validate.js`, review `git status`, and commit the bundle, the workflow and the pointer in one commit.
-4. To make the gate a merge barrier, require the `g-inga-gate / validate-harness` status check in branch protection. Without it, CI only reports, and reports must say so (SC7).
+4. Run `node tools/validate/validate.js`, review `git status`, and commit the bundle, the workflow and the pointer in one commit.
+5. To make the gate a merge barrier, require the `g-inga-gate / validate-harness` status check in branch protection. Without it, CI only reports, and reports must say so (SC7).
 
 ## Update procedure (SC6)
 

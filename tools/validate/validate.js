@@ -7679,6 +7679,7 @@ var bundle_default = {
     ".claude/skills/sharpen/",
     ".agents/skills/work/",
     ".agents/skills/sharpen/",
+    ".mise/tasks/g-inga/",
     "tools/validate/"
   ],
   assets: [
@@ -7688,6 +7689,7 @@ var bundle_default = {
     ".claude/skills/work/review.md",
     ".claude/skills/work/standard.md",
     ".claude/skills/work/references/artifact-contracts.md",
+    ".claude/skills/work/references/model-policy.md",
     ".claude/skills/work/references/procedure.md",
     ".claude/skills/work/references/question-rounds.md",
     ".claude/skills/sharpen/SKILL.md",
@@ -7700,6 +7702,7 @@ var bundle_default = {
     ".agents/skills/work/references/procedure.md",
     ".agents/skills/work/references/question-rounds.md",
     ".agents/skills/sharpen/SKILL.md",
+    ".mise/tasks/g-inga/validate",
     "tools/validate/ci-template.yml",
     "tools/validate/validate.js",
     "tools/validate/validate.ts"

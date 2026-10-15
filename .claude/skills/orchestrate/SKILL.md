@@ -81,6 +81,7 @@ flowchart TD
 
 - Dispatch worker subagents in parallel by issuing multiple `Agent` tool calls in a single message, each with role and scoped prompt:
   - Set `subagent_type: "general-purpose"` for implementation workers (or `subagent_type: "Explore"` for read-only spikes).
+  - Set the model by role from the shared table in `.claude/skills/work/references/model-policy.md`: `model: "sonnet"` for implementation workers, `model: "haiku"` for read-only `Explore` spikes.
   - Include the verification contract directly in the prompt.
   - Name `.claude/skills/work/references/procedure.md` as the procedure to follow, never the `work` skill (ADR 0010).
 - **Working Tree Selection:**
@@ -112,11 +113,12 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
    - Verify objective thresholds (e.g. 0 lint warnings, schema validation, performance latency).
 5. **Layer 5 (Anti-Thrashing Circuit Breaker):**
    - Track verification failure count per ticket.
-   - If count < 2: send deterministic failure logs to the same agent via `SendMessage` (keeps its context) for corrective action.
-   - If count $\ge 2$: stop worker, mark ticket `blocked`, record escalation, and alert owner.
+   - First failure: retry the Sonnet worker on **Opus** (`model: "opus"`, per `.claude/skills/work/references/model-policy.md`) and send the deterministic failure log to the same agent via `SendMessage` (keeps its context) for corrective action.
+   - Second failure (count $\ge 2$, no new information): stop worker, mark ticket `blocked`, record escalation, and alert owner.
 
 ### 6. SEAL & ADVANCE (Atomic Integration)
 
+- Record each child's verification note with the model that ran it and its token totals in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — no prompt content (per `.claude/skills/work/references/model-policy.md`).
 - Update ticket status in roadmap (`map.md` / `tasks/`) to `resolved`.
 - Create an atomic descriptive Git commit referencing the resolved ticket IDs:
   `git commit -m "<type>(<scope>): <summary> [resolves #ID]"`
@@ -125,6 +127,7 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
 ## References & Procedures
 
 - Verification Gate Rules & Rollback: [.claude/skills/orchestrate/gate.md](gate.md)
+- Subagent Model Policy: [.claude/skills/work/references/model-policy.md](../work/references/model-policy.md)
 - Subagent Canonical Prompt Template: [.claude/skills/orchestrate/subagent-prompt.md](subagent-prompt.md)
 - OODA State Machine & Transitions: [.claude/skills/orchestrate/references/ooda-cycle.md](references/ooda-cycle.md)
 - Automated Wave Runner: [tools/gate/orchestrate-runner.ts](../../../tools/gate/orchestrate-runner.ts)
