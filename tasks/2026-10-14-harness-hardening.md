@@ -67,10 +67,18 @@ Not run yet: the fresh-context adversarial review runs after integrated verifica
 
 ## Checkpoint
 
-- Date: 2026-10-14
-- Branch: `claude/backlog-seed-tasks-e38dc9` at 2edf21e (worktree `.claude/worktrees/backlog-seed-tasks-e38dc9`)
-- Done: heavy confirmed; all owner decisions recorded; research note written; ADR 0009 accepted; spec v1 approved and frozen; children 01–06 decomposed `todo` at `@1`; baseline B1 and B2 recorded.
-- Update 2026-10-14: child 01 (`-01-commit-gate`) done on `task/2026-10-14-harness-hardening-01-commit-gate-r2` (PR #55 closed: sibling-branch history walk, see child Notes); the CI job is named `pre-commit`, and the test-only job is now `test`.
-- Update 2026-10-14 (`/drive` wave): children 03 (`-03-model-policy`, verified at `4fab75c`), 02 (`-02-bundle-validate-step`, verified at `4fab75c`) and 06 (`-06-startup-warnings`, verified at `24bec60` after rebase onto child 07) completed and verified.
-- Next action: run `/drive` (or `/work resume 2026-10-14-harness-hardening`) for child 04 (`-04-checkpoint-resume`, now unblocked) followed by child 05 (`-05-session-close-merge`).
-- Owner actions pending: (1) branch protection on `main` requiring the `pre-commit` check, read back through the GitHub API (SC3); (2) after the child 01 PR merges, run `mise install` in the main clone to install the Git hook, and merge `main` into any open worktree branch first, since a branch without hk in its `mise.toml` can't commit once the hook is installed.
+- as of: 2026-10-15, branch `task/2026-10-14-harness-hardening-04-checkpoint-resume`, head 41a830b, worktree clean
+- done: 01 (`-01-commit-gate`, merged), 02 and 03 (verified at 4fab75c, merged), 07 (`-07-hook-env-isolation`, verified at 57b33da, PR #61), 06 (`-06-startup-warnings`, verified at 24bec60, PR #62), 04 (`-04-checkpoint-resume`, verified at 41a830b)
+- active: none
+- blocked: none
+- next: child 05 (`-05-session-close-merge`): handoff report and merge rule in `work`, `drive` and `orchestrate`
+- revalidate: parent B1/B2 ran on 2edf21e; integrated SC rows run after child 05
+- owner actions pending: branch protection on `main` requiring the `pre-commit` check, read back through the GitHub API (SC3); SC10 acceptance
+- resume prompt:
+
+  ~~~text
+  Resume 2026-10-14-harness-hardening on branch task/2026-10-14-harness-hardening-04-checkpoint-resume. Expected head 41a830b.
+  Read the parent's ## Checkpoint, then reconcile it with `git status`, `git log -n 1` and the child statuses.
+  If the head or any child status disagrees with the checkpoint, report the difference and dispatch nothing until it is reconciled.
+  Otherwise continue with child 05. Done: 01, 02, 03, 04, 06, 07. Blocked: none.
+  ~~~

@@ -36,6 +36,7 @@ flowchart TD
 
 - Inspect Git worktree: `git status --porcelain`, current branch, and HEAD SHA.
 - Inspect the task graph: read `map.md` (or `tasks/` directory).
+- Reconcile the parent's latest `## Checkpoint` with Git using "Reconcile on start" in [.claude/skills/work/resume.md](../work/resume.md). If its branch, HEAD, worktree or child statuses disagree with Git, report the difference and stop: dispatch nothing until it is reconciled.
 - Identify tickets in state `open` whose dependencies are fully resolved (`Blocked by: []` or all dependencies in `resolved` / `verified`).
 
 ### 2. ORIENT (Frontier & Contract Definition)
@@ -122,6 +123,7 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
 - Update ticket status in roadmap (`map.md` / `tasks/`) to `resolved`.
 - Create an atomic descriptive Git commit referencing the resolved ticket IDs:
   `git commit -m "<type>(<scope>): <summary> [resolves #ID]"`
+- After each verified child, replace the parent's `## Checkpoint` (done, active and blocked children, branch, HEAD and the copy-pasteable resume prompt) using the template in [.claude/skills/work/resume.md](../work/resume.md).
 - Advance the frontier of the dependency graph and repeat the OODA loop until all tickets are `resolved` or `blocked`.
 
 ## References & Procedures
