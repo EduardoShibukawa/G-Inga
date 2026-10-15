@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "f7839c3"
 parent: 2026-10-14-harness-hardening
 spec: 2026-10-14-harness-hardening@1
 depends_on:
@@ -38,12 +39,12 @@ Resolve the parent's review findings (2026-10-15) that sit inside spec v1, so SC
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | e083e6c | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (264 pass, 0 fail) |
-| AC1 | fixture target commit test rejects an invalid record and accepts a valid one through a real Git hook | pass | pending | `bun test tools/validate/bundle-validate-step.test.ts`: 5 pass, 0 fail; target path and `sh()` confined to the temp root |
-| AC2 | no `SendMessage` retry and no model-less dispatch remains in `orchestrate` | pass | pending | grep over `.claude/skills/{work,drive,orchestrate}`: retry is a new `Agent` with `model: "opus"`; every dispatch names a model |
-| AC3 | failed lookup cached 24 h, hook check first, every mise config location and inline `[tasks]` form | pass | pending | `bun test tools/gate/startup-warnings.test.ts`: new cases for cached failure, hook-before-network, four config paths, inline form |
-| AC4 | `hk.pkl` comment corrected; cost note source is the host's agent result | pass | pending | `hk.pkl` comment only; `subagent-prompt.md`, orchestrate SEAL, drive Step 6 and `model-policy.md` updated |
-| R1 | repository validation and test suites after change | pass | pending | filled at seal |
-| V1 | self-review of the diff against AC1-AC4 and the allowed files | pass | pending | diff limited to the in-scope files |
+| AC1 | fixture target commit test rejects an invalid record and accepts a valid one through a real Git hook | pass | f7839c3 | `bun test tools/validate/bundle-validate-step.test.ts`: 5 pass, 0 fail; target path and `sh()` confined to the temp root |
+| AC2 | no `SendMessage` retry and no model-less dispatch remains in `orchestrate` | pass | f7839c3 | grep over `.claude/skills/{work,drive,orchestrate}`: retry is a new `Agent` with `model: "opus"`; every dispatch names a model |
+| AC3 | failed lookup cached 24 h, hook check first, every mise config location and inline `[tasks]` form | pass | f7839c3 | `bun test tools/gate/startup-warnings.test.ts`: new cases for cached failure, hook-before-network, four config paths, inline form |
+| AC4 | `hk.pkl` comment corrected; cost note source is the host's agent result | pass | f7839c3 | `hk.pkl` comment only; `subagent-prompt.md`, orchestrate SEAL, drive Step 6 and `model-policy.md` updated |
+| R1 | repository validation and test suites after change | pass | f7839c3 | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (274 pass, 0 fail), after the manifest regeneration in f7839c3 |
+| V1 | self-review of the diff against AC1-AC4 and the allowed files | pass | f7839c3 | diff limited to the in-scope files |
 
 ## Plan
 
@@ -59,4 +60,4 @@ Dispatch cost (SC5): implementation worker on model `sonnet`, one attempt; `tota
 
 F1, F2, F3, F6, F7, F8 and F9 are resolved within spec v1. The bundle step test now installs a Git `pre-commit` hook in a fixture target confined to the temp root and proves a rejected invalid commit (HEAD unchanged, finding named) and an accepted valid commit. The Opus retry is a new `Agent` dispatch carrying the failure log. The startup hook checks locally first, caches failed lookups for 24 h and reads every mise config location. Token totals come from the host's agent result, not the worker.
 
-`model-policy.md` is a bundle asset: its edit leaves `manifest.json` stale until the owner regenerates it.
+`model-policy.md` is a bundle asset; `manifest.json` was regenerated alone in f7839c3.
