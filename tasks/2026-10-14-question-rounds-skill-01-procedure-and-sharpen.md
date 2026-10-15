@@ -1,8 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: verified
-verified_at: "48e1949"
+status: completed
 parent: 2026-10-14-question-rounds-skill
 spec: 2026-10-14-question-rounds-skill@1
 ---
@@ -36,7 +35,7 @@ Write `.claude/skills/work/references/question-rounds.md` and the thin `.claude/
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation suite before change | pass | ed82275 | parent B1: `mise run validate` exit 0 |
-| AC1 | SC1 Layout: procedure file, sharpen skill, provenance | pass | 48e1949 | `.claude/skills/work/references/question-rounds.md` line 1 and §Provenance name `grilling` and `domain-modeling` at `49dd158`; `.claude/skills/sharpen/SKILL.md` has `disable-model-invocation: true`, a one-line description, and only points at the procedure (standalone mode) |
+| AC1 | SC1 Layout: procedure file, sharpen skill, provenance | fail | 48e1949 | fail at 48e1949: fresh-context review finding F1 (2026-10-15): the procedure is a close copy of upstream (13 of 50 substantive lines verbatim, owner→user normalized; question format, domain-modeling subsections, glossary rules, ADR template) without the MIT notice, and lines 4 and 140 claim original text; SC1 requires G-Ingá's own text |
 | AC2 | SC2 Rounds: whole-frontier, numbered, recommended answers | pass | 48e1949 | procedure §Round Mechanics items 1–5: whole frontier, Q1…Qn with recommended answer, dependent questions deferred, done when the frontier is empty and the owner confirms, no action before |
 | AC3 | SC3 Facts vs Decisions: agent finds facts, subagents allowed | pass | 48e1949 | procedure §Facts versus Decisions: facts are the agent's job; read-only Haiku subagents for broad lookups without blocking independent questions; decisions are the owner's |
 | AC4 | SC4 Domain Discipline: challenge, sharpen, scenarios, code cross-check, glossary | pass | 48e1949 | procedure §Domain Discipline 1–6: glossary challenge, fuzzy terms, scenarios, code cross-check, immediate writes to `docs/glossary.md` (lazy, no implementation detail), `CONTEXT.md` migration |
@@ -56,7 +55,7 @@ Write `.claude/skills/work/references/question-rounds.md` and the thin `.claude/
 
 ## Outcome
 
-The question-rounds procedure lives once in `.claude/skills/work/references/question-rounds.md` with its upstream provenance. `/sharpen` is a thin user-invoked entry that reads it in standalone mode, and the `/work` heavy route runs it in step 2 and records answers as `decided:` lines (SC1–SC7 for Claude Code).
+The question-rounds procedure lives once in `.claude/skills/work/references/question-rounds.md` with its upstream provenance. `/sharpen` is a thin user-invoked entry that reads it in standalone mode, and the `/work` heavy route runs it in step 2 and records answers as `decided:` lines (SC2–SC7 for Claude Code). SC1 is open: the text is still a close copy of upstream (review F1).
 
 ## Checkpoint
 
@@ -66,4 +65,4 @@ The question-rounds procedure lives once in `.claude/skills/work/references/ques
 - done: procedure file, /sharpen skill, heavy route and heavy.md step 2 for Claude Code (SC1–SC7)
 - next: child 02 (Antigravity/OpenCode)
 
-- Update 2026-10-15: revalidated on `main` at 48e1949, after the spec history-walk fixes (`2026-10-14-spec-history-squash-creation`, `2026-10-14-fix-history-walk-sibling-unchanged`) cleared the spec history failure that had blocked the suites; every AC re-checked against the files at 48e1949; promoted `completed` → `verified`.
+- Update 2026-10-15: revalidated on `main` at 48e1949, after the spec history-walk fixes (`2026-10-14-spec-history-squash-creation`, `2026-10-14-fix-history-walk-sibling-unchanged`) cleared the spec history failure that had blocked the suites; every AC re-checked against the files at 48e1949. Not promoted: the parent's fresh-context review found SC1 unmet (F1, close copy of upstream); the record stays `completed` until the parent's fix child lands.
