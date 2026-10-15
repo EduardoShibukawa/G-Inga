@@ -63,13 +63,18 @@ None yet: the fresh-context review runs after integration (`work/review.md`).
 
 ## Checkpoint
 
-- 2026-10-15, branch `work/prompt-audit-remediation`, HEAD `d12e498`, worktree clean.
-- Done: question rounds (Q1–Q8), spec v1 approved, decomposed into children 01 and 02 (both `todo`).
-- Next: owner runs `/drive` in another session to execute child 01, then child 02 once `2026-10-14-harness-hardening-04` and `-05` are `verified`. Workers stage files explicitly (`git add <paths>`): `git commit -a` failed once under the pre-commit hook.
-- 2026-10-15 (`/drive` run 1), branch `work/prompt-audit-remediation`, HEAD `9dc838c` (merge of `origin/main` at `4a04a22`), worktree clean.
-  - Child 01: not committed, still `todo`. A Sonnet worker made the edits, but the commit failed: on `d2da2bc`, which lacks the hook environment fix (hardening 07, #61), the pre-commit hook's test fixtures set `core.bare = true` in the shared `.git/config` and staged fixture files (`tasks/2026-10-14-valid.md`, `tasks/2026-10-14-invalid.md`) in the worker's index. The owner repaired the config; `origin/main` is now merged here, so the fix is on this branch.
-  - The worker's edits are in the stash `prompt-audit child 01 worker edits (drive run 1)` (`git stash list`). Its `CLAUDE.md`, `docs/artifact-contracts.md` and two `procedure.md` changes apply cleanly to `9dc838c` (`git apply --3way --check`). Reuse only those four files. Regenerate the contract copies and the manifest, and never commit the two fixture files the stash also holds. The worker's worktree and branches are removed.
-  - Finding, not in this task's scope: `mise run validate` lints files under `.claude/worktrees/`, so a live agent worktree fails `markdown-lint` and `local-links`, and the pre-commit hook then fails in the main clone. Open a follow-up task for it.
-  - Worker-reported results: `mise run validate` pass outside the hook; `mise run test` fail on a stale manifest (`bundle.test.ts`); SC4 and SC8 greps not run. Worker usage about 64k tokens, over the 25k ticket ceiling.
-  - `2026-10-14-harness-hardening-04` and `-05` are `verified` on this branch, so child 02 is eligible once child 01 is `verified`.
-  - Next: a new `/drive` re-runs child 01 from `9dc838c` on a fresh branch (`...-01-procedure-contract-memory-r2`), then child 02. After each commit made under the hook, check `git config --get core.bare` is `false`.
+- as of: 2026-10-15 (`/drive` run 2), branch `work/prompt-audit-remediation`, head `ba7b490`, worktree clean; branch not pushed (no upstream).
+- done: `2026-10-15-prompt-audit-remediation-01-procedure-contract-memory`, `verified_at` `2b9c835`, merged into this branch at `ba7b490` (run 2 reused the four files from the run 1 stash; driver gate L1–L4 pass, L5 not triggered).
+- active: none.
+- blocked: none.
+- next: `2026-10-15-prompt-audit-remediation-02-orchestrate` (all `depends_on` now `verified`). First action: rerun B1 (`mise run validate`, `mise run test`) on a fresh branch from `ba7b490`, then edit `orchestrate` and `drive` in both host copies. Not run in run 2: the run's 100k ceiling was spent by child 01 (worker `total_tokens` 50062 host-reported, plus driver context).
+- revalidate: parent B1/B2 (Ref `48e1949`), rerun before integration.
+- notes: the run 1 stash `prompt-audit child 01 worker edits (drive run 1)` is now redundant and can be dropped by the owner. The `.claude/worktrees/` lint finding still needs a follow-up task. After each commit made under the hook, check `git config --get core.bare` is `false` (it was `false` after every commit in run 2).
+- resume prompt:
+
+  ~~~text
+  Resume 2026-10-15-prompt-audit-remediation on branch work/prompt-audit-remediation. Expected head ba7b490.
+  Read the parent's ## Checkpoint, then reconcile it with `git status`, `git log -n 1` and the child statuses.
+  If the head or any child status disagrees with the checkpoint, report the difference and dispatch nothing until it is reconciled.
+  Otherwise continue with child 2026-10-15-prompt-audit-remediation-02-orchestrate. Done: 2026-10-15-prompt-audit-remediation-01-procedure-contract-memory. Blocked: none.
+  ~~~
