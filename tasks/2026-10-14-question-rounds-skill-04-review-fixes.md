@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "55f7299"
 parent: 2026-10-14-question-rounds-skill
 spec: 2026-10-14-question-rounds-skill@1
 depends_on:
@@ -38,15 +39,15 @@ Resolve the parent's review findings (2026-10-15) so SC1, SC5, SC6 and SC8 hold.
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | repository `pre-commit` and `test` before change | pass | 5582910 | CI on PR #63 at 5582910: `pre-commit` success, `test` success |
-| B2 | overlap gate on the procedure before change | fail | 5afc0f6 | `.claude` copy: 13/51 substantive lines verbatim upstream; 313/1069 8-word shingles (29.3%) |
-| AC1 | overlap gate on both procedure copies | pass | pending | 0/41 verbatim lines, 0/1097 shingles (0.0%) on each copy; provenance rewritten |
-| AC2 | SC2–SC6 read-through | pass | pending | rounds, facts vs decisions, domain discipline, three-condition ADR as `proposed`, standalone persistence without `accepted`; `CONTEXT.md` removal left to the owner in standalone mode |
-| AC3 | `/sharpen` command names `.claude/skills/work/references/question-rounds.md`; `bun test packages/opencode-plugin` | pass | pending | 2 pass, 0 fail |
-| AC4 | each `work/SKILL.md` lists the reference files its procedure reads | pass | pending | `.claude`: procedure, artifact-contracts, model-policy, question-rounds; `.agents`: same without model-policy |
-| AC5 | SC10: bundle, manifest and `docs/bundle.md` consistent; `mise run validate` and `mise run test` | pass | pending | filled at seal |
-| R1 | repository validation and test suites after change | pass | pending | filled at seal |
-| V1 | self-review of 5afc0f6..HEAD against AC1–AC5 and findings F1–F8 | pass | pending | in-scope files only; the two procedure copies byte-identical (`cmp`) with no host path; orchestrator corrections at the gate: the deferral rule ("you choose" is the owner's decision, "later" stays open) and the ADR heading `# NNNN — Title` as in `docs/decisions/` |
+| B1 | repository validation and test suites before change | pass | 41a830b | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (264 pass, 0 fail), run for child `2026-10-14-harness-hardening-04` on this stack |
+| B2 | overlap gate on the procedure before change | fail | a88bb0f | `.claude` copy: 13/51 substantive lines verbatim upstream; 313/1069 8-word shingles (29.3%) |
+| AC1 | overlap gate on both procedure copies | pass | 55f7299 | 0/41 verbatim lines, 0/1105 shingles (0.0%) on each copy; provenance rewritten |
+| AC2 | SC2–SC6 read-through | pass | 55f7299 | rounds, facts vs decisions, domain discipline, three-condition ADR as `proposed`, standalone persistence without `accepted`; `CONTEXT.md` removal left to the owner in standalone mode |
+| AC3 | `/sharpen` command names `.claude/skills/work/references/question-rounds.md`; `bun test packages/opencode-plugin` | pass | 55f7299 | 2 pass, 0 fail |
+| AC4 | each `work/SKILL.md` lists the reference files its procedure reads | pass | 55f7299 | `.claude`: procedure, artifact-contracts, model-policy, question-rounds; `.agents`: same without model-policy |
+| AC5 | SC10: bundle, manifest and `docs/bundle.md` consistent; `mise run validate` and `mise run test` | pass | 55f7299 | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (264 pass, 0 fail); `manifest.json` regenerated alone at 55f7299 (commit field 7008237); `docs/bundle.md` lists `model-policy.md` |
+| R1 | repository validation and test suites after change | pass | 55f7299 | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (264 pass, 0 fail); `manifest.json` regenerated alone at 55f7299 (commit field 7008237); `docs/bundle.md` lists `model-policy.md` |
+| V1 | self-review of a88bb0f..HEAD against AC1–AC5 and findings F1–F8 | pass | 55f7299 | in-scope files only; the two procedure copies byte-identical (`cmp`) with no host path; orchestrator corrections at the gate: the deferral rule ("you choose" is the owner's decision, "later" stays open) and the ADR heading `# NNNN — Title` as in `docs/decisions/` |
 
 ## Plan
 
