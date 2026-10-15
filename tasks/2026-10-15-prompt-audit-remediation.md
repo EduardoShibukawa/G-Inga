@@ -60,3 +60,9 @@ SC1–SC9 from `specs/2026-10-15-prompt-audit-remediation.md`.
 ## Review
 
 None yet: the fresh-context review runs after integration (`work/review.md`).
+
+## Checkpoint
+
+- 2026-10-15, branch `work/prompt-audit-remediation`, HEAD `d12e498`, worktree clean.
+- Done: question rounds (Q1–Q8), spec v1 approved, decomposed into children 01 and 02 (both `todo`).
+- Next: owner runs `/drive` in another session to execute child 01, then child 02 once `2026-10-14-harness-hardening-04` and `-05` are `verified`. Workers stage files explicitly (`git add <paths>`): `git commit -a` failed once under the pre-commit hook.
