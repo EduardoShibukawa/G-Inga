@@ -71,5 +71,6 @@ Not run yet: the fresh-context adversarial review runs after integrated verifica
 - Branch: `claude/backlog-seed-tasks-e38dc9` at 2edf21e (worktree `.claude/worktrees/backlog-seed-tasks-e38dc9`)
 - Done: heavy confirmed; all owner decisions recorded; research note written; ADR 0009 accepted; spec v1 approved and frozen; children 01–06 decomposed `todo` at `@1`; baseline B1 and B2 recorded.
 - Update 2026-10-14: child 01 (`-01-commit-gate`) done on `task/2026-10-14-harness-hardening-01-commit-gate-r2` (PR #55 closed: sibling-branch history walk, see child Notes); the CI job is named `pre-commit`, and the test-only job is now `test`.
-- Next action: owner runs `/drive` for children 02–06 (02 and 06 depend on 01; 03 has no dependency).
+- Update 2026-10-14 (`/drive` wave): children 03 (`-03-model-policy`, verified at `4fab75c`), 02 (`-02-bundle-validate-step`, verified at `4fab75c`) and 06 (`-06-startup-warnings`, verified at `24bec60` after rebase onto child 07) completed and verified.
+- Next action: run `/drive` (or `/work resume 2026-10-14-harness-hardening`) for child 04 (`-04-checkpoint-resume`, now unblocked) followed by child 05 (`-05-session-close-merge`).
 - Owner actions pending: (1) branch protection on `main` requiring the `pre-commit` check, read back through the GitHub API (SC3); (2) after the child 01 PR merges, run `mise install` in the main clone to install the Git hook, and merge `main` into any open worktree branch first, since a branch without hk in its `mise.toml` can't commit once the hook is installed.
