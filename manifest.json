@@ -1,10 +1,10 @@
 {
   "release": "1.0.0",
-  "commit": "227e17d8f33e0a82d288414d932670ab506c8f13",
+  "commit": "afffdac3db3f5b3abd0128a505a03694891b2483",
   "files": {
     ".claude/skills/work/SKILL.md": "d3b769981048ff10fc9101a8a9e61f7e39f0b9abe66d8edc8deb06e3985ca427",
     ".claude/skills/work/heavy.md": "c9be18d67cdb9bfe09954d70f62a4df2d63aa03f69a33fff5542985fccb9889e",
-    ".claude/skills/work/resume.md": "6cdccc200264c39287ead22aa64fa32ec0464ab159da449e0d90989280e19730",
+    ".claude/skills/work/resume.md": "86ff1c69148eb6a68da032adbc4197746412a725a8443d48b53a14bfc748b043",
     ".claude/skills/work/review.md": "d0d5a605790048c69acb70f03a3da246b92122131dbac9f7eb04d78551363cff",
     ".claude/skills/work/standard.md": "ebcd10521e955cd0a655b0ad2e3408a97cbbdc4e111f55e2ca86b734b81856a3",
     ".claude/skills/work/references/artifact-contracts.md": "4f25a5e6d6e293bab83093e7cb4d5c66fb2d83a84848cf2c3c1bda0241a4dbcb",
