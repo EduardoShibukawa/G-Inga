@@ -153,7 +153,7 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 - After each verified child, replace the parent's `## Checkpoint` with the done, active and blocked children, the branch and HEAD, and the copy-pasteable resume prompt, using the template in [resume.md](../work/resume.md). The next child to run is the first eligible child after the last one in `done`.
 - Decrement token budget by recorded consumption.
 - If remaining budget > 0 and eligible tasks remain under `--limit`, repeat from Step 1.
-- Otherwise, exit cleanly and output the final `/drive` session ledger.
+- Otherwise, run the handoff report and merge rule in "Session Close and Merge" ([procedure.md](../work/references/procedure.md)), then exit cleanly and output the final `/drive` session ledger with that report.
 
 ## References
 

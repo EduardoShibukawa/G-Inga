@@ -125,6 +125,7 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
   `git commit -m "<type>(<scope>): <summary> [resolves #ID]"`
 - After each verified child, replace the parent's `## Checkpoint` (done, active and blocked children, branch, HEAD and the copy-pasteable resume prompt) using the template in [.claude/skills/work/resume.md](../work/resume.md).
 - Advance the frontier of the dependency graph and repeat the OODA loop until all tickets are `resolved` or `blocked`.
+- When the loop ends, run the handoff report and merge rule in "Session Close and Merge" ([.claude/skills/work/references/procedure.md](../work/references/procedure.md)) before declaring the wave delivered.
 
 ## References & Procedures
 

@@ -37,6 +37,7 @@ Procedure for `standard` tasks in G-Ingá.
      - Exit `1` (`fail`): invariant or schema violation. Transition forbidden. Fix record/code.
      - Exit `2` (`blocked`): environmental barrier, shallow clone, or prerequisite missing. Transition to `verified` forbidden; record stays `completed` or `blocked`.
    - Commit the verified task record update.
+   - If the session delivered work, close with "Session Close and Merge" in `.claude/skills/work/references/procedure.md`.
 
 6. **Outcome:**
    - Write `## Outcome` summarizing delivered results.

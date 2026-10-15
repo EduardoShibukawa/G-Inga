@@ -73,6 +73,33 @@ Stop and escalate immediately (`escalated: <from> → <to> because <E1–E5>: <e
 
 On `resume <task-id>`: read `.claude/skills/work/resume.md`, verify git state vs `## Checkpoint`, reconcile, and resume.
 
+## Session Close and Merge
+
+Applies to every session that delivered work. Do not call work delivered until this section's report shows it on `origin/main`.
+
+1. **Handoff report.** Run `git fetch origin`, then collect:
+   - `origin/main`: `git log --oneline <base>..origin/main` (commits landed since the session's base).
+   - Local-only commits: `git log --branches --not --remotes --oneline`.
+   - Pushed branches without a merged PR: `gh pr list --state open --author @me`, or `git branch -r --no-merged origin/main`.
+   - Worktrees: `git worktree list`; for each, unmerged work is commits outside `origin/main` (`git log origin/main..HEAD`) or a dirty tree (`git status --porcelain`).
+
+   ```text
+   handoff (fetched <date>, base <sha>)
+   origin/main: <N commits since base | none> (<head sha>)
+   local-only commits: <none | list> -> pass / fail
+   pushed, not merged: <none | branch (PR #n)> -> pass / fail
+   worktrees: <path: clean | unmerged work> -> pass / fail
+   merge: pass / fail / blocked / not run (<PR #n, head sha>)
+   ```
+
+   Local-only commits, unmerged pushed branches or worktrees with unmerged work are `fail`, unless the task is intentionally open; then name it and the next action.
+2. **Merge rule.** The agent may merge its own pull request only when every required check passed.
+   - Confirm with `gh pr checks <n>`: no `fail`, no `pending`. Never use `--admin`.
+   - Do not rely on `--auto` when `main` has no required checks: GitHub then merges at once without waiting for CI. Confirm the checks first.
+   - Merge with `gh pr merge <n> --merge` (merge commit), which keeps the SHAs cited in `verified_at`.
+   - If the merge is denied (permission or branch protection), report `blocked` and leave the action to the owner.
+3. **Verify after merge.** Run `git fetch origin` and `git merge-base --is-ancestor <PR head sha> origin/main`. Exit `0`: `pass`. Otherwise report `fail` and do not declare the work delivered.
+
 ## Light Tier Procedure
 
 1. **Routing:** Output `tier: light (S1–S4, S6, S7 hold; S5 doesn't)`.
