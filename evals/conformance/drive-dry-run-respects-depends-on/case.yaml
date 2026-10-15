@@ -8,14 +8,13 @@ tags:
   - drive
 expected_outcome: No file writes, no subagent dispatch, no git mutation. 2026-10-13-add-shout-option is eligible; 2026-10-13-document-shout-option is held back because its dependency is not verified.
 execution:
-  prompt: "Use the drive skill with --dry-run: show me which backlog tasks can run now and in what order. Do not execute anything."
+  prompt: "/drive --dry-run: show me which backlog tasks can run now and in what order. Do not execute anything."
   max_turns: 25
   timeout_seconds: 400
   allowed_tools:
     - Read
     - Glob
     - Grep
-    - Skill
     - Bash
 context:
   scaffold_script: fixture.sh
@@ -53,7 +52,3 @@ graders:
     criteria: |-
       PASS if the response presents 2026-10-13-add-shout-option as runnable now AND presents 2026-10-13-document-shout-option as not runnable yet (waiting, blocked or deferred) because its dependency 2026-10-13-add-shout-option is not verified or accepted.
       FAIL if 2026-10-13-document-shout-option is listed as runnable now, or placed in the same wave as or before its dependency, or if the response says it executed or changed anything.
-  - name: det-skill-fired
-    type: tool_used
-    tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?drive"'

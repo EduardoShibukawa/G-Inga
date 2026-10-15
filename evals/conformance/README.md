@@ -2,6 +2,8 @@
 
 Behavioral cases for the `work`, `drive` and `orchestrate` skills, run with `claude plugin eval`. They cover the behavioral part of SC1 and the case design of SC3 in `specs/2026-10-13-skill-health-evaluation.md`.
 
+Since ADR 0010 every G-Ingá skill is user-invoked, each case's prompt types the slash command (`/work`, `/drive` or `/orchestrate`) instead of asking the model to use a skill by name. The typed command is the invocation; the graders verify the skill's outcome.
+
 Each case directory holds a `case.yaml` (schema 1.1: prompt, limits, graders) and a `fixture.sh` scaffold. The scaffold builds a small Git repository in the empty run workspace, so a run never touches this repository. Fixture task and spec records are generated at scaffold time. No fixture record is stored here as Markdown, so the repository validator never scans one.
 
 ## Cases
@@ -18,7 +20,7 @@ Grader labels: a grader named `det-*` is deterministic (`regex`, `tool_used` or 
 | `orchestrate-draft-spec-no-dispatch` | orchestrate | SC1 | The parent's spec is `draft`, so there is no decomposition and no dispatch. The response says the spec needs approval | deterministic only (approval mention is lexical) |
 | `orchestrate-collision-serializes-waves` | orchestrate | SC1 | Two tasks share `src/greet.js`, so the plan-only request serializes them into separate waves, with no dispatch | deterministic + model-graded (wave verdict) |
 
-Every case also has `det-skill-fired`, a `tool_used: Skill` check that the intended skill ran. Under a two-arm run it's a with-only indicator. Under `--ablation none` it's scored.
+There is no `det-skill-fired` grader: the typed slash command is the invocation, and the behavioral graders verify its outcome. A model-initiated `Skill` call would be a defect under ADR 0010, not a signal to score.
 
 ### How the standard case reaches the validator
 

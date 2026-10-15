@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "adb6dcc"
 ---
 
 # Align Evaluation Cases with User-Invoked Skills
@@ -16,7 +17,7 @@ Since ADR 0010, every G-Ingá skill is user-invoked. The model can't invoke `wor
 
 - In scope:
   - conformance prompts that say "Use the `<skill>` skill": `work-light-zero-persistence`, `work-heavy-stops-for-confirmation`, `work-standard-valid-record`, `drive-dry-run-respects-depends-on`, `drive-no-eligible-no-dispatch`, `orchestrate-collision-serializes-waves` and `orchestrate-draft-spec-no-dispatch` are rewritten to type `/<skill> …`. The `drive` and `orchestrate` cases have had this defect since ADR 0007.
-  - trigger cases: `work-should-fire-new-deliverable`, `drive-should-fire-backlog-drain` and `orchestrate-should-fire-parallel-tickets` are reclassified or retired, since model-initiated firing is now a defect. `work-registration-precedence` is kept only if a typed `/work` still shows which registration wins.
+  - trigger cases: `work-should-fire-new-deliverable`, `drive-should-fire-backlog-drain` and `orchestrate-should-fire-parallel-tickets` are retired, since model-initiated firing is now a defect. `work-registration-precedence` is kept with a typed `/work` prompt.
   - `evals/triggers/README.md`, `evals/conformance/README.md` and ADR 0008 consequences, where they assume model invocation.
 - Out of scope: running the paid suites without owner approval.
 
@@ -26,7 +27,28 @@ Since ADR 0010, every G-Ingá skill is user-invoked. The model can't invoke `wor
 - AC2: no trigger case scores a model-initiated `Skill` call to a G-Ingá skill as a pass.
 - AC3: `mise run validate` and `mise run test` pass.
 
+## Plan
+
+1. Baseline B1/B2 at HEAD `d80069c` before edits.
+2. Rewrite the seven conformance prompts to type the slash command and drop their `det-skill-fired` graders.
+3. Retire the three should-fire trigger cases; retype `work-registration-precedence` to `/work`.
+4. Update `evals/triggers/README.md`, `evals/conformance/README.md` and ADR 0008 consequences.
+5. Verify AC1–AC3, R1 and V1, then commit the verification update.
+
 ## Verification
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
+| B1 | `mise run validate` before edits | pass | d80069c | exit 0, Overall pass (159 files, 0 issues) |
+| B2 | `mise run test` before edits | pass | d80069c | exit 0, 253 pass, 0 fail |
+| AC1 | grep: no case prompt names a G-Ingá skill | pass | adb6dcc | `Use the <skill> skill` gone; seven conformance prompts type `/work`, `/drive`, `/orchestrate` |
+| AC2 | grep: no trigger case scores a model-initiated `Skill` call as pass | pass | adb6dcc | three should-fire cases retired; remaining `Skill` graders are `min: 0, max: 0` or `with-only` indicators |
+| AC3 | `mise run validate` and `mise run test` | pass | adb6dcc | validate exit 0 (Overall pass); test exit 0 (253 pass, 0 fail) |
+| R1 | `bun tools/validate/validate.ts` | pass | adb6dcc | exit 0; manifest-integrity + artifact-records pass, history walk 0 frozen |
+| V1 | diff read against AC1–AC3 | pass | adb6dcc | 7 conformance prompt+grader edits, 3 trigger deletions, `/work` retype, 2 READMEs + ADR 0008 reviewed |
+
+## Outcome
+
+Aligned the evaluation cases with the user-invoked contract (ADR 0010): the seven conformance prompts now type the slash command and no longer ask the model to use a skill by name, their `det-skill-fired` (`tool_used: Skill`) graders are removed, the three should-fire trigger cases are retired (model-initiated firing is now a defect), and `work-registration-precedence` types `/work`. The conformance and trigger READMEs and the ADR 0008 consequences no longer assume model invocation. `mise run validate`, `mise run test` and the standalone validator all exit 0 at `adb6dcc`.
+
+Follow-ups: none in scope. Whether a typed `/work` still surfaces which registration wins (`work-registration-precedence`) is confirmed by the next owner-approved paid baseline run.
