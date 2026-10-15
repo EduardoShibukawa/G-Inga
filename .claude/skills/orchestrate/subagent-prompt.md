@@ -52,16 +52,9 @@ modified_files:
   - <caminho/do/arquivo>
 checks_run:
   - <check_name>: pass / fail / blocked (<evidência resumida>)
-usage:
-  tokens_input: <n>
-  tokens_output: <n>
-  cache_read_tokens: <n>
-  cache_write_tokens: <n>
-  total_tokens: <n>
-  cache_read_ratio: <n>
 ```
 
-The `usage` block records the token totals in the ADR 0006 vocabulary; never include prompt content.
+The worker does NOT report token usage: it cannot observe its own. The orchestrator records the model and the ADR 0006 token totals from the host's `Agent` result (fields the host doesn't provide are `not run`), never from the worker's report, and never with prompt content.
 ````
 
 ---
@@ -106,12 +99,5 @@ modified_files:
   - tests/unit/parser/query.test.ts
 checks_run:
   - bun test: pass (6 passed, 0 failed)
-usage:
-  tokens_input: 12041
-  tokens_output: 612
-  cache_read_tokens: 9844
-  cache_write_tokens: 1187
-  total_tokens: 12653
-  cache_read_ratio: 0.82
 ```
 ````

@@ -10,7 +10,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { runSessionStartCheck, TTL_MS } from "../../hooks/session-start.mjs";
 import { REPO } from "../validate/testkit.ts";
 
@@ -41,11 +41,15 @@ function makeMarketplaceRepo(): { dir: string; head: string } {
   return { dir, head };
 }
 
-function makeProjectRepo(opts: { withPreCommitTask: boolean; withGitHook: boolean }): string {
+function makeProjectRepo(opts: { withPreCommitTask: boolean; withGitHook: boolean; config?: [string, string] }): string {
   const dir = mkdtempSync(join(tmpdir(), "g-inga-proj-"));
   temps.push(dir);
   spawnSync("git", ["init", "-q"], { cwd: dir });
-  if (opts.withPreCommitTask) {
+  if (opts.config) {
+    const [rel, text] = opts.config;
+    mkdirSync(dirname(join(dir, rel)), { recursive: true });
+    writeFileSync(join(dir, rel), text);
+  } else if (opts.withPreCommitTask) {
     writeFileSync(join(dir, "mise.toml"), '[tasks.pre-commit]\ndepends = ["validate"]\n');
   }
   if (opts.withGitHook) {
@@ -145,6 +149,68 @@ describe("startup warnings (SC8) and single skill listing (SC9)", () => {
     expect(res.warnings).toHaveLength(1);
     expect(res.warnings[0]).toContain("pre-commit");
     expect(res.warnings[0]).toContain("mise install");
+  });
+
+  test("a failed lookup is cached: the next run within 24 h does not reach the network", () => {
+    const proj = makeProjectRepo({ withPreCommitTask: false, withGitHook: false });
+    const installedFile = writeInstalledPlugins("3333333333333333333333333333333333333333");
+    const cacheDir = mkdtempSync(join(tmpdir(), "g-inga-cache-"));
+    temps.push(cacheDir);
+    const cacheFile = join(cacheDir, "marketplace-main.json");
+    const now = 1_700_000_000_000;
+    const base = { cwd: proj, installedPluginsFile: installedFile, cacheFile, marketplaceUrl: "http://127.0.0.1:9/unreachable.git" };
+
+    const first = runSessionStartCheck({ ...base, now });
+    expect(first.networkReached).toBe(true);
+    expect(first.warnings).toEqual([]);
+    expect(JSON.parse(readFileSync(cacheFile, "utf8"))).toEqual({ sha: null, checkedAt: now });
+
+    const second = runSessionStartCheck({ ...base, now: now + TTL_MS - 1000 });
+    expect(second.networkReached).toBe(false);
+    expect(second.warnings).toEqual([]);
+
+    // After 24 h the failed entry expires and the network is tried again.
+    const third = runSessionStartCheck({ ...base, now: now + TTL_MS + 1000 });
+    expect(third.networkReached).toBe(true);
+  });
+
+  test("the missing-hook warning does not depend on the network lookup", () => {
+    const proj = makeProjectRepo({ withPreCommitTask: true, withGitHook: false });
+    const installedFile = writeInstalledPlugins("4444444444444444444444444444444444444444");
+    const cacheFile = join(mkdtempSync(join(tmpdir(), "g-inga-cache-")), "marketplace-main.json");
+    temps.push(join(cacheFile, ".."));
+    const res = runSessionStartCheck({
+      cwd: proj,
+      installedPluginsFile: installedFile,
+      cacheFile,
+      marketplaceUrl: "http://127.0.0.1:9/unreachable.git",
+      timeoutMs: 1,
+    });
+    expect(res.warnings).toHaveLength(1);
+    expect(res.warnings[0]).toContain("mise run pre-commit");
+  });
+
+  test.each([
+    [".config/mise/config.toml", '[tasks.pre-commit]\nrun = "true"\n'],
+    [".mise.toml", '[tasks."pre-commit"]\nrun = "true"\n'],
+    ["mise.toml", '[tasks]\npre-commit = "true"\n'],
+    ["mise.toml", '[tools]\nbun = "1"\n\n[tasks]\n"pre-commit" = { run = "true" }\n'],
+    ["mise.local.toml", '[tasks]\npre-commit = "true"\n'],
+  ])("a pre-commit task in %s triggers the missing-hook warning", (rel, text) => {
+    const proj = makeProjectRepo({ withPreCommitTask: false, withGitHook: false, config: [rel, text] });
+    const res = runSessionStartCheck({ cwd: proj, installedPluginsFile: "/nonexistent/installed.json", pluginRoot: "" });
+    expect(res.warnings).toHaveLength(1);
+    expect(res.warnings[0]).toContain("pre-commit");
+  });
+
+  test("a mise config without a pre-commit task does not trigger the warning", () => {
+    const proj = makeProjectRepo({
+      withPreCommitTask: false,
+      withGitHook: false,
+      config: ["mise.toml", '[tasks]\nvalidate = "true"\n\n[env]\npre-commit = "x"\n'],
+    });
+    const res = runSessionStartCheck({ cwd: proj, installedPluginsFile: "/nonexistent/installed.json", pluginRoot: "" });
+    expect(res.warnings).toEqual([]);
   });
 
   test("network down fails open within 3 seconds and exits 0 without false staleness warning", () => {

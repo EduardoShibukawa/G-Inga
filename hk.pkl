@@ -5,7 +5,8 @@ amends "package://github.com/jdx/hk/releases/download/v1.24.0/hk@1.24.0#/Config.
 hooks {
   ["pre-commit"] {
     // Unstaged and untracked changes are stashed while the step runs, so the
-    // validator sees what the commit will contain.
+    // validator sees what the commit will contain. The stash is `refs/stash` in the
+    // common git dir, shared by every worktree of the repository, not per worktree.
     stash = "git"
     steps {
       ["pre-commit"] {
