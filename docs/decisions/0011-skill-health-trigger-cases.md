@@ -1,6 +1,6 @@
 # 0011 — Skill-health trigger cases under user-invoked skills
 
-- **Status:** proposed
+- **Status:** accepted (accepted by project owner 2026-10-15)
 - **Date:** 2026-10-15
 - **Deciders:** project owner
 - **Depends on:** [ADR 0010](0010-user-invoked-entry-skills.md) (`accepted`) and [ADR 0008](0008-skill-evaluation-instrument.md) (`accepted`), D7 on the [decision map](../decision-map.md).
