@@ -77,6 +77,14 @@ A result from this route is evidence only when it ran on the pinned Bun. CI is t
 - The agent's checked-in permissions (`.claude/settings.json`) deny `git commit --no-verify`, `-n` and `HK=0`. The owner keeps those bypasses. CI runs the `pre-commit` job on every pull request; branch protection on `main` requiring it is an owner setting.
 - Remove the gate with `mise x -- hk uninstall`.
 
+### Startup warnings and single skill listing
+
+[ADR 0009](decisions/0009-enforcement-primitives.md) §1. The Claude Code plugin ships `hooks/hooks.json` with a `SessionStart` command (`hooks/session-start.mjs`, 3 s timeout, fail open):
+
+- **Stale plugin warning:** reads the installed `g-inga@g-inga` commit from `~/.claude/plugins/installed_plugins.json` (or `CLAUDE_PLUGIN_ROOT`) and compares it with the marketplace's `main` commit (`git ls-remote`, cached for 24 hours in `${XDG_CACHE_HOME:-~/.cache}/g-inga/marketplace-main.json`). When they differ, it prints a one-line warning to update the plugin.
+- **Missing Git hook warning:** when the working repository's `mise.toml` defines `[tasks.pre-commit]` (or a `pre-commit` file task) and `git rev-parse --git-path hooks/pre-commit` does not exist, it prints a one-line warning to run `mise install`.
+- **Single listing in this repository:** `.claude-plugin/plugin.json` points at this repository's `.claude/skills/`, so enabling the user-installed `g-inga@g-inga` plugin while working inside G-Ingá itself would list each skill twice (`work` and `g-inga:work`). Checked-in `.claude/settings.json` sets `"enabledPlugins": { "g-inga@g-inga": false }` so the live `.claude/skills/` copy is the only one loaded here.
+
 No check edits a document. A failure is fixed in the document or, if the rule is wrong, in the validator, never by the validator.
 
 ## Layers
