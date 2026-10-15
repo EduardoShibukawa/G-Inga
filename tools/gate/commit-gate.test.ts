@@ -36,6 +36,8 @@ const ENV = {
 };
 
 function sh(script: string, cwd: string) {
+  // Any cwd outside the temp root would run git, and the hook, in a real repository.
+  if (!cwd.startsWith(root) && cwd !== tmpdir()) throw new Error(`commit gate: refusing to run outside ${root}: "${cwd}"`);
   const p = Bun.spawnSync(["sh", "-c", script], { cwd, env: ENV, stdout: "pipe", stderr: "pipe" });
   return { code: p.exitCode, out: p.stdout.toString() + p.stderr.toString() };
 }
@@ -51,7 +53,8 @@ const VALID = "tasks/2026-10-14-valid.md";
 const FINDING = `${INVALID} §3.3 working tree: status "nonsense" is not a task state`;
 
 describe.skipIf(!hasMise && !requireRuntimes)("commit gate", () => {
-  let clone = "";
+  // Inside the temp root from the start, so a failed setup test never points later tests at this repository.
+  const clone = join(root, "clone");
 
   test("mise install in a fresh clone installs the pre-commit hook", () => {
     expect(hasMise).toBe(true);
@@ -62,7 +65,6 @@ describe.skipIf(!hasMise && !requireRuntimes)("commit gate", () => {
     for (const f of ["mise.toml", "mise.lock", "hk.pkl"]) cpSync(join(REPO, f), join(origin, f));
     expect(sh("git init -q && git config commit.gpgsign false && git add -A && git commit -q -m init", origin).code).toBe(0);
 
-    clone = join(root, "clone");
     expect(sh(`git clone -q "${origin}" "${clone}" && git -C "${clone}" config commit.gpgsign false`, root).code).toBe(0);
     // Ignored, as a local override usually is; hk would otherwise stash it with the untracked files.
     expect(sh('echo mise.local.toml >> "$(git rev-parse --git-common-dir)/info/exclude"', clone).code).toBe(0);
@@ -105,5 +107,18 @@ describe.skipIf(!hasMise && !requireRuntimes)("commit gate", () => {
     expect(r.code).not.toBe(0);
     expect(head(wt)).toBe(before);
     expect(r.out).toContain(FINDING);
+  }, 120_000);
+
+  test("a valid record commits from another worktree, and the hook leaves the clone's config alone", () => {
+    const wt = join(root, "wt");
+    expect(sh(`git rm -q --cached ${INVALID} && rm ${INVALID}`, wt).code).toBe(0);
+    const valid = "tasks/2026-10-14-valid-wt.md";
+    writeFileSync(join(wt, valid), task({ status: "todo" }));
+    const before = head(wt);
+    const r = sh(`git add ${valid} && git commit -q -m valid`, wt);
+    if (r.code !== 0) console.error(r.out);
+    expect(r.code).toBe(0);
+    expect(head(wt)).not.toBe(before);
+    expect(sh("git config --get core.bare", clone).out.trim()).toBe("false");
   }, 120_000);
 });

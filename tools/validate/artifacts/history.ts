@@ -17,12 +17,33 @@ export interface HistoryResult {
 
 const WT = "working tree";
 
+/**
+ * Git's repository-local variables (`git rev-parse --local-env-vars`). A Git hook exports some of
+ * them (in a linked worktree, absolute GIT_DIR and GIT_INDEX_FILE), and a child git that inherits
+ * them acts on the hook's repository instead of `root`. Dropping them makes git find the
+ * repository from `cwd`, which for the validator's own root is the same repository.
+ */
+const LOCAL_ENV_VARS = [
+  "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_CONFIG", "GIT_CONFIG_PARAMETERS", "GIT_CONFIG_COUNT",
+  "GIT_OBJECT_DIRECTORY", "GIT_DIR", "GIT_WORK_TREE", "GIT_IMPLICIT_WORK_TREE", "GIT_GRAFT_FILE",
+  "GIT_INDEX_FILE", "GIT_NO_REPLACE_OBJECTS", "GIT_REPLACE_REF_BASE", "GIT_PREFIX", "GIT_SHALLOW_FILE",
+  "GIT_COMMON_DIR",
+];
+
+function gitEnv(): Record<string, string | undefined> {
+  const env: Record<string, string | undefined> = { ...process.env };
+  for (const k of LOCAL_ENV_VARS) delete env[k];
+  // GIT_CONFIG_COUNT pairs with GIT_CONFIG_KEY_<n> and GIT_CONFIG_VALUE_<n>.
+  for (const k of Object.keys(env)) if (/^GIT_CONFIG_(KEY|VALUE)_\d+$/.test(k)) delete env[k];
+  return env;
+}
+
 export function git(root: string, args: string[]): { ok: boolean; out: string } {
   if (typeof Bun !== "undefined" && Bun.spawnSync) {
-    const p = Bun.spawnSync(["git", ...args], { cwd: root, stdout: "pipe", stderr: "pipe" });
+    const p = Bun.spawnSync(["git", ...args], { cwd: root, env: gitEnv(), stdout: "pipe", stderr: "pipe" });
     return { ok: p.exitCode === 0, out: p.stdout.toString() };
   }
-  const p = spawnSync("git", args, { cwd: root, encoding: "utf8" });
+  const p = spawnSync("git", args, { cwd: root, env: gitEnv(), encoding: "utf8" });
   return { ok: p.status === 0, out: p.stdout || "" };
 }
 
@@ -52,10 +73,10 @@ export function gitAncestry(root: string): Ancestry {
     if (!ra.ok || !rb.ok) return undefined;
     if (ra.out.trim() === rb.out.trim()) return false;
     if (typeof Bun !== "undefined" && Bun.spawnSync) {
-      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root });
+      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
       return p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
     }
-    const p = spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd: root });
+    const p = spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
     return p.status === 0 ? true : p.status === 1 ? false : undefined;
   };
 }
