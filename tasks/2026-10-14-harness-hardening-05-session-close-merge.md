@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "e083e6c"
 parent: 2026-10-14-harness-hardening
 spec: 2026-10-14-harness-hardening@1
 depends_on:
@@ -31,9 +32,9 @@ Every delivering session ends with a remote-state report, and the agent merges o
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | 2edf21e | parent B1/B2: `mise run validate` exit 0, `mise run test` 242 pass |
 | B2 | repository validation and test suites before change | pass | 55f7299 | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (264 pass, 0 fail) |
-| AC1 | SC7: handoff report (fetch, `origin/main`, local-only, worktrees), merge rule (required checks, no `--admin`), post-merge verification | pass | pending | one section in `work/references/procedure.md`, referenced from `/drive` Step 6, `/orchestrate` SEAL and `work/standard.md`; table-top in `## Notes` |
-| R1 | repository validation and test suites after change | pass | pending | filled at seal |
-| V1 | self-review of 01fec5a..HEAD against AC1 | pass | pending | one shared section in `procedure.md` (bundle asset), referenced from `/drive` Step 6, `/orchestrate` SEAL and `standard.md` step 5; covers fetch, `origin/main`, local-only commits, unmerged pushed branches, worktrees, required checks via `gh pr checks`, no `--admin`, no reliance on `--auto` without required checks, merge commit, post-merge `merge-base --is-ancestor`; table-top in `## Notes` |
+| AC1 | SC7: handoff report (fetch, `origin/main`, local-only, worktrees), merge rule (required checks, no `--admin`), post-merge verification | pass | e083e6c | one section in `work/references/procedure.md`, referenced from `/drive` Step 6, `/orchestrate` SEAL and `work/standard.md`; table-top in `## Notes` |
+| R1 | repository validation and test suites after change | pass | e083e6c | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (264 pass, 0 fail), after the manifest regeneration in e083e6c |
+| V1 | self-review of 01fec5a..HEAD against AC1 | pass | e083e6c | one shared section in `procedure.md` (bundle asset), referenced from `/drive` Step 6, `/orchestrate` SEAL and `standard.md` step 5; covers fetch, `origin/main`, local-only commits, unmerged pushed branches, worktrees, required checks via `gh pr checks`, no `--admin`, no reliance on `--auto` without required checks, merge commit, post-merge `merge-base --is-ancestor`; table-top in `## Notes` |
 
 ## Plan
 

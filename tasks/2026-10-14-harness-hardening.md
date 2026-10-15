@@ -67,18 +67,18 @@ Not run yet: the fresh-context adversarial review runs after integrated verifica
 
 ## Checkpoint
 
-- as of: 2026-10-15, branch `task/2026-10-14-harness-hardening-04-checkpoint-resume`, head 41a830b, worktree clean
-- done: 01 (`-01-commit-gate`, merged), 02 and 03 (verified at 4fab75c, merged), 07 (`-07-hook-env-isolation`, verified at 57b33da, PR #61), 06 (`-06-startup-warnings`, verified at 24bec60, PR #62), 04 (`-04-checkpoint-resume`, verified at 41a830b)
+- as of: 2026-10-15, branch `task/2026-10-14-harness-hardening-05-session-close-merge`, head e083e6c, worktree clean
+- done: 01 (merged), 02 and 03 (verified at 4fab75c, merged), 07 (verified at 57b33da, PR #61), 06 (verified at 24bec60, PR #62), 04 (verified at 41a830b, PR #64), 05 (verified at e083e6c)
 - active: none
 - blocked: none
-- next: child 05 (`-05-session-close-merge`): handoff report and merge rule in `work`, `drive` and `orchestrate`
-- revalidate: parent B1/B2 ran on 2edf21e; integrated SC rows run after child 05
-- owner actions pending: branch protection on `main` requiring the `pre-commit` check, read back through the GitHub API (SC3); SC10 acceptance
+- next: integrated SC rows and the fresh-context adversarial review on the parent; then merge the stacked PRs in order (#61, #62, #64, #63, #65, then this branch)
+- revalidate: parent B1/B2 ran on 2edf21e
+- owner actions pending: branch protection on `main` requiring the `pre-commit` check, read back through the GitHub API (SC3); acceptance
 - resume prompt:
 
   ~~~text
-  Resume 2026-10-14-harness-hardening on branch task/2026-10-14-harness-hardening-04-checkpoint-resume. Expected head 41a830b.
+  Resume 2026-10-14-harness-hardening on branch task/2026-10-14-harness-hardening-05-session-close-merge. Expected head e083e6c.
   Read the parent's ## Checkpoint, then reconcile it with `git status`, `git log -n 1` and the child statuses.
   If the head or any child status disagrees with the checkpoint, report the difference and dispatch nothing until it is reconciled.
-  Otherwise continue with child 05. Done: 01, 02, 03, 04, 06, 07. Blocked: none.
+  Otherwise run the parent's integrated verification and review. Done: 01-07. Blocked: none.
   ~~~
