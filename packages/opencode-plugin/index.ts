@@ -53,7 +53,7 @@ const SKILLS: SkillSpec[] = [
   {
     id: "sharpen",
     command:
-      "Run the G-Ingá `/sharpen` question-rounds procedure. Load the `sharpen` skill and follow `.agents/skills/work/references/question-rounds.md` in standalone mode.",
+      "Run the G-Ingá `/sharpen` question-rounds procedure. Load the `sharpen` skill and follow `.claude/skills/work/references/question-rounds.md` in standalone mode.",
   },
 ];
 

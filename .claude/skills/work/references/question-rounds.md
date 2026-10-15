@@ -1,140 +1,113 @@
-<!-- Adapted from Matt Pocock's skills at 49dd158: skills/productivity/grilling/SKILL.md and skills/engineering/domain-modeling/SKILL.md -->
-# Question Rounds Procedure
+<!-- Technique adapted from mattpocock/skills at 49dd158 (grilling, domain-modeling) under ADR 0004 item 5. The wording is G-Ingá's own. -->
+# Question Rounds
 
-This procedure governs structured question rounds for G-Ingá. It is the single source of truth for both the `/sharpen` standalone skill and the `/work` heavy route (step 2). It contains G-Ingá's own text, not a close copy of upstream.
+One procedure, two callers: the `/sharpen` entry skill (standalone) and step 2 of the `/work` heavy route. Its job is to turn a vague idea into decisions the owner has made on purpose.
 
-## Purpose
+## The model
 
-Interview the owner until shared understanding exists. Map decisions as a **design tree**: every decision branches into the decisions that hang off it. Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask now without guessing at answers you haven't heard yet.
+Treat the idea as a tree of choices. Some choices must be settled before others even make sense. At any moment, the choices that are ready to be asked are the ones with nothing unsettled upstream. Call that set the **ready set**. You work through the tree in numbered **rounds**, each round covering the whole ready set.
 
-## Round Mechanics
+## Running a round
 
-1. **Ask the whole frontier in one round.** Number each question (Q1, Q2, …) and give your recommended answer with clear rationale.
-2. **Dependent questions wait.** A question whose answer depends on another question still open in this round belongs to a later round, not this one.
-3. **Record owner decisions.** Each answer becomes `decided: <question> → <answer> by owner (<date>, "<ref>")`.
-4. **Recompute the frontier.** Settled decisions push the frontier outward and unblock questions that depended on them. Ask the next round.
-5. **Done when empty.** The session ends when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. The owner must confirm shared understanding before any action is taken.
+1. Gather every ready choice and put all of them to the owner together, numbered Q1, Q2, and so on.
+2. For each, state your own pick and the reason for it, so the owner can reply "agreed" or push back. If the owner says "you choose", your pick becomes their decision and is logged as theirs. If the owner says "later", the question stays open and returns in a later round; nothing is settled on their behalf.
+3. Hold back any question whose wording would change depending on another answer in the same round. It joins a later round.
+4. When the owner answers, log one line per answer in the form `decided: <question> → <answer> by owner (<date>, "<ref>")`, and recompute the ready set. New questions appear as old ones close.
+5. Stop when no ready choice remains and no branch was skipped. Then ask the owner to confirm that you both understand the idea the same way. Take no action before that confirmation.
 
-### Question Format
+Question layout:
 
 ```text
-❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
-
-➡️ <your recommended answer with rationale>
+Q2 [storage] Where should the checkpoint live?
+  a) in the task record  b) in a separate file
+Recommend: a) it keeps one source per task, and the contract already names that file.
 ```
 
-## Facts versus Decisions
+## Facts and decisions
 
-- **Facts are the agent's job.** Never ask the owner for anything you could look up yourself (filesystem, codebase, tools, docs).
-- **Read-only subagents for broad lookups.** When a frontier question needs a fact from the environment and the lookup is broad, dispatch a read-only subagent (Haiku model, no write tools) to find it. Do not block the round on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the subagent to report — ask the rest of the frontier now.
-- **Decisions are the owner's.** Put each decision to the owner and wait. Never assume or infer a decision.
+- A fact can be found; a decision must be made. Look facts up yourself in the repository, the tools and the docs. Never spend an owner question on something you could read.
+- For a wide search, hand it to a read-only subagent in the "read-only search" role of the model policy (in Claude Code that is Haiku, per `references/model-policy.md`; in other hosts, the cheapest model available). Give it no write tools. Do not pause the round for it: only questions that need its answer move to the next round; ask the others now.
+- A decision always goes to the owner. Never settle one by guessing what they would probably say.
 
-## Domain Discipline
+## Keeping the vocabulary honest
 
-During every round, actively sharpen the project's domain model:
+While the rounds run, keep `docs/glossary.md` accurate.
 
-### 1. Challenge against the glossary
+1. **Check terms against the glossary.** If the owner uses a word in a different sense than the glossary gives it, say so at once and ask which sense holds. Example: the glossary says a *checkpoint* is the handoff block of a task, and the owner says "checkpoint" for a git tag.
+2. **Replace loose words.** When a word is vague or covers two things, propose one precise term. Example: "the record" could mean a task file or a spec file; suggest which name each should carry.
+3. **Probe with concrete cases.** When the owner describes how two concepts relate, invent a specific situation that tests the boundary. Example: a task whose spec changes after approval; does it keep its id?
+4. **Compare claims with the repository.** When the owner says how something works, check the files. If they disagree, show both and ask which is right. Example: the owner says specs can be edited in place, but the spec header says the approved text is frozen under its hash.
+5. **Record resolved terms right away.** Write each term to `docs/glossary.md` the moment it is settled, not at the end. Create the file when the first term arrives.
 
-When the owner uses a term that conflicts with `docs/glossary.md`, call it out immediately: *"Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"*
-
-If `docs/glossary.md` does not exist, create it lazily when the first term is resolved.
-
-### 2. Sharpen fuzzy language
-
-When the owner uses vague or overloaded terms, propose a precise canonical term: *"You're saying 'account' — do you mean the Customer or the User? Those are different things."*
-
-### 3. Discuss concrete scenarios
-
-When domain relationships are being discussed, stress-test them with specific scenarios. Invent scenarios that probe edge cases and force the owner to be precise about the boundaries between concepts.
-
-### 4. Cross-reference with code
-
-When the owner states how something works, check whether the code agrees. If you find a contradiction, surface it: *"Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"*
-
-### 5. Write resolved terms to `docs/glossary.md` immediately
-
-When a term is resolved, write it to `docs/glossary.md` right there. Do not batch these up — capture them as they happen.
-
-**Glossary format** (plain repository doc, not a contract artifact):
+Glossary entry shape (a plain repository doc, not a contract artifact):
 
 ```md
 # Glossary
 
-**Order**:
-A customer's request for products or services.
-_Avoid_: Purchase, transaction
-
-**Invoice**:
-A request for payment sent to a customer after delivery.
-_Avoid_: Bill, payment request
+**Checkpoint**:
+The handoff block at the end of a task record.
+_Avoid_: save point, bookmark
 ```
 
-Rules:
+Entry rules:
 
-- Be opinionated: when multiple words exist for the same concept, pick the best one and list the others under `_Avoid_`.
-- Keep definitions tight: one or two sentences max. Define what it IS, not what it does.
-- Only include terms specific to this project's context. General programming concepts don't belong.
-- Group terms under subheadings when natural clusters emerge.
-- **No implementation details.** The glossary is a vocabulary reference, not a spec or scratch pad.
+- Choose one preferred word per concept and list rejected synonyms after `_Avoid_`.
+- Define in one or two sentences what the thing is, not what it does.
+- List only words with a meaning specific to this project; leave out general programming vocabulary.
+- Group entries under subheadings once clusters appear.
+- Keep implementation detail out; the glossary names things and nothing else.
 
-### 6. Migrate existing `CONTEXT.md`
+### Legacy `CONTEXT.md`
 
-If a `CONTEXT.md` exists at the repository root, migrate its terms into `docs/glossary.md` on first use of this procedure, then remove `CONTEXT.md`.
+If a `CONTEXT.md` sits at the repository root, copy its terms into `docs/glossary.md` the first time this procedure runs. In standalone mode leave the file in place and list its removal in the decision summary for the owner to do. In heavy mode its removal may be proposed as part of the task.
 
-## ADR Offers
+## When to offer an ADR
 
-Offer an ADR **only when all three conditions are true**:
+Offer one only if all three hold:
 
-1. **Hard to reverse** — the cost of changing your mind later is meaningful.
-2. **Surprising without context** — a future reader will wonder "why did they do it this way?".
-3. **The result of a real trade-off** — there were genuine alternatives and you picked one for specific reasons.
+1. Reversing it later would be costly.
+2. A newcomer would not guess the reason from the code or docs.
+3. Real alternatives existed and one was chosen for stated reasons.
 
-If any condition is missing, skip the ADR.
+If one of these fails, do not offer.
 
-When offered, write it to `docs/decisions/` as `proposed` with status frontmatter `proposed`. Only the owner accepts it (changes status to `accepted`).
+A drafted ADR is written to `docs/decisions/` with status `proposed`. Only the owner accepts it. Number it one above the highest file number in that folder.
 
-**ADR format** (minimal, per ADR 0004 item 5):
+Follow the house layout of the existing records:
 
 ```md
-# {Short title of the decision}
+# NNNN — Short decision title
 
-{1-3 sentences: what's the context, what did we decide, and why.}
+- **Status:** proposed
+- **Date:** <date>
+- **Deciders:** project owner
 
-Status: proposed
+## Context
+
+Why the decision came up, in a few sentences.
+
+## Decision
+
+What was chosen and why.
 ```
 
-Optional sections (only when they add genuine value):
+Add `## Considered options` or `## Consequences` only when they carry something a reader would otherwise miss.
 
-- **Considered Options** — only when rejected alternatives are worth remembering.
-- **Consequences** — only when non-obvious downstream effects need to be called out.
+## Standalone mode (`/sharpen`)
 
-Numbering: scan `docs/decisions/` for the highest existing number and increment by one (e.g., `0005-...`, `0006-...`).
+- Run the rounds as above.
+- Write only two kinds of file: glossary entries in `docs/glossary.md`, and ADR drafts in `docs/decisions/` that the owner agreed to record, each with status `proposed`. Accepting an ADR is the owner's act.
+- Create no task or spec file.
+- Finish with a decision summary: every `decided:` line, each glossary term added or changed, each ADR draft written, and any `CONTEXT.md` removal left for the owner.
+- Offer to continue under `/work` with those decisions as input.
 
-## Standalone Mode (`/sharpen`)
+## Heavy mode (`/work`, step 2)
 
-When invoked as `/sharpen <idea or plan>`:
-
-- Run the procedure above.
-- Persist **only** glossary entries (`docs/glossary.md`) and owner-accepted ADR drafts (`docs/decisions/*` with `Status: accepted`).
-- Do not create task or spec files.
-- Close with a **decision summary** listing every `decided:` line and every glossary term added/updated.
-- Offer to open `/work` with the captured decisions as input.
-
-## Heavy Mode (`/work` heavy route, step 2)
-
-When invoked from `/work` heavy route step 2:
-
-- Run the procedure above.
-- **Every owner answer becomes a `decided:` line in the parent task record** (not just in the session).
-- The procedure feeds directly into spec authoring (step 2 continued: author specification in `specs/<id>.md`).
-- No implementation before the owner confirms shared understanding and the spec is approved.
+- Run the rounds as above.
+- Copy each `decided:` line into the parent task record, so the decisions outlive the session.
+- The outcome feeds the specification written next in `specs/<id>.md`.
+- Do not implement anything until the owner has confirmed the shared understanding and approved the spec.
 
 ## Provenance
 
-Technique adapted under ADR 0004 item 5 from:
-
-- `mattpocock/skills` at commit `49dd158`
-  - `skills/productivity/grilling/SKILL.md` — frontier rounds with recommended answers, fact-finding via subagents, decisions to owner
-  - `skills/engineering/domain-modeling/SKILL.md` — term challenge, fuzzy language sharpening, edge-case scenarios, claim-vs-code cross-check, glossary inline updates, three-condition ADR rule
-
-G-Ingá's text is original; only the technique structure is adapted.
+Technique adapted under ADR 0004 item 5 from `mattpocock/skills` at commit `49dd158` (`grilling` and `domain-modeling`): asking by rounds with recommended answers, delegating fact-finding, challenging terms, and the three-test ADR offer. The text, formats and examples here were written for G-Ingá.
