@@ -303,6 +303,46 @@ describe("applicability uses Git history, so deleting every record can't turn th
     expect(r.code).toBe(0);
   }, 60000);
 
+  test("a record modified on one branch and unchanged on a later sibling-branch commit doesn't regress (§3.3)", () => {
+    const X = "tasks/2026-10-12-x.md";
+    const Y = "tasks/2026-10-12-y.md";
+    const closed = task({ status: "cancelled", log: ["tier: standard (S2 fails)", "downgraded: standard → light because typo"] });
+    const dir = fixtureDir({ "README.md": "# R\n" }, { git: true });
+    const g = (...args: string[]) => {
+      const r = git(dir, ...args);
+      if (r.exitCode !== 0) throw new Error(`git ${args.join(" ")}: ${r.stderr.toString()}`);
+      return r.stdout.toString().trim();
+    };
+    const commitAt = (date: string) => {
+      g("add", "-A");
+      const env = { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date };
+      const r = Bun.spawnSync(["git", "-c", "user.email=f@example.invalid", "-c", "user.name=f", "-c", "commit.gpgsign=false", "commit", "-q", "-m", "fixture"], { cwd: dir, env, stderr: "pipe" });
+      if (r.exitCode !== 0) throw new Error(r.stderr.toString());
+    };
+    const base = g("rev-parse", "--abbrev-ref", "HEAD");
+    mkdirSync(join(dir, "tasks"), { recursive: true });
+    // Both X and Y exist as active at the fork point.
+    writeFileSync(join(dir, X), task({ status: "active" }));
+    writeFileSync(join(dir, Y), task({ status: "active" }));
+    commitAt("2026-10-14T10:00:00Z");
+    // Branch A closes X as cancelled at 11:00.
+    g("checkout", "-q", "-b", "branch-x");
+    writeFileSync(join(dir, X), closed);
+    commitAt("2026-10-14T11:00:00Z");
+    const branchX = g("rev-parse", "HEAD");
+    // Sibling branch (base) modifies only Y at 12:00; X is still active in its tree.
+    g("checkout", "-q", base);
+    writeFileSync(join(dir, Y), closed);
+    commitAt("2026-10-14T12:00:00Z");
+    const env = { ...process.env, GIT_AUTHOR_DATE: "2026-10-14T13:00:00Z", GIT_COMMITTER_DATE: "2026-10-14T13:00:00Z" };
+    const m = Bun.spawnSync(["git", "-c", "user.email=f@example.invalid", "-c", "user.name=f", "merge", "-q", "--no-ff", "-m", "merge branch-x", branchX], { cwd: dir, env, stderr: "pipe" });
+    if (m.exitCode !== 0) throw new Error(m.stderr.toString());
+    const r = validate(dir, NO_BROWSER);
+    expect(r.out).not.toContain("cancelled → active is not reachable");
+    expect(status("artifact-records", r.out)).toBe("pass");
+    expect(r.code).toBe(0);
+  }, 60000);
+
   test("every tracked record deleted but not committed yet: still fails", () => {
     const dir = fixtureDir({ [RECORD]: task({ status: "active" }) }, { git: true });
     rmSync(join(dir, "tasks"), { recursive: true });
