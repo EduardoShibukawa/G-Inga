@@ -142,13 +142,13 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 - **Layer 3:** Task ancestry and Git lineage check (`git merge-base --is-ancestor`).
 - **Layer 4:** Quantitative thresholds (0 lint errors, 100% schema match).
 - **Layer 5:** Anti-thrashing circuit breaker:
-  - If a Sonnet worker fails verification once, retry on **Opus** (`model` set to `opus`, per `.claude/skills/work/references/model-policy.md`).
+  - If a Sonnet worker fails verification once, retry with a NEW `Agent` dispatch on **Opus** (`model` set to `opus`, carrying the failure log and the same contract; continuing the Sonnet worker doesn't change its model; per `.claude/skills/work/references/model-policy.md`).
   - If the task then fails verification a second time without new evidence, trigger immediate **Circuit Breaker Halt** (ADR 0002 §5, Trigger E3).
   - Halt entire drive execution, mark the failing task `blocked`, and escalate to the repository owner.
 
 ### Step 6: Atomic Seal & Continuous Handoff
 
-- Update task records with verification results. Each child's verification note records the model that ran it and its token totals in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — with no prompt content (per `.claude/skills/work/references/model-policy.md`).
+- Update task records with verification results. Each child's verification note records the model that ran it and its token totals, taken from the host's `Agent` result (never the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — with no prompt content (per `.claude/skills/work/references/model-policy.md`).
 - Seal atomic commit per resolved ticket wave.
 - After each verified child, replace the parent's `## Checkpoint` with the done, active and blocked children, the branch and HEAD, and the copy-pasteable resume prompt, using the template in [resume.md](../work/resume.md). The next child to run is the first eligible child after the last one in `done`.
 - Decrement token budget by recorded consumption.

@@ -6,10 +6,12 @@
  *  1. Stale plugin: the installed `g-inga@g-inga` commit differs from the marketplace's `main`.
  *     Installed commit source: `~/.claude/plugins/installed_plugins.json` (`plugins["g-inga@g-inga"][0].gitCommitSha`),
  *     falling back to the trailing commit segment of `CLAUDE_PLUGIN_ROOT`.
- *     Marketplace `main` source: `git ls-remote <repo> refs/heads/main`, cached for 24 h under
- *     `${XDG_CACHE_HOME:-~/.cache}/g-inga/marketplace-main.json` so the network is reached at most once per 24 h.
- *  2. Missing Git hook: the current repository's `mise.toml` defines `[tasks.pre-commit]` (or a `pre-commit`
- *     file task), but no `.git/hooks/pre-commit` (resolved via `git rev-parse --git-path hooks/pre-commit`) exists.
+ *     Marketplace `main` source: `git ls-remote <repo> refs/heads/main`, cached for 24 h (failures and
+ *     timeouts too) under `${XDG_CACHE_HOME:-~/.cache}/g-inga/marketplace-main.json` so the network is reached at most once per 24 h.
+ *  2. Missing Git hook: the current repository's mise config (`mise.toml`, `.mise.toml`, `.config/mise.toml`,
+ *     `mise/config.toml`, `.config/mise/config.toml` and their `.local` variants) defines a `pre-commit` task
+ *     (`[tasks.pre-commit]`, an inline `[tasks]` key, or a `pre-commit` file task), but no `.git/hooks/pre-commit`
+ *     (resolved via `git rev-parse --git-path hooks/pre-commit`) exists. This local check runs first.
  *
  * Fail-open invariant: any error, missing binary, unreadable file or network failure is swallowed and exits 0
  * within the 3-second budget.
@@ -56,24 +58,24 @@ export function runSessionStartCheck(opts = {}) {
     const now = opts.now ?? Date.now();
     const timeoutMs = opts.timeoutMs ?? NET_TIMEOUT_MS;
 
-    // 1. Plugin staleness check.
+    // 1. Missing Git pre-commit hook check (local, runs before any network access).
+    if (hasPreCommitMiseTask(cwd) && !hasInstalledGitPreCommitHook(cwd)) {
+      warnings.push(
+        "warning: repository defines a pre-commit mise task, but no Git pre-commit hook is installed; install a Git pre-commit hook that runs `mise run pre-commit` (`mise install` does it where `hk install --mise` is a postinstall hook)."
+      );
+    }
+
+    // 2. Plugin staleness check.
     const installedSha = readInstalledCommit(installedPluginsFile, pluginRoot);
     if (installedSha) {
       const remoteResult = resolveMarketplaceMain(cacheFile, marketplaceUrl, now, timeoutMs);
       networkReached = remoteResult.networkReached;
       const remoteSha = remoteResult.sha;
       if (remoteSha && !commitsMatch(installedSha, remoteSha)) {
-        warnings.push(
+        warnings.unshift(
           `warning: installed g-inga plugin (${installedSha.slice(0, 7)}) differs from marketplace main (${remoteSha.slice(0, 7)}); run \`claude plugin update g-inga@g-inga\`.`
         );
       }
-    }
-
-    // 2. Missing Git pre-commit hook check.
-    if (hasPreCommitMiseTask(cwd) && !hasInstalledGitPreCommitHook(cwd)) {
-      warnings.push(
-        "warning: repository defines a pre-commit mise task, but no Git pre-commit hook is installed; run `mise install`."
-      );
     }
   } catch {
     // Fail open on any unexpected exception.
@@ -107,13 +109,12 @@ function resolveMarketplaceMain(cacheFile, marketplaceUrl, now, timeoutMs) {
   try {
     if (existsSync(cacheFile)) {
       const cached = JSON.parse(readFileSync(cacheFile, "utf8"));
-      if (
-        typeof cached?.sha === "string" &&
-        /^[0-9a-f]{7,40}$/i.test(cached.sha) &&
-        typeof cached?.checkedAt === "number" &&
-        now - cached.checkedAt < TTL_MS
-      ) {
-        return { sha: cached.sha.toLowerCase(), networkReached: false };
+      if (typeof cached?.checkedAt === "number" && now - cached.checkedAt < TTL_MS) {
+        // A cached failure (`sha: null`) also holds for 24 h, so the network is not retried.
+        if (cached.sha === null) return { sha: null, networkReached: false };
+        if (typeof cached?.sha === "string" && /^[0-9a-f]{7,40}$/i.test(cached.sha)) {
+          return { sha: cached.sha.toLowerCase(), networkReached: false };
+        }
       }
     }
   } catch {
@@ -135,13 +136,12 @@ function resolveMarketplaceMain(cacheFile, marketplaceUrl, now, timeoutMs) {
     // Fail open on network/spawn failure.
   }
 
-  if (sha) {
-    try {
-      mkdirSync(dirname(cacheFile), { recursive: true });
-      writeFileSync(cacheFile, JSON.stringify({ sha, checkedAt: now }) + "\n");
-    } catch {
-      // Cache write failure is non-fatal.
-    }
+  // Failure or timeout is cached too (`sha: null`), so the network is reached at most once per 24 h.
+  try {
+    mkdirSync(dirname(cacheFile), { recursive: true });
+    writeFileSync(cacheFile, JSON.stringify({ sha, checkedAt: now }) + "\n");
+  } catch {
+    // Cache write failure is non-fatal.
   }
   return { sha, networkReached: true };
 }
@@ -152,12 +152,35 @@ function commitsMatch(a, b) {
   return x.startsWith(y) || y.startsWith(x);
 }
 
+const MISE_CONFIGS = [
+  "mise.toml",
+  ".mise.toml",
+  ".config/mise.toml",
+  "mise/config.toml",
+  ".config/mise/config.toml",
+];
+const PRE_COMMIT_KEY = String.raw`(?:"pre-commit"|'pre-commit'|pre-commit)`;
+const TASK_TABLE = new RegExp(String.raw`^\s*\[tasks\.${PRE_COMMIT_KEY}(?:\.[^\]]*)?\]`, "m");
+const INLINE_TASK = new RegExp(String.raw`^\s*${PRE_COMMIT_KEY}\s*=`, "m");
+
+/** True when a mise config defines `[tasks.pre-commit]` or a `pre-commit` key under `[tasks]`. */
+function configDefinesPreCommit(text) {
+  if (TASK_TABLE.test(text)) return true;
+  // Inline form: a `pre-commit = ...` key inside the `[tasks]` table.
+  const m = text.match(/^\s*\[tasks\]\s*$/m);
+  if (!m) return false;
+  const rest = text.slice(m.index + m[0].length);
+  const next = rest.search(/^\s*\[/m);
+  return INLINE_TASK.test(next === -1 ? rest : rest.slice(0, next));
+}
+
 function hasPreCommitMiseTask(cwd) {
   try {
-    const miseToml = join(cwd, "mise.toml");
-    if (existsSync(miseToml)) {
-      const text = readFileSync(miseToml, "utf8");
-      if (/^\s*\[tasks\.(?:"pre-commit"|'pre-commit'|pre-commit)\]/m.test(text)) return true;
+    for (const rel of MISE_CONFIGS) {
+      for (const f of [rel, rel.replace(/\.toml$/, ".local.toml")]) {
+        const path = join(cwd, f);
+        if (existsSync(path) && configDefinesPreCommit(readFileSync(path, "utf8"))) return true;
+      }
     }
     for (const rel of [".mise/tasks/pre-commit", "mise-tasks/pre-commit"]) {
       if (existsSync(join(cwd, rel))) return true;

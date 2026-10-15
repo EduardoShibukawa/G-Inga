@@ -13,7 +13,7 @@ flowchart TD
     L1 -->|Clean Scope| L2{Layer 2: Deterministic Commands}
     
     L2 -->|Exit != 0 / Blocked| RET{Attempt < 2?}
-    RET -->|Yes| FDB[SendMessage failure log to worker]
+    RET -->|Yes| FDB[Dispatch new Opus Agent with failure log]
     RET -->|No| CB[Circuit Breaker: Mark ticket BLOCKED]
     
     L2 -->|Exit 0| L3{Layer 3: Task Ancestry & Lineage}
@@ -133,7 +133,7 @@ mise run test
 | Exit Code | Gate Status | Action |
 |---|---|---|
 | `0` | `pass` | Proceed to Layer 3. |
-| `1` | `fail` | Increment failure counter. If counter < 2, feed stderr/stdout to the worker via `SendMessage` for retry. |
+| `1` | `fail` | Increment failure counter. If counter < 2, dispatch a new `Agent` with `model: "opus"` carrying stderr/stdout and the same contract for retry. |
 | `2` | `blocked` | Environment block. Halt ticket execution; escalate to human owner. |
 | `127` | `blocked` | Missing binary / command toolchain. Escalate to human owner. |
 
@@ -174,7 +174,7 @@ To prevent infinite loops and runaway token expenditure:
 - Maintain an attempt counter per ticket: `attempts: N`.
 - **First Failure ($N = 1$):**
   - Extract the exact compiler, linter, or test failure output.
-  - Send corrective instructions to the same agent via `SendMessage` (keeps its context) with the factual failure report.
+  - Dispatch a new `Agent` with `model: "opus"` (per `.claude/skills/work/references/model-policy.md`) carrying the factual failure report and the same contract. Continuing the existing Sonnet worker does not change its model, so it is not the retry.
 - **Second Failure ($N = 2$):**
   - **Circuit Breaker Trips:** Immediately halt subagent execution.
   - Revert dirty changes: `git checkout HEAD . && git clean -fd`.

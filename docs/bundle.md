@@ -84,6 +84,11 @@ Then, in the target:
    depends = ["g-inga:validate"]
    ```
 
+   Then install the Git hook that runs it. Either option works:
+
+   - hk, as this repository does: add an `hk.pkl` whose `pre-commit` hook runs `mise run pre-commit`, and set `postinstall = "hk install --mise"` in `mise.toml`, so `mise install` installs the hook.
+   - A plain Git hook: create `.git/hooks/pre-commit` (executable) containing `#!/bin/sh` and `exec mise run pre-commit`.
+
    This is the whole change a target repository makes to adopt the gate; no fallback is needed, because the child-01 spike showed a TOML `depends` can name a namespaced mise file task (the fallback ADR 0009 §2 names — a one-line `run` calling `node tools/validate/validate.js` — was therefore never chosen, and ADR 0009 stays unrevised).
 2. Copy `tools/validate/ci-template.yml` to `.github/workflows/g-inga.yml`. That copy belongs to the target; the update procedure never writes it. Re-copy it when a release changes the template.
 3. Add the delimited pointer to the target's `CLAUDE.md` (for Claude Code) or `GEMINI.md` / `AGENTS.md` (for Google Antigravity), leaving content outside the block untouched:

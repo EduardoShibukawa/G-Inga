@@ -15,7 +15,7 @@ stateDiagram-v2
     claimed --> executing: OODA Act: Dispatched to worker subagent
     executing --> gating: Subagent returns: Autonomous Gate initiated
     gating --> resolved: Gate 1-4 pass: Atomic commit sealed
-    gating --> claimed: Gate fails (Attempts < 2): Failure log sent via SendMessage
+    gating --> claimed: Gate fails (Attempts < 2): New Opus Agent dispatched with failure log
     gating --> blocked: Gate fails (Attempts >= 2): Circuit breaker trips
     blocked --> [*]: Escalated to repository owner
     resolved --> [*]: Graph frontier advances
@@ -56,7 +56,7 @@ stateDiagram-v2
 
 ### Phase 4: ACT
 
-- Invoke subagents concurrently by issuing multiple `Agent` tool calls in a single message (`subagent_type: "general-purpose"`, or `"Explore"` for read-only spikes).
+- Invoke subagents concurrently by issuing multiple `Agent` tool calls in a single message (`subagent_type: "general-purpose"`, or `"Explore"` for read-only spikes), each with `model` set by role from `.claude/skills/work/references/model-policy.md`: `sonnet` for implementation workers, `haiku` for `Explore` spikes, `opus` for the retry after a first verification failure.
 - Use the default shared working tree only when the pre-dispatch collision check passes; otherwise set `isolation: "worktree"` (or use `tools/gate/worktree-runner.ts`) and merge worktree results back into the orchestrator branch before Gate Layer 1.
 - Agents run in the background (`run_in_background`, the default); cease tool execution and wait for the harness completion notification. Never poll or sleep.
 
