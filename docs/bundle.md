@@ -10,6 +10,7 @@ The bundle is what a target repository commits (FU2). `tools/validate/bundle.jso
 |---|---|---|---|
 | `.claude/skills/work/SKILL.md`, `standard.md`, `heavy.md`, `resume.md`, `review.md` | `/work` skill and procedures for Claude Code | yes | yes |
 | `.claude/skills/work/references/artifact-contracts.md` | artifact contract copy for Claude Code | yes | yes |
+| `.claude/skills/work/references/model-policy.md` | model policy for Claude Code: the roles and models `/work` dispatches by | yes | yes |
 | `.claude/skills/work/references/procedure.md` | `/work` procedure for Claude Code: the user-invoked `SKILL.md` and `/drive` and `/orchestrate` workers read it ([ADR 0010](decisions/0010-user-invoked-entry-skills.md)) | yes | yes |
 | `.claude/skills/work/references/question-rounds.md` | question-rounds procedure for Claude Code | yes | yes |
 | `.claude/skills/sharpen/SKILL.md` | `/sharpen` entry skill for Claude Code | yes | yes |

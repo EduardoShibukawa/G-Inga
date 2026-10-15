@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 Read `.claude/skills/work/references/procedure.md` and follow it for the request below. It holds the invariants, routing, escalation and the `light` procedure.
 
+The procedure reads these reference files, all next to it in `.claude/skills/work/references/`: `procedure.md`, `artifact-contracts.md`, `model-policy.md`, `question-rounds.md`.
+
 The tier files sit next to this one and are read only when the procedure routes to them:
 
 - `.claude/skills/work/standard.md` for `standard`;
