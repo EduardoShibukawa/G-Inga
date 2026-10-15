@@ -36,6 +36,7 @@ flowchart TD
 
 - Inspect Git worktree: `git status --porcelain`, current branch, and HEAD SHA.
 - Inspect the task graph: read `map.md` (or `tasks/` directory).
+- Reconcile the parent's latest `## Checkpoint` with Git using "Reconcile on start" in [.claude/skills/work/resume.md](../work/resume.md). If its branch, HEAD, worktree or child statuses disagree with Git, report the difference and stop: dispatch nothing until it is reconciled.
 - Identify tickets in state `open` whose dependencies are fully resolved (`Blocked by: []` or all dependencies in `resolved` / `verified`).
 
 ### 2. ORIENT (Frontier & Contract Definition)
@@ -113,16 +114,18 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
    - Verify objective thresholds (e.g. 0 lint warnings, schema validation, performance latency).
 5. **Layer 5 (Anti-Thrashing Circuit Breaker):**
    - Track verification failure count per ticket.
-   - First failure: retry the Sonnet worker on **Opus** (`model: "opus"`, per `.claude/skills/work/references/model-policy.md`) and send the deterministic failure log to the same agent via `SendMessage` (keeps its context) for corrective action.
+   - First failure: dispatch a NEW `Agent` with `model: "opus"` (per `.claude/skills/work/references/model-policy.md`) carrying the deterministic failure log and the same contract (scope, acceptance criteria). Continuing the existing Sonnet worker does not change its model, so it is not the retry.
    - Second failure (count $\ge 2$, no new information): stop worker, mark ticket `blocked`, record escalation, and alert owner.
 
 ### 6. SEAL & ADVANCE (Atomic Integration)
 
-- Record each child's verification note with the model that ran it and its token totals in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — no prompt content (per `.claude/skills/work/references/model-policy.md`).
+- Record each child's verification note with the model that ran it and its token totals, taken from the host's `Agent` result (never from the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — no prompt content (per `.claude/skills/work/references/model-policy.md`).
 - Update ticket status in roadmap (`map.md` / `tasks/`) to `resolved`.
 - Create an atomic descriptive Git commit referencing the resolved ticket IDs:
   `git commit -m "<type>(<scope>): <summary> [resolves #ID]"`
+- After each verified child, replace the parent's `## Checkpoint` (done, active and blocked children, branch, HEAD and the copy-pasteable resume prompt) using the template in [.claude/skills/work/resume.md](../work/resume.md).
 - Advance the frontier of the dependency graph and repeat the OODA loop until all tickets are `resolved` or `blocked`.
+- When the loop ends, run the handoff report and merge rule in "Session Close and Merge" ([.claude/skills/work/references/procedure.md](../work/references/procedure.md)) before declaring the wave delivered.
 
 ## References & Procedures
 

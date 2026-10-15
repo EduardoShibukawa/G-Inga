@@ -7434,12 +7434,38 @@ function criteria(rec, prefix) {
 
 // tools/validate/artifacts/history.ts
 var WT = "working tree";
+var LOCAL_ENV_VARS = [
+  "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+  "GIT_CONFIG",
+  "GIT_CONFIG_PARAMETERS",
+  "GIT_CONFIG_COUNT",
+  "GIT_OBJECT_DIRECTORY",
+  "GIT_DIR",
+  "GIT_WORK_TREE",
+  "GIT_IMPLICIT_WORK_TREE",
+  "GIT_GRAFT_FILE",
+  "GIT_INDEX_FILE",
+  "GIT_NO_REPLACE_OBJECTS",
+  "GIT_REPLACE_REF_BASE",
+  "GIT_PREFIX",
+  "GIT_SHALLOW_FILE",
+  "GIT_COMMON_DIR"
+];
+function gitEnv() {
+  const env = { ...process.env };
+  for (const k of LOCAL_ENV_VARS)
+    delete env[k];
+  for (const k of Object.keys(env))
+    if (/^GIT_CONFIG_(KEY|VALUE)_\d+$/.test(k))
+      delete env[k];
+  return env;
+}
 function git(root, args) {
   if (typeof Bun !== "undefined" && Bun.spawnSync) {
-    const p = Bun.spawnSync(["git", ...args], { cwd: root, stdout: "pipe", stderr: "pipe" });
+    const p = Bun.spawnSync(["git", ...args], { cwd: root, env: gitEnv(), stdout: "pipe", stderr: "pipe" });
     return { ok: p.exitCode === 0, out: p.stdout.toString() };
   }
-  const p = spawnSync("git", args, { cwd: root, encoding: "utf8" });
+  const p = spawnSync("git", args, { cwd: root, env: gitEnv(), encoding: "utf8" });
   return { ok: p.status === 0, out: p.stdout || "" };
 }
 function isGitRepo(root) {
@@ -7464,10 +7490,10 @@ function gitAncestry(root) {
     if (ra.out.trim() === rb.out.trim())
       return false;
     if (typeof Bun !== "undefined" && Bun.spawnSync) {
-      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root });
+      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
       return p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
     }
-    const p = spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd: root });
+    const p = spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
     return p.status === 0 ? true : p.status === 1 ? false : undefined;
   };
 }

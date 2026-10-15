@@ -1,0 +1,16 @@
+{
+  "description": "G-Ingá startup warnings: stale installed plugin and missing Git pre-commit hook (ADR 0009 §1, SC8)",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs\"",
+            "timeout": 3
+          }
+        ]
+      }
+    ]
+  }
+}

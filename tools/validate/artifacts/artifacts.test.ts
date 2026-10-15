@@ -394,3 +394,26 @@ describe("applicability uses Git history, so deleting every record can't turn th
     expect(status("artifact-records", validate(dir, NO_BROWSER).out)).toBe("not run");
   }, 60000);
 });
+
+describe("Git hook environment (spec 2026-10-14-harness-hardening SC1)", () => {
+  // A pre-commit hook in a linked worktree exports absolute GIT_DIR and GIT_INDEX_FILE. The
+  // validator's history fixtures run git in their own temp repositories, so they must not follow
+  // those variables into the repository being committed to. The fixtures run in a child process
+  // started with that environment, as the hook starts the validator.
+  test("history fixtures ignore an inherited GIT_DIR and GIT_INDEX_FILE", () => {
+    const decoy = fixtureDir({});
+    expect(git(decoy, "init", "-q").exitCode).toBe(0);
+    const config = () => readFileSync(join(decoy, ".git", "config"), "utf8");
+    const before = config();
+    const script = `import { allCases } from ${JSON.stringify(join(import.meta.dir, "fixtures.ts"))};
+for (const c of allCases.filter((x) => x.id.startsWith("H-"))) {
+  const got = c.run().outcome;
+  if (got !== c.expect) { console.log(c.id + ": " + got + " (expected " + c.expect + ")"); process.exitCode = 1; }
+}`;
+    const env = { ...process.env, GIT_DIR: join(decoy, ".git"), GIT_INDEX_FILE: join(decoy, ".git", "index") };
+    const p = Bun.spawnSync(["bun", "-e", script], { env, stdout: "pipe", stderr: "pipe" });
+    expect(p.stdout.toString() + p.stderr.toString()).toBe("");
+    expect(p.exitCode).toBe(0);
+    expect(config()).toBe(before);
+  }, 60_000);
+});
