@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "33b807e"
 ---
 
 # Keep a Record's Last State When It Is Unchanged on a Sibling Branch
@@ -39,13 +40,17 @@ In `checkHistory`, a record that already existed before two branches diverged, a
 |---|---|---|---|---|
 | B1 | baseline validate | fail | ce2d723 | `artifact-records` fail: §3.3 false positive at `adb6dcc` (`verified → todo` on `2026-10-14-harness-hardening-02-bundle-validate-step` and `-03-model-policy`) |
 | B2 | baseline test | fail | ce2d723 | 255 pass, 1 fail (self-validation test fails on the `artifact-records` false positive) |
-| AC1 | sibling-branch unchanged record keeps last state | not run | | |
-| AC2 | regression test red before, green after | not run | | |
-| AC3 | validate | not run | | |
-| AC4 | test | not run | | |
-| AC5 | manifest provenance | not run | | |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | | |
+| AC1 | sibling-branch unchanged record keeps last state | pass | 33b807e | `artifact-records` passes on `ce2d723`'s merge history; `H-forbidden` and `cancelled → active` real backward transitions still fail |
+| AC2 | regression test red before, green after | pass | 33b807e | new `artifacts.test.ts` case (`73 pass, 0 fail`) pins two records existing at the fork point, one advancing on branch A and untouched on sibling branch B before merge |
+| AC3 | validate | pass | 33b807e | `mise run validate` exit 0 (`Overall: pass`; `artifact-rule-fixtures` 45/45; `artifact-records` pass) |
+| AC4 | test | pass | 33b807e | `mise run test` exit 0: 257 pass, 0 fail |
+| AC5 | manifest provenance | pass | 33b807e | `bun tools/validate/manifest.mjs --check`: `manifest provenance: pass` (23 files at `c263e48`) |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | pass | 33b807e | 5 files changed; 0 files under `docs/` or `.claude/skills/`; contract text unchanged |
 
 ## Plan
 
 skip: single-step fix; the acceptance criteria are the plan.
+
+## Outcome
+
+`checkHistory` now skips a record at a non-working-tree commit when `before.rev` is not an ancestor of `rev` (`ancestry(before.rev, rev) === false`) and the record in `rev` is identical to `parentSnap(rev)`, preserving `lastState` across sibling-branch commits that did not touch the record. Rebuilt `tools/validate/validate.js` and regenerated `manifest.json`.
