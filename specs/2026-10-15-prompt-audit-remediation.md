@@ -1,7 +1,9 @@
 ---
 schema: spec/1
-status: draft
+status: approved
 version: 1
+approved_version: 1
+approved_hash: sha256:d20c1ddb2273ea7f3bc815885ba82d4f74ef99cf36a65d814ead61ab5b74bc48
 ---
 
 # Prompt-Audit Remediation

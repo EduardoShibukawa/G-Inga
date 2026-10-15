@@ -18,6 +18,7 @@ spec: 2026-10-15-prompt-audit-remediation@1
 - decided: circuit-breaker revert → limited to the ticket's in-scope files, or discard its isolated worktree; never the whole tree by owner (2026-10-15, "Q5. OK")
 - decided: memory rule → the repository is canonical; auto-memory is a hint checked against the repository before acting by owner (2026-10-15, "Q6. ok")
 - decided: skill layout → moving skills to a root `skills/` directory distributed by plugin is a separate heavy task with an ADR amending ADR 0005, after this one; this task edits the current paths by owner (2026-10-15, "Q8l. Sim")
+- approved: spec v1 by owner (2026-10-15, "sim")
 
 ## Objective
 
