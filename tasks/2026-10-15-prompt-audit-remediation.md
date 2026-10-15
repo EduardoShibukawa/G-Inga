@@ -17,6 +17,7 @@ spec: 2026-10-15-prompt-audit-remediation@1
 - decided: skill language → skills, references and dispatch templates are English; the owner talks Portuguese, the files don't need to by owner (2026-10-15, "Podemos deixar tudo em ingles nao vejo problemas")
 - decided: circuit-breaker revert → limited to the ticket's in-scope files, or discard its isolated worktree; never the whole tree by owner (2026-10-15, "Q5. OK")
 - decided: memory rule → the repository is canonical; auto-memory is a hint checked against the repository before acting by owner (2026-10-15, "Q6. ok")
+- decided: skill layout → moving skills to a root `skills/` directory distributed by plugin is a separate heavy task with an ADR amending ADR 0005, after this one; this task edits the current paths by owner (2026-10-15, "Q8l. Sim")
 
 ## Objective
 
@@ -36,11 +37,8 @@ Resolve the 2026-10-15 prompt audit of the instruction files that load in G-Ing�
 - Out of scope:
   - F3 and F11 (`question-rounds.md`): owned by `2026-10-14-question-rounds-skill`;
   - F7 and F9 (worker-reported token usage, `drive` budget): owned by `2026-10-14-harness-hardening` (cost per child);
-  - the plugin copy drifting from the project skills: `2026-10-14-harness-hardening-06`.
-
-## Open decisions (owner)
-
-1. Skill layout (owner, 2026-10-15): move skills out of `.claude/skills/` into a root `skills/` directory distributed only by plugin, as `harness/harness-skills` does. This changes ADR 0005's distribution (committed `.claude/skills/` plus pinned bundle). Recommended: a separate heavy task with its own ADR; this task edits the current paths.
+  - the plugin copy drifting from the project skills: `2026-10-14-harness-hardening-06`;
+  - moving skills to a root `skills/` directory distributed by plugin, as `harness/harness-skills` does: a separate heavy task with an ADR amending ADR 0005.
 
 ## Acceptance criteria
 
