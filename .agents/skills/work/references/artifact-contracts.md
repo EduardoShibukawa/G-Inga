@@ -1,7 +1,7 @@
 <!-- Generated copy of docs/artifact-contracts.md from G-Ingá, delivered in the /work bundle. Do not edit: change the canonical file and run `bun tools/validate/contract-copy.mjs`. Transform: this comment is added and relative link targets are prefixed with ../../../../docs/, which resolves only in a G-Ingá checkout. -->
 # Artifact contracts
 
-**Status:** accepted (decision D3, approved by the owner on 2026-10-10, [ADR 0003](../../../../docs/decisions/0003-minimum-artifact-schemas.md)). Nothing here is implemented. No validator exists yet, so every "deterministic check" below is a specification for M1, not an enforced rule.
+**Status:** accepted (decision D3, approved by the owner on 2026-10-10, [ADR 0003](../../../../docs/decisions/0003-minimum-artifact-schemas.md)). The validator in `tools/validate/` (`mise run validate`) implements the deterministic checks below: frontmatter, ids and references, sections, log grammar, guards and the spec gate, the verification rule, the approved-spec hash, the history walk and retired-schema freezing, internal links, and the contract's own diagram, copy and example records. It does not implement the secrets pattern scan (§7), and the agent-judgment and owner columns are not checkable by script.
 
 This document is the field-level contract. The rationale and the alternatives are in ADR 0003. The tiers and routing rules come from [ADR 0002](../../../../docs/decisions/0002-ceremony-tiers-and-routing.md) (`accepted`) and aren't restated here.
 
@@ -366,7 +366,7 @@ A `light` task has no resume contract. It fits one session by definition (S8). I
 
 ## 7. Validation
 
-Nothing below exists yet. M1 can implement the deterministic column as one small script.
+The deterministic column is implemented by the validator in `tools/validate/`, except the secrets pattern scan, which is not implemented.
 
 | Check | Deterministic script | Agent judgment | Owner |
 |---|---|---|---|
@@ -420,9 +420,9 @@ Limits:
 - The walk sees only the history that exists. A rewritten history (rebase, force-push) or a squash merge shows up only as its end states, which still have to satisfy the table.
 - It can't tell who made a commit. Approvals stay a trust boundary (§7).
 
-### 7.2 Validator test cases (for M1)
+### 7.2 Validator test cases
 
-These fixtures specify the validator. None has run, because there's no validator yet.
+These fixtures specify the validator. The `artifact-rule-fixtures` check runs them.
 
 | ID | Fixture | Expected |
 |---|---|---|

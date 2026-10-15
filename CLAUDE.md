@@ -7,7 +7,7 @@ Personal agentic SDLC harness for Claude Code favoring **tokens per verified tas
 ## Working Protocol for Agent Sessions
 
 1. **Language & Communication:** Owner: Brazilian Portuguese. Repo docs, code, commits: English.
-2. **Repository as Canonical Truth:** Use repo files only; no conversation memory or external trackers.
+2. **Repository as Canonical Truth:** The repository is canonical. Auto-memory is a hint: check it against the repository before acting on it. No external trackers.
 3. **Session Startup & Revalidation:** Check [README.md](README.md), [docs/README.md](docs/README.md), `git status`, branch, HEAD, and active [tasks/](tasks/). Revalidate latest `## Checkpoint` before edits.
 4. **Architectural & Spec Authority:** Follow [docs/decision-map.md](docs/decision-map.md), accepted ADRs in [docs/decisions/](docs/decisions/), [docs/artifact-contracts.md](docs/artifact-contracts.md), and [specs/2026-10-11-minimal-v1-specification.md](specs/2026-10-11-minimal-v1-specification.md). Labels: `proposed`, `accepted`, `open`, `superseded`. Only owner accepts ADRs or approves specs. Approved spec is immutable under its hash.
 5. **Implementation Scope:** Bounded to active task and approved spec. Record state in canonical artifacts.
