@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "41a830b"
 parent: 2026-10-14-harness-hardening
 spec: 2026-10-14-harness-hardening@1
 depends_on:
@@ -31,9 +32,9 @@ After each verified child, `drive` and `orchestrate` update the parent checkpoin
 |---|---|---|---|---|
 | B1 | repository validation and test suites before change | pass | 2edf21e | parent B1/B2: `mise run validate` exit 0, `mise run test` 242 pass |
 | B2 | repository validation and test suites before change | pass | 24bec60 | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (264 pass, 0 fail) |
-| AC1 | SC6: per-child checkpoint with resume prompt, reconciliation on start, stop on mismatch, table-top walk | pass | pending | `/drive` Step 1 and Step 6 and `/orchestrate` OBSERVE and SEAL reference the shared template and reconciliation in `work/resume.md`; walk in `## Notes` |
-| R1 | repository validation and test suites after change | pass | pending | filled at seal |
-| V1 | self-review of 64e193c..HEAD against AC1 | pass | pending | changed files all in scope; checkpoint template follows `docs/artifact-contracts.md` §3.6 (`as of`, `done`, `next`, `revalidate`) plus active, blocked and the resume prompt SC6 asks for; one shared copy in `work/resume.md`, referenced from `/drive` and `/orchestrate` |
+| AC1 | SC6: per-child checkpoint with resume prompt, reconciliation on start, stop on mismatch, table-top walk | pass | 41a830b | `/drive` Step 1 and Step 6 and `/orchestrate` OBSERVE and SEAL reference the shared template and reconciliation in `work/resume.md`; walk in `## Notes` |
+| R1 | repository validation and test suites after change | pass | 41a830b | `mise run validate` exit 0 (Overall: pass); `mise run test` exit 0 (264 pass, 0 fail), after the manifest regeneration in 41a830b (first verified at 08c1f58 on the superseded base 64e193c) |
+| V1 | self-review of 64e193c..HEAD against AC1 | pass | 41a830b | changed files all in scope; checkpoint template follows `docs/artifact-contracts.md` §3.6 (`as of`, `done`, `next`, `revalidate`) plus active, blocked and the resume prompt SC6 asks for; one shared copy in `work/resume.md`, referenced from `/drive` and `/orchestrate` |
 
 ## Plan
 
