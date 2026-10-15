@@ -7550,10 +7550,16 @@ function checkHistory(root, opts = {}) {
     for (const key of keys) {
       const now = cur.get(key);
       const before = lastState.get(key);
-      if (before && now && before.rec.body === now.body && JSON.stringify(before.rec.fm) === JSON.stringify(now.fm))
+      const sameRec = (a, b) => a.body === b.body && JSON.stringify(a.fm) === JSON.stringify(b.fm);
+      if (before && now && sameRec(before.rec, now))
         continue;
       if (!before && !now)
         continue;
+      if (rev !== WT && before && now && ancestry(before.rev, rev) === false) {
+        const parentRec = parentSnap(rev).get(key);
+        if (parentRec && sameRec(parentRec, now))
+          continue;
+      }
       touched.add(key);
       const file = (now ?? before.rec).path;
       const f = (msg, rule = "§7.1") => findings.push({ level: "fail", rule, file, msg: `${at(rev)}: ${msg}` });

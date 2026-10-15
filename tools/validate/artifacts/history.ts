@@ -138,8 +138,15 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
     for (const key of keys) {
       const now = cur.get(key);
       const before = lastState.get(key);
-      if (before && now && before.rec.body === now.body && JSON.stringify(before.rec.fm) === JSON.stringify(now.fm)) continue;
+      const sameRec = (a: Artifact, b: Artifact) => a.body === b.body && JSON.stringify(a.fm) === JSON.stringify(b.fm);
+      if (before && now && sameRec(before.rec, now)) continue;
       if (!before && !now) continue;
+      // Unchanged from its parent at a sibling-branch commit (where `before.rev` is not an ancestor) is
+      // the pre-divergence state, not a transition: keep `lastState` so `verified` doesn't regress to `todo`.
+      if (rev !== WT && before && now && ancestry(before.rev, rev) === false) {
+        const parentRec = parentSnap(rev).get(key);
+        if (parentRec && sameRec(parentRec, now)) continue;
+      }
       touched.add(key);
       const file = (now ?? before!.rec).path;
       const f = (msg: string, rule = "§7.1") => findings.push({ level: "fail", rule, file, msg: `${at(rev)}: ${msg}` });
