@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "7759ac6"
 spec: 2026-10-16-decouple-commit-gate-and-trunk-linear-history@1
 ---
 
@@ -41,26 +42,26 @@ SC4 and SC5 from spec `2026-10-16-decouple-commit-gate-and-trunk-linear-history@
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | bun test artifacts.test.ts before change | pass | 75d2f05 | Current tests pass |
-| AC1 | history.ts passes --first-parent to rev-list | not run | - | |
-| AC2 | artifacts.test.ts verifies --first-parent behavior | not run | - | |
-| AC3 | bun test passes | not run | - | |
-| V1 | Diff review against plan and out-of-scope | not run | - | |
+| AC1 | history.ts passes --first-parent to rev-list | pass | 7759ac6 | checkHistory uses --first-parent in rev-list |
+| AC2 | artifacts.test.ts verifies --first-parent behavior | pass | 7759ac6 | Added test for trunk merge linearization passing |
+| AC3 | bun test passes | pass | 7759ac6 | 90 tests pass in artifacts.test.ts |
+| V1 | Diff review against plan and out-of-scope | pass | 7759ac6 | Changes bounded to history.ts and artifacts.test.ts |
 
 ## Review
 
 - reviewer: skip: child task of heavy parent
-- verdict: -
+- verdict: pass
 - findings: none
 
 ## Outcome
 
-Pending execution of child 01.
+`checkHistory` in `tools/validate/artifacts/history.ts` now specifies `--first-parent` in the `rev-list` command, linearizing the walk along the canonical trunk integration lineage. Sibling branch commits prior to their merge no longer cause false positive state transitions or phantom deletions. Regression tests in `artifacts.test.ts` confirm correct behavior.
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/2026-10-16-decouple-commit-gate-and-trunk-linear-history`, head 75d2f05, worktree clean
-- done: child 02 authored with baseline B1 established
+- as of: 2026-10-16, branch `work/2026-10-16-decouple-commit-gate-and-trunk-linear-history`, head 7759ac6, task verified
+- done: AC1, AC2, AC3, V1 verified at 7759ac6
 - active: none
-- blocked: waiting for child 01
-- next: execute child 01
+- blocked: none
+- next: execute child 03
 - revalidate: none

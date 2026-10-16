@@ -380,13 +380,13 @@ A `light` task has no resume contract. It fits one session by definition (S8). I
 
 The deterministic column is implemented by the validator in `tools/validate/`, except the secrets pattern scan, which is not implemented.
 
-The validator supports two modes ([ADR 0012](../../../docs/decisions/0012-authoring-vs-full-validation-modes.md)):
+The validator supports two modes ([ADR 0012](../../../docs/decisions/0012-authoring-vs-full-validation-modes.md), [ADR 0015](../../../docs/decisions/0015-decoupling-commit-gate-and-trunk-linear-history-walk.md)):
 
-- **Full mode (default, `mise run validate`, `node tools/validate/validate.js`):** runs every current-tree check plus commit-order ancestry (`§3.4`) and the Git history walk (`§7.1`). Required before merge/acceptance and in CI and `pre-commit`.
-- **Authoring mode (`bun run validate:authoring`, `bun tools/validate/main.ts --authoring`, `node tools/validate/validate.js --authoring`):** runs locally during iteration, checks current-tree structure and records using the same rule and finding vocabulary (`observed`, `expected`, `next`), and skips the Git history walk and commit-order ancestry checks. Not accepted as merge/CI evidence.
+- **Full mode (default, `mise run validate`, `node tools/validate/validate.js`):** runs every current-tree check plus commit-order ancestry (`§3.4`) and the Git history walk (`§7.1`). Required before merge/acceptance and in CI merge gates (ADR 0015 §2).
+- **Authoring mode (`bun run validate:authoring`, `bun tools/validate/main.ts --authoring`, `node tools/validate/validate.js --authoring`):** runs locally during iteration and in the Git pre-commit hook (ADR 0015 §1), checks current-tree structure and records using the same rule and finding vocabulary (`observed`, `expected`, `next`), and skips the Git history walk and commit-order ancestry checks. Not accepted as merge/CI evidence.
 - **Explain mode (`--explain <rule>` or `--explain list`):** prints the rationale and repair step for any contract rule (`§2.2`–`§8`).
 
-Detailed workflow and repair procedures are described in [validator-flow](../../../docs/../.claude/skills/validator-flow/SKILL.md).
+Detailed workflow and repair procedures are described in [validator-flow](../../../docs/../skills/validator-flow/SKILL.md).
 
 | Check | Deterministic script | Agent judgment | Owner |
 |---|---|---|---|
@@ -414,7 +414,7 @@ The script can prove that an `approved:` line exists, not that the owner wrote i
 
 ### 7.1 History walk
 
-For each spec and task record, the script walks the commits that touched the file, oldest first (`git log --reverse --format=%H -- <file>`). The working tree counts as a final state. It checks each consecutive pair of states, `prev` and `cur`; `h(x)` is the body hash of a state.
+For each spec and task record, the script walks the commits that touched the file, oldest first, following the trunk-linear lineage (`git rev-list --first-parent --reverse HEAD -- <paths>`; [ADR 0015](../../../docs/decisions/0015-decoupling-commit-gate-and-trunk-linear-history-walk.md) §3). The working tree counts as a final state. It checks each consecutive pair of states, `prev` and `cur`; `h(x)` is the body hash of a state.
 
 Spec transitions:
 
