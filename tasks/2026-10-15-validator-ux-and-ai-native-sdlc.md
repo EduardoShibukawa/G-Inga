@@ -58,8 +58,8 @@ skip: runs after children are verified
 
 ## Checkpoint
 
-- as of: 2026-10-15, branch work/validator-ux-redesign-analysis, head cebd090, worktree clean
-- done: heavy confirmed; question rounds recorded; baseline captured
-- next: author spec draft in specs/2026-10-15-validator-ux-and-ai-native-sdlc.md (Opus) and run validator preflight
-- open: spec approval, task decomposition, child execution
-- revalidate: B1/B2 ran on cebd090; rerun before verification if main moves
+- as of: 2026-10-16, branch work/validator-ux-redesign-analysis, head aa1f018, worktree clean
+- done: child 01 (intent/1 artifact schema) and child 02 (authoring/full modes, SHA canonicalization, structured findings, memoization) verified
+- next: execute child 03 (tasks/2026-10-15-validator-ux-and-ai-native-sdlc-03-subagents-skills.md)
+- open: child 03, child 04, child 05; parent review and verification
+- resume prompt: /drive --tag 2026-10-15-validator-ux-and-ai-native-sdlc --limit 3

@@ -1,10 +1,11 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
 parent: 2026-10-15-validator-ux-and-ai-native-sdlc
 spec: 2026-10-15-validator-ux-and-ai-native-sdlc@1
 depends_on: ["2026-10-15-validator-ux-and-ai-native-sdlc-01-spec-and-intent-artifact"]
+verified_at: "aa1f018"
 ---
 
 # Validator authoring/full modes plus messages
@@ -34,14 +35,14 @@ Out of scope: subagents and skills (child 03), history audit refinement for `int
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation and validator tests before child 02 edits | pass | 2aaa651 | `mise run validate && bun test tools/validate` |
-| AC1 | authoring mode runs current-tree checks only and ignores past commit failures | not run |  | |
-| AC2 | full mode keeps history walk and ancestry checks | not run |  | |
-| AC3 | current-tree findings are identical in authoring and full modes | not run |  | |
-| AC4 | SHA canonicalization handles abbreviated SHAs and Ref log paths | not run |  | |
-| AC5 | findings include observed/expected/next and `--explain <rule>` prints rule docs | not run |  | |
-| AC6 | heavy parent `## Review: skip:` allowed before verified and fails at verified | not run |  | |
-| R1 | full repository validation and validator test suite | not run |  | |
-| V1 | diff read against AC1–AC6 | not run |  | |
+| AC1 | authoring mode runs current-tree checks only and ignores past commit failures | pass | aa1f018 | unit tests in `tools/validate/artifacts/artifacts.test.ts` SC1 & SC2 |
+| AC2 | full mode keeps history walk and ancestry checks | pass | aa1f018 | unit tests in `tools/validate/artifacts/artifacts.test.ts` SC1 & SC2 |
+| AC3 | current-tree findings are identical in authoring and full modes | pass | aa1f018 | unit tests in `tools/validate/artifacts/artifacts.test.ts` SC1 & SC2 |
+| AC4 | SHA canonicalization handles abbreviated SHAs and Ref log paths | pass | aa1f018 | unit tests in `tools/validate/artifacts/artifacts.test.ts` SC4 |
+| AC5 | findings include observed/expected/next and `--explain <rule>` prints rule docs | pass | aa1f018 | unit tests in `tools/validate/artifacts/artifacts.test.ts` SC3 & SC5 |
+| AC6 | heavy parent `## Review: skip:` allowed before verified and fails at verified | pass | aa1f018 | unit tests in `tools/validate/artifacts/artifacts.test.ts` SC6 |
+| R1 | full repository validation and validator test suite | pass | aa1f018 | `mise run validate && bun test tools/validate` (133 pass, 8 skip, 0 fail) |
+| V1 | diff read against AC1–AC6 | pass | aa1f018 | git diff inspected and verified against spec SC1–SC6 |
 
 ## Plan
 
@@ -50,3 +51,7 @@ Out of scope: subagents and skills (child 03), history audit refinement for `int
 3. Wire `--authoring` and `--explain` across `tools/validate/lib/check.ts`, `tools/validate/artifacts/history.ts`, `tools/validate/artifacts/checks.ts`, `tools/validate/main.ts`, `tools/validate/standalone.ts`, and `package.json`.
 4. Update `docs/artifact-contracts.md` for `intent/1` (§4.5), `## Review: skip:`, SHA canonicalization, and authoring mode, and regenerate the contract copy.
 5. Add fixtures and unit tests in `tools/validate/artifacts/fixtures.ts` and `tools/validate/artifacts/artifacts.test.ts`, rebuild `validate.js`, regenerate `manifest.json`, and verify.
+
+## Outcome
+
+Delivered `--authoring` mode for fast current-state validation without historical walk failures, SHA canonicalization handling 7-to-40 character SHAs and trailing log paths in Ref cells, structured finding messages (`observed`, `expected`, `next`), `--explain <rule>` CLI documentation mode, heavy parent `## Review: skip:` timing guards, and performance memoization for SHA resolution and commit ancestry during history walk. All gates passed cleanly.
