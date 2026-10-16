@@ -2,7 +2,7 @@
 name: researcher
 description: Researches repository architecture, decisions, artifact contracts, and previous tasks. Use when scoping tasks or gathering background evidence.
 tools:
-  - ReadFile
+  - Read
   - Glob
   - Grep
 ---
