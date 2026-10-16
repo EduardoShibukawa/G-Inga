@@ -345,6 +345,49 @@ describe("applicability uses Git history, so deleting every record can't turn th
     expect(r.code).toBe(0);
   }, 60000);
 
+  test("a merge that brings in a record's older creation after a sibling verified it doesn't regress (§3.3)", () => {
+    const X = "tasks/2026-10-12-x.md";
+    const dir = fixtureDir({ "README.md": "# R\n" }, { git: true });
+    const g = (...args: string[]) => {
+      const r = git(dir, ...args);
+      if (r.exitCode !== 0) throw new Error(`git ${args.join(" ")}: ${r.stderr.toString()}`);
+      return r.stdout.toString().trim();
+    };
+    const env = (date: string) => ({ ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date });
+    const commitAt = (date: string) => {
+      g("add", "-A");
+      const r = Bun.spawnSync(["git", "-c", "user.email=f@example.invalid", "-c", "user.name=f", "-c", "commit.gpgsign=false", "commit", "-q", "-m", "fixture"], { cwd: dir, env: env(date), stderr: "pipe" });
+      if (r.exitCode !== 0) throw new Error(r.stderr.toString());
+    };
+    const mergeAt = (date: string, rev: string) => {
+      const r = Bun.spawnSync(["git", "-c", "user.email=f@example.invalid", "-c", "user.name=f", "-c", "commit.gpgsign=false", "merge", "-q", "--no-ff", "-m", "merge", rev], { cwd: dir, env: env(date), stderr: "pipe" });
+      if (r.exitCode !== 0) throw new Error(r.stderr.toString());
+    };
+    const base = g("rev-parse", "--abbrev-ref", "HEAD");
+    // Branch T records X as todo; branch W, forked from T, takes X to cancelled before T is merged.
+    g("checkout", "-q", "-b", "records");
+    mkdirSync(join(dir, "tasks"), { recursive: true });
+    writeFileSync(join(dir, X), task({ status: "todo" }));
+    commitAt("2026-10-14T10:00:00Z");
+    const t = g("rev-parse", "HEAD");
+    g("checkout", "-q", "-b", "work");
+    writeFileSync(join(dir, X), task({ status: "cancelled" }));
+    commitAt("2026-10-14T11:00:00Z");
+    const w = g("rev-parse", "HEAD");
+    // The base records Y meanwhile, so its merges differ from both parents and stay in the path-limited walk.
+    // It then merges T first (X new relative to its first parent, at todo), then W.
+    g("checkout", "-q", base);
+    mkdirSync(join(dir, "tasks"), { recursive: true });
+    writeFileSync(join(dir, "tasks/2026-10-12-y.md"), task({ status: "active" }));
+    commitAt("2026-10-14T11:30:00Z");
+    mergeAt("2026-10-14T12:00:00Z", t);
+    mergeAt("2026-10-14T13:00:00Z", w);
+    const r = validate(dir, NO_BROWSER);
+    expect(r.out).not.toContain("→ todo is not reachable");
+    expect(status("artifact-records", r.out)).toBe("pass");
+    expect(r.code).toBe(0);
+  }, 60000);
+
   test("every tracked record deleted but not committed yet: still fails", () => {
     const dir = fixtureDir({ [RECORD]: task({ status: "active" }) }, { git: true });
     rmSync(join(dir, "tasks"), { recursive: true });

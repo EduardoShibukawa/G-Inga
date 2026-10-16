@@ -2,7 +2,7 @@
 schema: task/1
 tier: standard
 status: verified
-verified_at: 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d
+verified_at: "97404df176fbe0faeaa1f8f4ef84a1a3b58b558d"
 ---
 
 # Ingest OMP session usage into the local telemetry pipeline
