@@ -14,7 +14,7 @@ export type MeasureState =
   | "collection_error";
 
 export interface UsageObservation {
-  host: "claude-code" | "antigravity" | "unknown";
+  host: "claude-code" | "antigravity" | "opencode" | "unknown";
   cli_version?: string;
   scope_id?: string; // session_id or conversation_id (scrubbed of emails/uuids if needed)
   input_tokens: { value?: number; state: MeasureState; note?: string };
@@ -112,9 +112,144 @@ export function parseAntigravityJson(jsonStr: string): UsageObservation {
 }
 
 /**
+ * Parses Antigravity CLI transcript logs (transcript.jsonl / transcript_full.jsonl).
+ * In Antigravity CLI transcripts:
+ * - Each turn/step logs input_tokens, output_tokens, cache_read_tokens, and thinking_tokens.
+ * - Sums tokens across turns into cumulative usage.
+ * - Duration is derived from step timestamps if not explicitly given.
+ * - Wall duration is observed if explicit duration_seconds exists, derived from timestamps, or absent.
+ */
+export function parseAntigravityTranscript(transcriptInput: string | string[]): UsageObservation {
+  const lines = Array.isArray(transcriptInput) ? transcriptInput : transcriptInput.split("\n");
+  let input = 0;
+  let output = 0;
+  let cacheRead = 0;
+  let cacheWrite = 0;
+  let thinking = 0;
+
+  let hasInput = false;
+  let hasOutput = false;
+  let hasCacheRead = false;
+  let hasCacheWrite = false;
+  let hasThinking = false;
+
+  let scopeId: string | undefined;
+  let firstTimestamp: number | undefined;
+  let lastTimestamp: number | undefined;
+  let explicitDuration: number | undefined;
+
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) continue;
+    try {
+      const obj = JSON.parse(trimmed);
+      if (obj.conversation_id || obj.conversationId || obj.scope_id) {
+        scopeId = sanitizeText(obj.conversation_id || obj.conversationId || obj.scope_id);
+      }
+      if (typeof obj.duration_seconds === "number") {
+        explicitDuration = obj.duration_seconds;
+      }
+      if (obj.created_at || obj.timestamp) {
+        const t = new Date(obj.created_at || obj.timestamp).getTime();
+        if (!isNaN(t)) {
+          if (firstTimestamp === undefined || t < firstTimestamp) firstTimestamp = t;
+          if (lastTimestamp === undefined || t > lastTimestamp) lastTimestamp = t;
+        }
+      }
+
+      // Check usage envelope or step tokens
+      const u = obj.usage || obj;
+      if (typeof u.input_tokens === "number") {
+        input += u.input_tokens;
+        hasInput = true;
+      }
+      if (typeof u.output_tokens === "number") {
+        output += u.output_tokens;
+        hasOutput = true;
+      }
+      if (typeof u.cache_read_tokens === "number") {
+        cacheRead += u.cache_read_tokens;
+        hasCacheRead = true;
+      }
+      if (typeof u.cache_write_tokens === "number") {
+        cacheWrite += u.cache_write_tokens;
+        hasCacheWrite = true;
+      }
+      if (typeof u.thinking_tokens === "number") {
+        thinking += u.thinking_tokens;
+        hasThinking = true;
+      }
+    } catch {
+      // not a json line, ignore
+    }
+  }
+
+  let durationVal: number | undefined = explicitDuration;
+  let durationState: MeasureState = explicitDuration !== undefined ? "observed" : "absent";
+  if (durationVal === undefined && firstTimestamp !== undefined && lastTimestamp !== undefined && lastTimestamp >= firstTimestamp) {
+    durationVal = (lastTimestamp - firstTimestamp) / 1000;
+    durationState = "derived";
+  }
+
+  const totalVal = (hasInput || hasOutput) ? input + output : undefined;
+
+  return {
+    host: "antigravity",
+    scope_id: scopeId,
+    input_tokens: {
+      value: hasInput ? input : undefined,
+      state: hasInput ? "observed" : "absent",
+      note: "session-cumulative transcript",
+    },
+    output_tokens: {
+      value: hasOutput ? output : undefined,
+      state: hasOutput ? "observed" : "absent",
+      note: "session-cumulative transcript",
+    },
+    cache_read_tokens: {
+      value: hasCacheRead ? cacheRead : undefined,
+      state: hasCacheRead ? "observed" : "absent",
+      note: "session-cumulative transcript",
+    },
+    cache_write_tokens: {
+      value: hasCacheWrite ? cacheWrite : undefined,
+      state: hasCacheWrite ? "observed" : "unsupported",
+      note: hasCacheWrite ? undefined : "cacheCreation not exposed in agy envelope/transcript",
+    },
+    thinking_tokens: {
+      value: hasThinking ? thinking : undefined,
+      state: hasThinking ? "observed" : "absent",
+      note: "subset of output_tokens",
+    },
+    total_tokens: {
+      value: totalVal,
+      state: totalVal !== undefined ? "observed" : "absent",
+      note: "input + output (excludes cache_read)",
+    },
+    wall_duration_seconds: {
+      value: durationVal,
+      state: durationState,
+    },
+    cost_usd_estimate: {
+      state: "unsupported",
+      note: "flat subscription / no list price emitted",
+    },
+    rate_limit_5h_used_pct: {
+      state: "unsupported",
+      note: "unsupported in transcript",
+    },
+    rate_limit_7d_used_pct: {
+      state: "unsupported",
+      note: "unsupported in transcript",
+    },
+  };
+}
+
+/**
  * Parses Claude Code local OTel console log dumps or structured JSON events.
  */
-export function parseClaudeCodeOtel(logLines: string[]): UsageObservation {
+export function parseClaudeCodeOtel(logLines: string[] | string): UsageObservation {
+  const lines = Array.isArray(logLines) ? logLines : logLines.split("\n");
   let input = 0;
   let output = 0;
   let cacheRead = 0;
@@ -127,7 +262,7 @@ export function parseClaudeCodeOtel(logLines: string[]): UsageObservation {
   let hasCost = false;
   let hasDuration = false;
 
-  for (const line of logLines) {
+  for (const line of lines) {
     if (!line.trim()) continue;
     try {
       const obj = JSON.parse(line);
@@ -226,6 +361,215 @@ export function parseClaudeCodeOtel(logLines: string[]): UsageObservation {
 }
 
 /**
+ * Parses OpenCode CLI outputs:
+ * - opencode session export [--sanitize]
+ * - opencode stats --json
+ * - opencode run --format json
+ */
+export function parseOpencodeJson(jsonStr: string): UsageObservation {
+  let input = 0;
+  let output = 0;
+  let cacheRead = 0;
+  let cacheWrite = 0;
+  let thinking = 0;
+  let costUsd = 0;
+  let wallDurationSec = 0;
+
+  let hasInput = false;
+  let hasOutput = false;
+  let hasCacheRead = false;
+  let hasCacheWrite = false;
+  let hasThinking = false;
+  let hasCost = false;
+  let hasDuration = false;
+  let durationIsDerived = false;
+
+  let scopeId: string | undefined;
+  let cliVersion: string | undefined;
+
+  function extractFromTurn(turn: any) {
+    if (!turn || typeof turn !== "object") return;
+    const t = turn.tokens || turn;
+    if (typeof t.input === "number") {
+      input += t.input;
+      hasInput = true;
+    } else if (typeof t.input_tokens === "number") {
+      input += t.input_tokens;
+      hasInput = true;
+    }
+
+    if (typeof t.output === "number") {
+      output += t.output;
+      hasOutput = true;
+    } else if (typeof t.output_tokens === "number") {
+      output += t.output_tokens;
+      hasOutput = true;
+    }
+
+    if (typeof t.reasoning === "number") {
+      thinking += t.reasoning;
+      hasThinking = true;
+    } else if (typeof t.thinking === "number") {
+      thinking += t.thinking;
+      hasThinking = true;
+    } else if (typeof t.thinking_tokens === "number") {
+      thinking += t.thinking_tokens;
+      hasThinking = true;
+    }
+
+    const c = t.cache || {};
+    if (typeof c.read === "number") {
+      cacheRead += c.read;
+      hasCacheRead = true;
+    } else if (typeof t.cache_read === "number") {
+      cacheRead += t.cache_read;
+      hasCacheRead = true;
+    } else if (typeof t.cache_read_tokens === "number") {
+      cacheRead += t.cache_read_tokens;
+      hasCacheRead = true;
+    }
+
+    if (typeof c.write === "number") {
+      cacheWrite += c.write;
+      hasCacheWrite = true;
+    } else if (typeof t.cache_write === "number") {
+      cacheWrite += t.cache_write;
+      hasCacheWrite = true;
+    } else if (typeof t.cache_write_tokens === "number") {
+      cacheWrite += t.cache_write_tokens;
+      hasCacheWrite = true;
+    }
+
+    const costVal = typeof turn.cost === "number" ? turn.cost : (typeof turn.cost_usd === "number" ? turn.cost_usd : undefined);
+    if (costVal !== undefined) {
+      costUsd += costVal;
+      hasCost = true;
+    }
+
+    const durVal = typeof turn.duration === "number" ? turn.duration : (typeof turn.duration_seconds === "number" ? turn.duration_seconds : undefined);
+    if (durVal !== undefined) {
+      wallDurationSec += durVal;
+      hasDuration = true;
+    }
+  }
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch {
+    // try JSONL (e.g. streaming line format)
+    const lines = jsonStr.split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const item = JSON.parse(trimmed);
+        if (item.session_id || item.sessionId || item.id) {
+          if (!scopeId) scopeId = sanitizeText(item.session_id || item.sessionId || item.id);
+        }
+        extractFromTurn(item);
+      } catch {
+        // ignore malformed line
+      }
+    }
+  }
+
+  if (parsed) {
+    if (parsed.info) {
+      if (parsed.info.id || parsed.info.session_id) {
+        scopeId = sanitizeText(parsed.info.id || parsed.info.session_id);
+      }
+      if (parsed.info.version || parsed.info.cli_version) {
+        cliVersion = sanitizeText(parsed.info.version || parsed.info.cli_version);
+      }
+      if (parsed.info.created_at && parsed.info.updated_at) {
+        const start = typeof parsed.info.created_at === "number" ? parsed.info.created_at : new Date(parsed.info.created_at).getTime();
+        const end = typeof parsed.info.updated_at === "number" ? parsed.info.updated_at : new Date(parsed.info.updated_at).getTime();
+        if (!isNaN(start) && !isNaN(end) && end >= start) {
+          wallDurationSec = (end - start) / 1000;
+          hasDuration = true;
+          durationIsDerived = true;
+        }
+      }
+    }
+    if (parsed.session_id || parsed.sessionId || parsed.id) {
+      if (!scopeId) scopeId = sanitizeText(parsed.session_id || parsed.sessionId || parsed.id);
+    }
+    if (parsed.version || parsed.cli_version) {
+      if (!cliVersion) cliVersion = sanitizeText(parsed.version || parsed.cli_version);
+    }
+
+    if (Array.isArray(parsed.messages)) {
+      for (const msg of parsed.messages) {
+        extractFromTurn(msg);
+      }
+    } else if (Array.isArray(parsed)) {
+      for (const item of parsed) {
+        extractFromTurn(item);
+      }
+    } else {
+      extractFromTurn(parsed);
+    }
+  }
+
+  const hasAnyTokens = hasInput || hasOutput || hasCacheRead || hasCacheWrite || hasThinking;
+  const totalVal = hasAnyTokens ? input + output + cacheRead + cacheWrite : undefined;
+
+  return {
+    host: "opencode",
+    cli_version: cliVersion,
+    scope_id: scopeId,
+    input_tokens: {
+      value: hasInput ? input : undefined,
+      state: hasInput ? "observed" : "absent",
+      note: "tokens.input",
+    },
+    output_tokens: {
+      value: hasOutput ? output : undefined,
+      state: hasOutput ? "observed" : "absent",
+      note: "tokens.output",
+    },
+    cache_read_tokens: {
+      value: hasCacheRead ? cacheRead : undefined,
+      state: hasCacheRead ? "observed" : "absent",
+      note: "tokens.cache.read",
+    },
+    cache_write_tokens: {
+      value: hasCacheWrite ? cacheWrite : undefined,
+      state: hasCacheWrite ? "observed" : "absent",
+      note: "tokens.cache.write",
+    },
+    thinking_tokens: {
+      value: hasThinking ? thinking : undefined,
+      state: hasThinking ? "observed" : "absent",
+      note: "tokens.reasoning",
+    },
+    total_tokens: {
+      value: totalVal,
+      state: totalVal !== undefined ? "derived" : "absent",
+      note: "sum(input + output + cacheRead + cacheWrite)",
+    },
+    wall_duration_seconds: {
+      value: hasDuration ? wallDurationSec : undefined,
+      state: hasDuration ? (durationIsDerived ? "derived" : "observed") : "absent",
+    },
+    cost_usd_estimate: {
+      value: hasCost ? costUsd : undefined,
+      state: hasCost ? "observed" : "absent",
+      note: "provider pricing USD",
+    },
+    rate_limit_5h_used_pct: {
+      state: "unsupported",
+      note: "unsupported in OpenCode CLI",
+    },
+    rate_limit_7d_used_pct: {
+      state: "unsupported",
+      note: "unsupported in OpenCode CLI",
+    },
+  };
+}
+
+/**
  * Formats a UsageObservation into a clean markdown table conforming to ADR 0006 §5.
  */
 export function formatObservationMarkdown(obs: UsageObservation): string {
@@ -299,7 +643,9 @@ if (import.meta.main) {
   if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
     console.log(`Usage:
   bun tools/eval/collect_usage.ts --antigravity <file.json>
+  bun tools/eval/collect_usage.ts --antigravity-transcript <file.jsonl>
   bun tools/eval/collect_usage.ts --claude-otel <file.log>
+  bun tools/eval/collect_usage.ts --opencode <file.json>
 `);
     process.exit(0);
   }
@@ -317,9 +663,15 @@ if (import.meta.main) {
   if (mode === "--antigravity") {
     const obs = parseAntigravityJson(content);
     console.log(formatObservationMarkdown(obs));
+  } else if (mode === "--antigravity-transcript") {
+    const obs = parseAntigravityTranscript(content);
+    console.log(formatObservationMarkdown(obs));
   } else if (mode === "--claude-otel") {
     const lines = content.split("\n");
     const obs = parseClaudeCodeOtel(lines);
+    console.log(formatObservationMarkdown(obs));
+  } else if (mode === "--opencode") {
+    const obs = parseOpencodeJson(content);
     console.log(formatObservationMarkdown(obs));
   } else {
     console.error(`Unknown flag: ${mode}`);

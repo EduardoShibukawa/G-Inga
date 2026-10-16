@@ -1,0 +1,11 @@
+{
+  "usage-telemetry": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "bun tools/eval/run_usage.ts --host antigravity --in -stdin --task-id continuous --condition with --out records/usage/continuous-antigravity.jsonl",
+        "timeout": 15
+      }
+    ]
+  }
+}
