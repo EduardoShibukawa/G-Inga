@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "fcd7c58"
 ---
 
 # Make the Repository Installable as an Antigravity Plugin
@@ -38,13 +39,23 @@ status: active
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | baseline validate and test | pass | ea49f66 | `mise run validate` Overall pass; `mise run test` 274 pass, 0 fail |
-| AC1 | `.antigravity-plugin/plugin.json` fields | not run | | |
-| AC2 | `agy plugin validate .` | not run | | |
-| AC3 | `agy plugin install` and `agy plugin list --json` | not run | | |
-| AC4 | `README.md` Antigravity install section | not run | | |
-| AC5 | `mise run validate` and `mise run test` | not run | | |
-| V1 | diff read against AC1–AC5 and out-of-scope list | not run | | |
+| AC1 | `.antigravity-plugin/plugin.json` fields | pass | fcd7c58 | `name: g-inga`, `skills: ["./.agents/skills/"]` |
+| AC2 | `agy plugin validate .` | pass | fcd7c58 | `[ok] .` — `skills : 4 processed` |
+| AC3 | `agy plugin install` and `agy plugin list --json` | pass | fcd7c58 | `g-inga` enabled, `source: antigravity`, skills `drive`, `orchestrate`, `sharpen`, `work` at `~/.gemini/config/plugins/g-inga` |
+| AC4 | `README.md` Antigravity install section | pass | fcd7c58 | `## Install as an Antigravity Plugin` with `agy plugin validate .` and `agy plugin install .` |
+| AC5 | `mise run validate` and `mise run test` | pass | fcd7c58 | `mise run validate` Overall pass; `mise run test` 274 pass, 0 fail |
+| V1 | diff read against AC1–AC5 and out-of-scope list | pass | fcd7c58 | 3 files, 71 insertions; no change under `.claude/skills/`, `.agents/`, `manifest.json`, `specs/`, `docs/decisions/` |
 
 ## Plan
 
 skip: single-step additive manifest and documentation update followed by local plugin install and verification
+
+## Outcome
+
+The repository is now a valid native Antigravity plugin (`.antigravity-plugin/plugin.json` scanning `./.agents/skills/`), documented in `README.md`, and installed locally on the machine at `~/.gemini/config/plugins/g-inga` (`enabled: true`, `source: antigravity`, 4 skills: `drive`, `orchestrate`, `sharpen`, `work`). The pinned bundle and V1 spec are untouched.
+
+## Checkpoint
+
+- as of: 2026-10-16, branch feat/antigravity-plugin-manifest, head fcd7c58, task verified
+- done: `.antigravity-plugin/plugin.json`, `README.md` install section, local `agy plugin install`, AC1–AC5 and V1 pass
+- next: push branch, open PR, and merge into `main`
