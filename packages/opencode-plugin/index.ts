@@ -3,7 +3,7 @@
  *
  * Exposes the harness to OpenCode:
  *   - registers the `work`, `drive` and `orchestrate` skills from the canonical
- *     `.claude/skills/` bundle shipped in this repository; and
+ *     `skills/` directory shipped in this repository; and
  *   - registers the `/work`, `/drive` and `/orchestrate` slash commands that open them.
  *
  * Install globally (OpenCode resolves package plugins itself; this repository's
@@ -17,7 +17,7 @@
  * devDependencies.
  *
  * The skills are repository-bound: their bodies reference `tools/validate/`, `docs/` and
- * `.claude/skills/` relative to a checkout, so they function where the G-Ingá bundle is
+ * `skills/` relative to a checkout, so they function where the G-Ingá bundle is
  * present. The commands always work; the deep references resolve only where the bundle
  * exists.
  */
@@ -53,11 +53,12 @@ const SKILLS: SkillSpec[] = [
   {
     id: "sharpen",
     command:
-      "Run the G-Ingá `/sharpen` question-rounds procedure. Load the `sharpen` skill and follow `.claude/skills/work/references/question-rounds.md` in standalone mode.",
+      "Run the G-Ingá `/sharpen` question-rounds procedure. Load the `sharpen` skill and follow `skills/work/references/question-rounds.md` in standalone mode.",
   },
 ];
 
 const SKILL_ROOTS = [
+  join(REPO_ROOT, "skills"),
   join(REPO_ROOT, ".claude", "skills"),
   join(REPO_ROOT, ".opencode", "skills"),
   join(REPO_ROOT, ".agents", "skills"),
