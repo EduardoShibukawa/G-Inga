@@ -1,11 +1,12 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-16-usage-telemetry-pipeline
 spec: 2026-10-16-usage-telemetry-pipeline@1
 depends_on:
   - 2026-10-16-usage-telemetry-pipeline-02-multi-host-ingestion
+verified_at: "e51f617"
 ---
 
 # Aggregator and ledger persistence
@@ -48,13 +49,13 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | evaluation test suite before change | pass | e1b407a | `bun test tools/eval` |
-| AC1 | aggregate_usage calculates sums and cache ratios | pass | tools/eval/aggregate_usage.ts | verify math and groupings |
-| AC2 | records/usage-summary.md produced with clean tables | pass | tools/eval/aggregate_usage.ts | verify markdown generation |
-| AC3 | records/usage-ledger.tsv structured correctly | pass | records/usage-ledger.tsv | verify TSV columns |
-| AC4 | git status confirms raw traces ignored | pass | .gitignore | verify gitignore behavior |
-| AC5 | eval tests and repository validation green | pass | tools/eval/aggregate_usage.test.ts | bun test tools/eval (85 pass) && bun run validate pass |
-| R1 | regression check on verified_at | not run | - | on verified_at |
-| V1 | diff read against AC1–AC5 | pass | - | changes verified against AC1–AC5 |
+| AC1 | aggregate_usage calculates sums and cache ratios | pass | e51f617 | verify math and groupings |
+| AC2 | records/usage-summary.md produced with clean tables | pass | e51f617 | verify markdown generation |
+| AC3 | records/usage-ledger.tsv structured correctly | pass | e51f617 | verify TSV columns |
+| AC4 | git status confirms raw traces ignored | pass | e51f617 | verify gitignore behavior |
+| AC5 | eval tests and repository validation green | pass | e51f617 | bun test tools/eval (85 pass) && bun run validate pass |
+| R1 | regression check on verified_at | pass | e51f617 | full eval test suite and validate pass |
+| V1 | diff read against AC1–AC5 | pass | e51f617 | changes verified against AC1–AC5 |
 
 ## Plan
 
