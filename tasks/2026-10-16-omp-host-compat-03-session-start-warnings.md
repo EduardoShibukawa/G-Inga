@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: blocked
 ---
 
 # Ship an OMP plugin hook for the G-Ingá startup warning
@@ -38,13 +38,13 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | not run | - | record the commit SHA you ran on |
-| AC1 | `bun test tools/gate/omp-session-start.test.ts` (warning case, notify) | not run | - | |
-| AC2 | `bun test tools/gate/omp-session-start.test.ts` (warning case, model context once) | not run | - | |
-| AC3 | `bun test tools/gate/omp-session-start.test.ts` (no-warning cases) | not run | - | |
-| AC4 | `bun test tools/gate/omp-session-start.test.ts` (networkReached false) | not run | - | |
-| AC5 | `mise run validate` and `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | |
+| B1 | `mise run validate` and `mise run test` before the first edit | fail | f678867 | `mise run validate` ran (exit not separately captured; `test` started). `mise run test` ran `typecheck` and `bun test`: 331 pass, 1 fail. The failure is `tools/validate/validate.test.ts` > "this repository > every layer applies…", which times out at 120000 ms. Re-run of that file alone: same timeout (17 pass, 1 fail, 124.9 s). Pre-existing, independent of this task. See `## Blockers`. |
+| AC1 | `bun test tools/gate/omp-session-start.test.ts` (warning case, notify) | not run | - | blocked by B1 |
+| AC2 | `bun test tools/gate/omp-session-start.test.ts` (warning case, model context once) | not run | - | blocked by B1 |
+| AC3 | `bun test tools/gate/omp-session-start.test.ts` (no-warning cases) | not run | - | blocked by B1 |
+| AC4 | `bun test tools/gate/omp-session-start.test.ts` (networkReached false) | not run | - | blocked by B1 |
+| AC5 | `mise run validate` and `mise run test` | not run | - | blocked by B1 |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | blocked by B1 |
 
 ## Constraints and budget
 
@@ -88,8 +88,15 @@ Out of scope:
 4. Run AC1–AC5, fill the table with the commit SHA, read the diff (V1), set `completed`, then `verified` with `verified_at` once every row passes.
 5. Update `## Checkpoint` and `## Outcome`.
 
+## Blockers
+
+- What blocks: `mise run test` fails at baseline (B1, commit f678867, before any edit). `tools/validate/validate.test.ts` test "this repository > every layer applies, no check is named after a decision ID, and git status is unchanged" exceeds its 120 s per-test timeout. It reproduced on two runs (full `mise run test`, and the file alone). AC5 and the B1 gate cannot pass while it fails.
+- Why not fixed here: the failing test is outside this task's In scope (`hooks/pre/g-inga-session-start.ts`, `tools/gate/omp-session-start.test.ts`, this record). Raising the timeout or changing the test is a change to the validator test suite.
+- Needed, from the owner: decide between (a) a separate task to fix the validator test (its per-test timeout or the cost of running the full-repo validation inside it), or (b) explicit approval to widen this task's scope to that test. Then re-run B1 on the resulting baseline.
+- Attempts: 2 (full `mise run validate` + `mise run test`; `bun test tools/validate/validate.test.ts` alone). Both timed out identically.
+
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/omp-host-compat-tasks, head 47e8c69, task recorded, no edits
-- done: on OMP 18.11.2, `node hooks/session-start.mjs` runs standalone (exit 0, no warning on this checkout), and nothing triggers it. A probe confirmed that OMP loads plugin `hooks/pre/*.ts` factories at session start
-- next: step 1 of the plan
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-03-session-start-warnings, baseline HEAD f678867
+- done: B1 run before any edit; `mise run test` fails at baseline (pre-existing 120 s timeout in `tools/validate/validate.test.ts`). No implementation edits made. Status set to `blocked`.
+- next: owner decision on the Blockers above, then re-run B1 and continue Plan step 2.
