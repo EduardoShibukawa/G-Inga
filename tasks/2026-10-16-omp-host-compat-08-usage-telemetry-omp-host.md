@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d
 ---
 
 # Ingest OMP session usage into the local telemetry pipeline
@@ -54,14 +55,14 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | `mise run validate` and `mise run test` before the first edit | fail | f678867 | validate pass; test fail: in the full `mise run test` run, `tools/validate/validate.test.ts` "this repository" failed under CPU contention with sibling workers (run 1: timed out at 120 s limit, earlier run: failed at 120 s). Rerun alone (`bun test tools/validate/validate.test.ts -t "this repository"`): pass, 1 pass / 0 fail. Pre-existing, outside scope. |
-| AC1 | `bun test tools/eval/collect_usage.test.ts` (fixture sums) | pass | - | collect_usage.test.ts: 8 pass / 0 fail (74 expects), fixture sums and states as AC1 |
-| AC2 | `bun test tools/eval/collect_usage.test.ts` (model_usage) | pass | - | same run: model_usage adds 10/5/0/0/15/0.001 |
-| AC3 | `bun test tools/eval/collect_usage.test.ts` (no usage) | pass | - | same run: absent states, no throw |
-| AC4 | `bun test tools/eval/collect_usage.test.ts` (no prompt text) | pass | - | same run: JSON.stringify does not contain prompt text |
-| AC5 | `bun test tools/eval/run_usage.test.ts` | pass | - | run_usage.test.ts: 16 pass / 0 fail (includes omp parseCliArgs, runUsage total 34678, --help lists omp) |
-| AC6 | real-session smoke command | pass | - | session 2026-10-16T19-04-15-265Z_01a14619…; exit 0; input_tokens observed; /tmp output deleted |
-| AC7 | `mise run validate` and `mise run test` | pass | - | validate exit 0; test exit 0, 339 pass / 0 fail (worktree, after B1 vocabulary fix) |
-| V1 | diff read against AC1–AC7 and the out-of-scope list | pass | - | 5 files in scope only; no `any` or `isRecord` in new code; no ab_runner/token_budget_guard/ADR/ledger changes |
+| AC1 | `bun test tools/eval/collect_usage.test.ts` (fixture sums) | pass | 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d | collect_usage.test.ts: 8 pass / 0 fail (74 expects), fixture sums and states as AC1 |
+| AC2 | `bun test tools/eval/collect_usage.test.ts` (model_usage) | pass | 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d | same run: model_usage adds 10/5/0/0/15/0.001 |
+| AC3 | `bun test tools/eval/collect_usage.test.ts` (no usage) | pass | 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d | same run: absent states, no throw |
+| AC4 | `bun test tools/eval/collect_usage.test.ts` (no prompt text) | pass | 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d | same run: JSON.stringify does not contain prompt text |
+| AC5 | `bun test tools/eval/run_usage.test.ts` | pass | 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d | run_usage.test.ts: 16 pass / 0 fail (includes omp parseCliArgs, runUsage total 34678, --help lists omp) |
+| AC6 | real-session smoke command | pass | 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d | session 2026-10-16T19-04-15-265Z_01a14619…; exit 0; input_tokens observed; /tmp output deleted |
+| AC7 | `mise run validate` and `mise run test` | pass | 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d | validate exit 0; test exit 0, 339 pass / 0 fail (worktree, after B1 vocabulary fix) |
+| V1 | diff read against AC1–AC7 and the out-of-scope list | pass | 97404df176fbe0faeaa1f8f4ef84a1a3b58b558d | 5 files in scope only; no `any` or `isRecord` in new code; no ab_runner/token_budget_guard/ADR/ledger changes |
 
 ## Constraints and budget
 
@@ -87,6 +88,13 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/omp-host-compat-tasks, head 47e8c69, task recorded, no edits
-- done: OMP compatibility analysis (OMP 18.11.2): the AC1 fixture usage numbers are copied from a real session in `~/.omp/agent/sessions/-Projetos-G-Inga/`; `totalTokens` equals input + output + cacheRead + cacheWrite there
-- next: step 1 of the plan
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-08-usage-telemetry-omp-host, head 97404df (implementation commit; this record commit follows)
+- done: `parseOmpSession` and the `omp` host implemented and tested; AC1–AC7 and V1 pass; B1 recorded as fail (validate pass, validate.test.ts timeout under contention, pass when rerun alone)
+- next: none; PR delivery by owner
+
+## Outcome
+
+- `parseOmpSession` added to `tools/eval/collect_usage.ts`; `omp` accepted by `tools/eval/run_usage.ts` (parseCliArgs, dispatch, errors, help).
+- Tests: `collect_usage.test.ts` 8 pass; `run_usage.test.ts` 16 pass; full `mise run test` 339 pass; `mise run validate` pass.
+- Real-session smoke (AC6): exit 0, `input_tokens` observed; temporary output deleted.
+- Caveat (pre-existing, outside scope): `tools/validate/validate.test.ts` "this repository" has a hard-coded 120 s timeout and fails under CPU contention; it passes alone.
