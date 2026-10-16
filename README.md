@@ -73,6 +73,18 @@ agy plugin install .
 
 Inside an interactive session, `/plugin` can also install from the local checkout directory (`+ Install from local directory...`). The plugin is a personal convenience channel: the pinned bundle stays the distribution for target repositories and CI ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)). The manifest sets no `version`, so updates follow the repository's commits.
 
+## Install as an OMP Plugin
+
+This repository is also an OMP plugin ([`.claude-plugin/`](.claude-plugin/)). The plugin is a personal convenience channel: the pinned bundle stays the distribution for target repositories and CI ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)).
+
+```sh
+omp plugin marketplace add EduardoShibukawa/G-Inga # or local checkout path
+omp plugin install g-inga@g-inga
+omp plugin marketplace update g-inga && omp plugin upgrade g-inga@g-inga
+```
+
+The plugin has no `version`, so OMP caches it as `0.0.0` and only an explicit upgrade refreshes it. Skills are invoked as `/skill:work`, `/skill:drive`, `/skill:orchestrate`, `/skill:sharpen` and `/skill:validator-flow`. Under OMP, the plugin adds the deny-list guard (`hooks/pre/g-inga-guard.ts`, which reads the project's `.claude/settings.json`), the missing-Git-hook warning (`hooks/pre/g-inga-session-start.ts`), and the `researcher` and `validator-guide` agents. In this repository, `.omp/config.yml` turns off the project skill folders, so OMP shows no G-Ingá skill until the plugin is installed. The same file maps `scout`, `task` and `reviewer` to Haiku, Sonnet and Opus. Ingest usage via `bun tools/eval/run_usage.ts --host omp --in <session.jsonl>`.
+
 ## Repository Validation and Development Setup
 
 Install [mise](https://mise.jdx.dev/installing-mise.html) and Git, then from the repository root:
