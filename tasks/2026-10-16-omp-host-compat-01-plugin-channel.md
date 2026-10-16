@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: blocked
 ---
 
 # Load G-Ingá in OMP only through the plugin channel
@@ -38,8 +38,8 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | not run | - | record the commit SHA you ran on |
-| B2 | `omp plugin marketplace list` (default profile) before the task | not run | - | paste the output; AC4 compares against it |
+| B1 | `mise run validate` and `mise run test` before the first edit | fail | f678867 | validate: pass (exit 0, 144s). test: 331 pass, 1 fail, twice (runs at 161s and 150s): "this repository > every layer applies, no check is named after a decision ID, and git status is unchanged" timed out at 120000ms (the test runs the full validator inside bun test; the standalone run takes ~144s) |
+| B2 | `omp plugin marketplace list` (default profile) before the task | pass | f678867 | `No marketplaces configured` / `Add one with: omp plugin marketplace add <source>` (exit 0; taken under /tmp/g-inga-omp-probe.lock, released) |
 | AC1 | `omp config get` for both keys | not run | - | |
 | AC2 | `omp --profile g-inga-check read skill://work` without the plugin | not run | - | |
 | AC3 | the same read with the plugin installed in the isolated profile | not run | - | |
@@ -76,6 +76,10 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/omp-host-compat-tasks, head 47e8c69, task recorded, no edits
-- done: probe on OMP 18.11.2 with an isolated profile and the plugin installed from a local checkout. With a temporary `.omp/config.yml` holding these keys, `skill://work` resolved to `~/.omp/profiles/<profile>/plugins/cache/plugins/g-inga___g-inga___0.0.0/.claude/skills/work/SKILL.md` inside this repository, so `.claude/settings.json` `enabledPlugins: false` did not exclude it. Without the plugin and with all three sources off, `Available:` lists no G-Ingá skill. With only the two `skills.*` keys set, `.opencode/skills/work/SKILL.md` still loaded, which is why `opencode` is disabled too. The plugin installs as version `0.0.0` because `plugin.json` has no `version`
-- next: step 1 of the plan
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-01-plugin-channel, head f678867, no edits to `.omp/config.yml`
+- done: B1 and B2 recorded. B1 `mise run test` fails at baseline (same test failed on two runs; see Blockers). AC1-AC4 not run (stopped before edits per E3/E4).
+- next: owner decides on the baseline timeout in `tools/validate/validate.test.ts` (out of this task's scope), then the worker resumes at Plan step 2.
+
+## Blockers
+
+- B1 baseline: `mise run test` fails at f678867 before any edit. The failing test `this repository > every layer applies, no check is named after a decision ID, and git status is unchanged` (tools/validate/validate.test.ts:157) has a 120000 ms timeout, but it runs the full `validate` (about 144 s on this machine). Failed on two consecutive runs; deterministic, not flakiness. Fixing it needs a change outside In scope (test timeout or validator speed), so the task stops here as `blocked` (E3/E4). The default OMP profile was not touched; the isolated profile was not created.
