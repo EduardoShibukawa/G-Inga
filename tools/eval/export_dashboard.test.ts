@@ -130,5 +130,27 @@ describe("export_dashboard", () => {
       // Cleanup
       await fs.rm(tempDir, { recursive: true, force: true });
     });
+
+    it("produces records/telemetry-dashboard.html when invoked with no CLI arguments", async () => {
+      const defaultOutput = path.resolve(process.cwd(), "records/telemetry-dashboard.html");
+
+      try {
+        const proc = Bun.spawnSync(["bun", "tools/eval/export_dashboard.ts"], {
+          cwd: process.cwd(),
+          stdout: "pipe",
+          stderr: "pipe",
+        });
+
+        expect(proc.exitCode).toBe(0);
+        const file = Bun.file(defaultOutput);
+        expect(await file.exists()).toBe(true);
+
+        const content = await file.text();
+        expect(content).toContain("<!DOCTYPE html>");
+        expect(content).toContain("G-Ingá Local Telemetry Dashboard");
+      } finally {
+        await fs.rm(defaultOutput, { force: true });
+      }
+    });
   });
 });

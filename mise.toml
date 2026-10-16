@@ -115,3 +115,8 @@ set -uo pipefail
 budget="${SHE_BUDGET_USD:-5.00}"
 bun tools/eval/ab_runner.ts --max-cost-usd "$budget" "$@"
 '''
+
+[tasks.dashboard]
+description = "Export local telemetry HTML dashboard from records/usage-ledger.tsv"
+run = "bun run dashboard"
+
