@@ -11,44 +11,44 @@ When constructing the prompt for `invoke_subagent`, include the following struct
 ````markdown
 # TASK DISPATCH: Ticket #<ID> — <TITLE>
 
-Você foi invocado como Subagente Especialista do Harness G-Ingá para executar a micro-entrega do Ticket #<ID>.
+You are invoked as a G-Ingá Harness Specialist Subagent to execute the micro-delivery of Ticket #<ID>.
 
-## 1. Missão
-<Descrição concisa, objetiva e autocontida do que deve ser implementado ou corrigido.>
+## 1. Mission
+<Concise, objective, self-contained description of what must be implemented or fixed.>
 
-## 2. Arquivos Permitidos (In Scope)
-ATENÇÃO: Você só tem autorização para criar ou modificar estritamente os arquivos listados abaixo. Edições fora desta lista violam o Gate 1 e resultarão em rollback imediato.
-- `<caminho/do/arquivo/1>`
-- `<caminho/do/arquivo/2>`
+## 2. Allowed Files (In Scope)
+Attention: you are only authorized to create or modify strictly the files listed below. Edits outside this list violate Gate 1 and will result in immediate rollback.
+- `<path/to/file/1>`
+- `<path/to/file/2>`
 
-## 3. Restrições Herdadas & Mandatos
-- Procedimento: leia e siga `.agents/skills/work/references/procedure.md` para esta entrega. Não invoque a skill `work`: ela é só do owner (ADR 0010).
-- Repositório é a fonte canônica da verdade: consulte `docs/artifact-contracts.md` e decisões em `docs/decisions/`.
-- Vocabulário factual estrito: reporte checagens usando apenas `pass`, `fail`, `blocked` e `not run`.
-- Comunicação: Código e commits em inglês; relatórios executivos em português.
-- Nunca adicione dependências não autorizadas no `package.json` ou remova testes existentes.
+## 3. Inherited Constraints & Mandates
+- Procedure: read and follow `.agents/skills/work/references/procedure.md` for this delivery. Do not invoke the `work` skill: it is owner-only (ADR 0010).
+- Repository is the canonical source of truth: consult `docs/artifact-contracts.md` and decisions in `docs/decisions/`.
+- Strict factual vocabulary: report checks using only `pass`, `fail`, `blocked` and `not run`.
+- Communication: Code and commits in English; executive reports in Portuguese.
+- Never add unauthorized dependencies to `package.json` or remove existing tests.
 
-## 4. Critérios de Aceite & Thresholds Obrigatórios
-O Orquestrador executará deterministicamente os seguintes gates antes de aceitar sua entrega:
-- **Gate 1 (Scope):** Apenas os arquivos em "In Scope" foram modificados (`git diff --name-only`).
+## 4. Acceptance Criteria & Mandatory Thresholds
+The Orchestrator will deterministically run the following gates before accepting your delivery:
+- **Gate 1 (Scope):** Only the files in "In Scope" were modified (`git diff --name-only`).
 - **Gate 2 (Deterministic Checks):**
-  - `<Comando de teste ou validação 1>` deve retornar Exit Code 0 (`pass`).
-  - `<Comando de teste ou validação 2>` deve retornar Exit Code 0 (`pass`).
+  - `<Test or validation command 1>` must return Exit Code 0 (`pass`).
+  - `<Test or validation command 2>` must return Exit Code 0 (`pass`).
 - **Gate 3 (Thresholds):**
-  - Zero erros de linter ou formatação.
-  - `<Critério quantitativo adicional, se houver>`.
+  - Zero linter or formatting errors.
+  - `<Additional quantitative criterion, if any>`.
 
-## 5. Formato do Relatório de Retorno
-Ao concluir o trabalho e verificar localmente suas alterações, envie uma mensagem concisa ao orquestrador (via retorno ou send_message) no formato exato:
+## 5. Return Report Format
+Upon completing the work and verifying your changes locally, send a concise message to the orchestrator (via return or `send_message`) in the exact format:
 
 ```text
 status: ready_for_gate
 ticket: #<ID>
-summary: <1 a 2 frases resumindo a alteração realizada>
+summary: <1-2 sentence summary of the change made>
 modified_files:
-  - <caminho/do/arquivo>
+  - <path/to/file>
 checks_run:
-  - <check_name>: pass / fail / blocked (<evidência resumida>)
+  - <check_name>: pass / fail / blocked (<summarized evidence>)
 ```
 ````
 
@@ -59,30 +59,30 @@ checks_run:
 ````markdown
 # TASK DISPATCH: Ticket #12 — Fix Pagination Offset in Query Parser
 
-Você foi invocado como Subagente Especialista do Harness G-Ingá para executar a micro-entrega do Ticket #12.
+You are invoked as a G-Ingá Harness Specialist Subagent to execute the micro-delivery of Ticket #12.
 
-## 1. Missão
-Corrigir o cálculo do offset de paginação em `src/parser/query.ts` para evitar erro off-by-one quando o parâmetro `page=1`.
+## 1. Mission
+Fix the pagination offset calculation in `src/parser/query.ts` to avoid an off-by-one error when the `page=1` parameter.
 
-## 2. Arquivos Permitidos (In Scope)
+## 2. Allowed Files (In Scope)
 - `src/parser/query.ts`
 - `tests/unit/parser/query.test.ts`
 
-## 3. Restrições Herdadas & Mandatos
-- Procedimento: leia e siga `.agents/skills/work/references/procedure.md` para esta entrega. Não invoque a skill `work`: ela é só do owner (ADR 0010).
-- Repositório é a fonte canônica da verdade: consulte `docs/artifact-contracts.md`.
-- Vocabulário factual estrito: use `pass`, `fail`, `blocked` ou `not run`.
-- Não altere assinaturas de métodos públicos existentes.
+## 3. Inherited Constraints & Mandates
+- Procedure: read and follow `.agents/skills/work/references/procedure.md` for this delivery. Do not invoke the `work` skill: it is owner-only (ADR 0010).
+- Repository is the canonical source of truth: consult `docs/artifact-contracts.md`.
+- Strict factual vocabulary: use `pass`, `fail`, `blocked` or `not run`.
+- Do not change existing public method signatures.
 
-## 4. Critérios de Aceite & Thresholds Obrigatórios
-- **Gate 1:** Apenas `src/parser/query.ts` e `tests/unit/parser/query.test.ts` modificados.
+## 4. Acceptance Criteria & Mandatory Thresholds
+- **Gate 1:** Only `src/parser/query.ts` and `tests/unit/parser/query.test.ts` modified.
 - **Gate 2:**
-  - `mise run validate` retorna Exit Code 0 (`pass`).
-  - `mise exec -- bun test tests/unit/parser/query.test.ts` retorna Exit Code 0 (`pass`).
+  - `mise run validate` returns Exit Code 0 (`pass`).
+  - `mise exec -- bun test tests/unit/parser/query.test.ts` returns Exit Code 0 (`pass`).
 - **Gate 3:**
-  - 100% dos novos testes passam; zero regressões na suite existente.
+  - 100% of new tests pass; zero regressions in the existing suite.
 
-## 5. Formato do Relatório de Retorno
+## 5. Return Report Format
 
 ```text
 status: ready_for_gate

@@ -12,15 +12,15 @@ Macro-governor for autonomous multi-task execution over dependency graphs and ta
 
 1. **Tokens Per Verified Task:** Never trust verbal self-attestation from subagents or models. Accept deliverables only when all 5 layers of the Verification Gate evaluate to `pass`.
 2. **Strict 4-Value Vocabulary:** Report checks strictly using `pass`, `fail`, `blocked`, or `not run`. Exit code 0 is strictly forbidden if any mandatory check is skipped or unrun.
-3. **Context Isolation:** Keep the orchestrator root context lean (< 25k tokens). Exploration, iterative editing, and tool output belong strictly inside ephemeral subagents (`invoke_subagent`).
+3. **Context Isolation:** Keep the orchestrator root context lean. Exploration, iterative editing, and tool output belong strictly inside ephemeral subagents (`invoke_subagent`).
 4. **Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3):** Maximum 2 verification attempts per ticket without new information. On the second consecutive failure, halt the ticket, mark it `blocked`, and escalate to the repository owner.
-5. **Macro vs Micro Division:** `/orchestrate` governs the roadmap graph (`map.md`, `tasks/`), dependency resolution, parallel concurrency, and gating. Micro-delivery within scoped boundaries is delegated to subagents that read and follow `.agents/skills/work/references/procedure.md`. They never invoke the `work` skill, which is user-invoked (ADR 0010).
+5. **Macro vs Micro Division:** `/orchestrate` governs the task backlog (`tasks/`), dependency resolution, parallel concurrency, and the verification gate. Micro-delivery within scoped boundaries is delegated to subagents that read and follow `.agents/skills/work/references/procedure.md`. They never invoke the `work` skill, which is user-invoked (ADR 0010).
 
 ## The 6-Step OODA Loop
 
 ```mermaid
 flowchart TD
-    OBS["1. OBSERVE: git status, HEAD, map.md / tasks/"] --> ORI["2. ORIENT: Unblocked frontier, constraints, thresholds"]
+    OBS["1. OBSERVE: git status, HEAD, tasks/"] --> ORI["2. ORIENT: Unblocked frontier, constraints, thresholds"]
     ORI --> DEC["3. DECIDE: Batch size N, pre-dispatch scope collision check"]
     DEC -->|"Collisions detected"| SER["Serialize into conflict-free waves"]
     SER --> ACT
@@ -35,13 +35,13 @@ flowchart TD
 ### 1. OBSERVE (State Inspection)
 
 - Inspect Git worktree: `git status --porcelain`, current branch, and HEAD SHA.
-- Inspect the task graph: read `map.md` (or `tasks/` directory).
-- Identify tickets in state `open` whose dependencies are fully resolved (`Blocked by: []` or all dependencies in `resolved` / `verified`).
+- Inspect the task graph: read `tasks/`.
+- Identify tickets in state `todo` whose dependencies are fully met (`Blocked by: []` or all dependencies in `verified` / `accepted`).
 
 ### 2. ORIENT (Frontier & Contract Definition)
 
 - Select the next unblocked tickets on the dependency frontier.
-- Transition selected tickets from `open` to `claimed`.
+- Transition selected tickets from `todo` to `active`.
 - Map architectural constraints, applicable ADRs (`docs/decisions/`), and specs (`specs/`).
 - Define the explicit **Verification Contract** for each ticket:
   - Allowed file scope (`In scope: [...]`).
@@ -116,10 +116,10 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
 
 ### 6. SEAL & ADVANCE (Atomic Integration)
 
-- Update ticket status in roadmap (`map.md` / `tasks/`) to `resolved`.
-- Create an atomic descriptive Git commit referencing the resolved ticket IDs:
+- Update ticket status in roadmap (`tasks/`) to `verified`.
+- Create an atomic descriptive Git commit referencing the verified ticket IDs:
   `git commit -m "<type>(<scope>): <summary> [resolves #ID]"`
-- Advance the frontier of the dependency graph and repeat the OODA loop until all tickets are `resolved` or `blocked`.
+- Advance the frontier of the dependency graph and repeat the OODA loop until all tickets are `verified` or `blocked`.
 
 ## References & Procedures
 

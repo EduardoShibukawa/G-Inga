@@ -25,7 +25,7 @@ Autonomous backlog execution driver for G-Ingá. Governs multi-task continuous d
 ```mermaid
 flowchart TD
     subgraph L1["L1: Driver (/drive)"]
-        SCAN["1. Scan Backlog (tasks/, map.md)"] --> DEPS["2. Resolve Deps & Gira-G Index"]
+        SCAN["1. Scan Backlog (tasks/)"] --> DEPS["2. Order Deps & Gira-G Index"]
         DEPS --> BUDGET["3. Enforce Global Run Budget (< 100k tokens)"]
         BUDGET --> BATCH["4. Form Candidate Batch (limit N)"]
     end
@@ -57,7 +57,7 @@ flowchart TD
 The `/drive` driver accepts configuration flags to control execution scope and resource limits:
 
 - `--limit <N>`: Maximum number of tasks to process in a single continuous drive session (default: `3`).
-- `--dry-run`: Scan backlog, resolve dependencies, query Gira-G slices, and output execution plan without executing workers or modifying files.
+- `--dry-run`: Scan backlog, resolve dependencies, query Gira-G slices, and output execution plan without running workers or modifying files.
 - `--tag <tag>`: Filter candidate tasks by tag or parent spec (e.g., `--tag standard`, `--tag v1`).
 - `--max-tokens <tokens>`: Maximum token budget for the continuous run (default: `100000`).
 
@@ -67,10 +67,10 @@ The `/drive` driver accepts configuration flags to control execution scope and r
 
 - Inspect `git status`, HEAD SHA, and branch.
 - **Reconcile the parent checkpoint first.** If the parent record has a `## Checkpoint`, compare it with Git using "Reconcile on start" in [resume.md](../work/resume.md). On any mismatch of branch, HEAD, worktree or child statuses, report the difference and stop: dispatch no child until it is reconciled. Record the reconciliation as `pass`, or as `blocked` with the mismatch.
-- Scan active and open tasks in `tasks/*.md` (and `map.md` if present).
+- Scan active and todo tasks in `tasks/*.md`.
 - Filter tasks by eligibility:
   - Schema is valid (`schema: task/1`).
-  - Status is `todo` or `active`, or `blocked` with its `## Blockers` entry resolved (contract §3.3: `blocked --> active` when the blocker is resolved). Never `completed`, `verified`, `accepted`, `partial` or `cancelled`.
+  - Status is `todo` or `active`, or `blocked` with its `## Blockers` entry cleared (contract §3.3: `blocked --> active` when the blocker is cleared). Never `completed`, `verified`, `accepted`, `partial` or `cancelled`.
   - Dependencies listed in `depends_on` are fully `verified` or `accepted`.
 - Sort candidates topologically by dependency depth and limit candidates to `--limit <N>`.
 
@@ -149,7 +149,7 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 ### Step 6: Atomic Seal & Continuous Handoff
 
 - Update task records with verification results. Each child's verification note records the model that ran it and its token totals, taken from the host's `Agent` result (never the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — with no prompt content (per `.claude/skills/work/references/model-policy.md`).
-- Seal atomic commit per resolved ticket wave.
+- Seal atomic commit per verified ticket wave.
 - After each verified child, replace the parent's `## Checkpoint` with the done, active and blocked children, the branch and HEAD, and the copy-pasteable resume prompt, using the template in [resume.md](../work/resume.md). The next child to run is the first eligible child after the last one in `done`.
 - Decrement token budget by recorded consumption.
 - If remaining budget > 0 and eligible tasks remain under `--limit`, repeat from Step 1.
