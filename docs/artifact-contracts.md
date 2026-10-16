@@ -464,6 +464,12 @@ These fixtures specify the validator. The `artifact-rule-fixtures` check runs th
 | T17 | `cancelled` record, `tier: standard`, last entry `downgraded: standard → light` | pass |
 | T18 | retired-major record (`task/1` once `task/3` is current), `accepted`, and unchanged since its status last changed / changed later / `active` | frozen / fail / fail |
 | T19 | commit that changes `schema:` and also `status` | fail |
+| X10 | `heavy` parent `active` with `## Review: skip: <reason>` | pass |
+| X11 | `heavy` parent `verified` while `## Review` is still `skip:` | fail |
+| X12 | `heavy` parent `verified` with an open finding in `## Review` | fail |
+| X13 | `verified` with abbreviated SHA and log path in `Ref` canonicalized to `verified_at` | pass |
+| X14 | abbreviated SHA prefix mismatch degrades to `blocked` when history is shallow or unavailable | blocked |
+| X15 | authoring mode skips commit-order ancestry check when ancestry is unavailable | pass |
 
 ## 8. Versioning and evolution
 
