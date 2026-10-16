@@ -1,10 +1,11 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
 parent: 2026-10-15-validator-ux-and-ai-native-sdlc
 spec: 2026-10-15-validator-ux-and-ai-native-sdlc@1
 depends_on: ["2026-10-15-validator-ux-and-ai-native-sdlc-01-spec-and-intent-artifact", "2026-10-15-validator-ux-and-ai-native-sdlc-02-validator-authoring-full-modes"]
+verified_at: "f5f6ad6"
 ---
 
 # Subagents (validator-guide, researcher) and skills
@@ -36,10 +37,10 @@ Out of scope: other children; implementing Phase 2 reviewer or Phase 3 verifier.
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | full repository validation and test suite before edits | pass | 7f32159 | `mise run validate && bun test tools/validate` |
-| AC1 | validator-guide and researcher subagents defined with minimal tools and later phases scoped | not run |  | inspection of `.claude/agents/` |
-| AC2 | validator-flow skill exists and is linked from docs/development.md and docs/artifact-contracts.md | not run |  | inspection of skills and docs links |
-| R1 | full repository validation and test suite | not run |  | `mise run validate && bun test tools/validate` |
-| V1 | diff read against AC1 and AC2 | not run |  | git diff inspected against spec SC8-SC9 |
+| AC1 | validator-guide and researcher subagents defined with minimal tools and later phases scoped | pass | f5f6ad6 | inspection of `.claude/agents/` |
+| AC2 | validator-flow skill exists and is linked from docs/development.md and docs/artifact-contracts.md | pass | f5f6ad6 | inspection of skills and docs links |
+| R1 | full repository validation and test suite | pass | f5f6ad6 | `mise run validate && bun test tools/validate` (133 pass, 8 skip, 0 fail) |
+| V1 | diff read against AC1 and AC2 | pass | f5f6ad6 | git diff inspected against spec SC8-SC9 |
 
 ## Plan
 
@@ -48,3 +49,7 @@ Out of scope: other children; implementing Phase 2 reviewer or Phase 3 verifier.
 3. Create `.claude/skills/validator-flow/SKILL.md` and `.agents/skills/validator-flow/SKILL.md` documenting authoring vs full modes, exit codes, finding templates, and `--explain <rule>`.
 4. Link `validator-flow` from `docs/development.md` and `docs/artifact-contracts.md`, and rebuild contract copy (`bun run build:contract-copy`).
 5. Run repository validation and tests, commit implementation, regenerate manifest if needed, seal task, and advance parent checkpoint.
+
+## Outcome
+
+Delivered `.claude/agents/validator-guide.md` and `.claude/agents/researcher.md` with single responsibility, least tools, and explicit scoping for later phases (reviewer in Phase 2, verifier in Phase 3 without implementation claims). Delivered the `/validator-flow` skill under `.claude/skills/validator-flow/SKILL.md` and `.agents/skills/validator-flow/SKILL.md`, documenting authoring/full modes, exit codes, finding templates, and `--explain`. Linked `validator-flow` from `docs/artifact-contracts.md` and `docs/development.md`. All verification checks pass.
