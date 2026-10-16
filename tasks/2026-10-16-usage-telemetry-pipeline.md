@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: heavy
-status: verified
+status: accepted
 verified_at: "141a6e0"
 spec: 2026-10-16-usage-telemetry-pipeline@1
 ---
@@ -23,6 +23,7 @@ spec: 2026-10-16-usage-telemetry-pipeline@1
 - decided: Q8 [quality-metric] → deterministic quality_score (test suite + task ACs) in ledger; weekly LLM-as-a-judge improvement loop flagged for roadmap by owner (2026-10-16, "Q8. ok, mas...")
 - decided: Q9 [mise-fix] → adjust mise.toml to prevent locked=true colliding with global developer tools in clean clone by owner (2026-10-16, "Q9.a")
 - decided: continuous-otel → day-to-day continuous telemetry across all three hosts (Claude Code native OTel, OpenCode via plugin, Antigravity via lifecycle hook on Stop/PostInvocation parsing transcript.jsonl) by owner (2026-10-16, "sim")
+- accepted: by owner (2026-10-16, "Executar governança e atualização de arquitetura")
 
 ## Objective
 
@@ -92,11 +93,13 @@ Delivered the complete continuous usage telemetry pipeline and multi-host A/B ba
 - A/B Runner & Contamination Guard (child 04): implemented `tools/eval/ab_runner.ts` executing N=3 comparisons under isolated ephemeral worktrees with automated skill absence assertion, deterministic `quality_score`, and mise tasks `eval:usage` and `eval:ab` bounded by `SHE_BUDGET_USD=5.00`.
 - End-to-End Review & Integration (child 05): executed live operational runs of `eval:usage` and `eval:ab`, committed real benchmark evidence to ledger and summary, conducted fresh-context spec compliance review, and verified full test suite and repository validation.
 
+Accepted by the repository owner on 2026-10-16.
+
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, HEAD 141a6e0
-- done: all child tasks 01–05 verified; parent review and end-to-end verification (SC1–SC10, R1, V1) passed; epic verified
+- as of: 2026-10-16, branch `work/governance-and-architecture-update`, HEAD 8a19832
+- done: all child tasks 01–05 verified; parent review and end-to-end verification (SC1–SC10, R1, V1) passed; epic accepted by owner
 - active: none
 - blocked: none
-- next: deliver PR and handoff to owner
+- next: deliver PR and merge to main
 - revalidate: none

@@ -1,6 +1,6 @@
 # 0012 — Authoring vs full validation modes for the artifact gate
 
-- **Status:** proposed
+- **Status:** accepted (accepted by project owner 2026-10-16)
 - **Date:** 2026-10-15
 - **Deciders:** project owner
 
