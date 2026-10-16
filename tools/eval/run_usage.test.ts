@@ -483,3 +483,35 @@ describe("Multi-host telemetry ingestion (tools/eval/run_usage.ts)", () => {
     expect(stopHook.command).toContain("--out records/usage/continuous-antigravity.jsonl");
   });
 });
+
+describe("OMP host (tools/eval/run_usage.ts)", () => {
+  const ompFixture = [
+    `{"type":"session","version":3,"id":"01a145f4-758a-7748-b62f-9120a5c936bc","timestamp":"2026-10-16T18:24:31.210Z","cwd":"/tmp/x"}`,
+    `{"type":"model_change","id":"m1","parentId":null,"timestamp":"2026-10-16T18:24:31.269Z","runtime":{"version":"18.11.2"},"model":"anthropic/claude-opus-5-5"}`,
+    `{"type":"message","id":"a1","parentId":"m1","timestamp":"2026-10-16T18:24:31.260Z","message":{"role":"assistant","model":"claude-opus-5-5","usage":{"input":4,"output":288,"cacheRead":0,"cacheWrite":14107,"totalTokens":14399,"cost":{"total":0.118632}}}}`,
+    `{"type":"message","id":"u1","parentId":"a1","timestamp":"2026-10-16T18:24:35.000Z","message":{"role":"user","content":"secret prompt text"}}`,
+    `{"type":"message","id":"a2","parentId":"u1","timestamp":"2026-10-16T18:24:39.445Z","message":{"role":"assistant","model":"claude-opus-5-5","usage":{"input":2,"output":634,"cacheRead":14107,"cacheWrite":5536,"totalTokens":20279,"cost":{"total":0.0597974}}}}`,
+    "not json",
+  ].join("\n");
+
+  test("parseCliArgs accepts --host omp", () => {
+    const opts = parseCliArgs(["--host", "omp", "--in", "f.jsonl"]);
+    expect(opts.host).toBe("omp");
+    expect(opts.inFile).toBe("f.jsonl");
+  });
+
+  test("runUsage ingests an OMP session into a TelemetryRecord", async () => {
+    const record = await runUsage({ host: "omp", inputContent: ompFixture, taskId: "omp-task" });
+    expect(record.host).toBe("omp");
+    expect(record.task_id).toBe("omp-task");
+    expect(record.total_tokens.value).toBe(34678);
+    expect(record.input_tokens.state).toBe("observed");
+  });
+
+  test("--help lists omp as a host", async () => {
+    const proc = Bun.spawn(["bun", path.resolve("tools/eval/run_usage.ts"), "--help"], { stdout: "pipe", stderr: "pipe" });
+    const out = await new Response(proc.stdout).text();
+    await proc.exited;
+    expect(out).toContain("claude-code|antigravity|opencode|omp");
+  });
+});

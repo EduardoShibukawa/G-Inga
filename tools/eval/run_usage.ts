@@ -14,6 +14,7 @@ import {
   parseAntigravityTranscript,
   parseClaudeCodeOtel,
   parseOpencodeJson,
+  parseOmpSession,
   type UsageObservation,
   type MeasureState,
 } from "./collect_usage";
@@ -26,7 +27,7 @@ export interface TelemetryRecord extends UsageObservation {
 }
 
 export interface RunUsageOptions {
-  host: "claude-code" | "antigravity" | "opencode";
+  host: "claude-code" | "antigravity" | "opencode" | "omp";
   inFile?: string;
   inputContent?: string;
   taskId?: string;
@@ -43,7 +44,7 @@ export async function readStdin(): Promise<string> {
 }
 
 export function parseCliArgs(args: string[]): RunUsageOptions {
-  let host: "claude-code" | "antigravity" | "opencode" | undefined;
+  let host: "claude-code" | "antigravity" | "opencode" | "omp" | undefined;
   let inFile: string | undefined;
   let taskId = "continuous";
   let condition: "with" | "without" = "with";
@@ -53,10 +54,10 @@ export function parseCliArgs(args: string[]): RunUsageOptions {
     const arg = args[i];
     if (arg === "--host" && i + 1 < args.length) {
       const h = args[++i].toLowerCase();
-      if (h === "claude-code" || h === "antigravity" || h === "opencode") {
-        host = h as "claude-code" | "antigravity" | "opencode";
+      if (h === "claude-code" || h === "antigravity" || h === "opencode" || h === "omp") {
+        host = h as "claude-code" | "antigravity" | "opencode" | "omp";
       } else {
-        throw new Error(`Unsupported host: ${h}. Must be claude-code, antigravity, or opencode.`);
+        throw new Error(`Unsupported host: ${h}. Must be claude-code, antigravity, opencode, or omp.`);
       }
     } else if (arg === "--in" && i + 1 < args.length) {
       inFile = args[++i];
@@ -77,7 +78,7 @@ export function parseCliArgs(args: string[]): RunUsageOptions {
   }
 
   if (!host) {
-    throw new Error("Missing required flag: --host <claude-code|antigravity|opencode>");
+    throw new Error("Missing required flag: --host <claude-code|antigravity|opencode|omp>");
   }
 
   return { host, inFile, taskId, condition, outFile };
@@ -158,6 +159,8 @@ export async function runUsage(options: RunUsageOptions): Promise<TelemetryRecor
     obs = parseClaudeCodeOtel(content);
   } else if (host === "opencode") {
     obs = parseOpencodeJson(content);
+  } else if (host === "omp") {
+    obs = parseOmpSession(content);
   } else {
     throw new Error(`Unsupported host: ${host}`);
   }
@@ -188,10 +191,10 @@ if (import.meta.main) {
   const args = process.argv.slice(2);
   if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
     console.log(`Usage:
-  bun tools/eval/run_usage.ts --host <claude-code|antigravity|opencode> --in <file|-stdin> [options]
+  bun tools/eval/run_usage.ts --host <claude-code|antigravity|opencode|omp> --in <file|-stdin> [options]
 
 Options:
-  --host <name>       Agent host (claude-code, antigravity, or opencode) [required]
+  --host <name>       Agent host (claude-code, antigravity, opencode, or omp) [required]
   --in <path>         Input log/transcript file or -stdin / - for standard input [required]
   --task-id <id>      Task identifier (default: continuous)
   --condition <cond>  Condition arm: with or without (default: with)

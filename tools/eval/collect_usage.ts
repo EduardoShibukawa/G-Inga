@@ -14,7 +14,7 @@ export type MeasureState =
   | "collection_error";
 
 export interface UsageObservation {
-  host: "claude-code" | "antigravity" | "opencode" | "unknown";
+  host: "claude-code" | "antigravity" | "opencode" | "omp" | "unknown";
   cli_version?: string;
   scope_id?: string; // session_id or conversation_id (scrubbed of emails/uuids if needed)
   input_tokens: { value?: number; state: MeasureState; note?: string };
@@ -565,6 +565,162 @@ export function parseOpencodeJson(jsonStr: string): UsageObservation {
     rate_limit_7d_used_pct: {
       state: "unsupported",
       note: "unsupported in OpenCode CLI",
+    },
+  };
+}
+
+/**
+ * Parses an OMP session file (~/.omp/agent/sessions/<encoded-cwd>/<timestamp>_<sessionId>.jsonl),
+ * one JSON object per line. Sums assistant message usage and model_usage entries.
+ * Only usage, cost, identifiers and timestamps are read; message content is never copied.
+ */
+export function parseOmpSession(raw: string): UsageObservation {
+  let input = 0;
+  let output = 0;
+  let cacheRead = 0;
+  let cacheWrite = 0;
+  let total = 0;
+  let costUsd = 0;
+
+  let hasUsage = false;
+  let hasCost = false;
+  let timestampCount = 0;
+  let firstTs = Number.POSITIVE_INFINITY;
+  let lastTs = Number.NEGATIVE_INFINITY;
+
+  let scopeId: string | undefined;
+  let cliVersion: string | undefined;
+
+  function addUsage(usage: object) {
+    hasUsage = true;
+    if ("input" in usage && typeof usage.input === "number") input += usage.input;
+    if ("output" in usage && typeof usage.output === "number") output += usage.output;
+    if ("cacheRead" in usage && typeof usage.cacheRead === "number") cacheRead += usage.cacheRead;
+    if ("cacheWrite" in usage && typeof usage.cacheWrite === "number") cacheWrite += usage.cacheWrite;
+    if ("totalTokens" in usage && typeof usage.totalTokens === "number") total += usage.totalTokens;
+    if (
+      "cost" in usage &&
+      typeof usage.cost === "object" &&
+      usage.cost !== null &&
+      "total" in usage.cost &&
+      typeof usage.cost.total === "number"
+    ) {
+      costUsd += usage.cost.total;
+      hasCost = true;
+    }
+  }
+
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    let entry: unknown;
+    try {
+      entry = JSON.parse(trimmed);
+    } catch {
+      continue;
+    }
+    if (typeof entry !== "object" || entry === null) continue;
+
+    const type = "type" in entry ? entry.type : undefined;
+
+    if ("timestamp" in entry && typeof entry.timestamp === "string") {
+      const ms = Date.parse(entry.timestamp);
+      if (!Number.isNaN(ms)) {
+        timestampCount++;
+        firstTs = Math.min(firstTs, ms);
+        lastTs = Math.max(lastTs, ms);
+      }
+    }
+
+    if (type === "session" && !scopeId && "id" in entry && typeof entry.id === "string") {
+      scopeId = sanitizeText(entry.id);
+    }
+    if (
+      type === "model_change" &&
+      !cliVersion &&
+      "runtime" in entry &&
+      typeof entry.runtime === "object" &&
+      entry.runtime !== null &&
+      "version" in entry.runtime &&
+      typeof entry.runtime.version === "string"
+    ) {
+      cliVersion = sanitizeText(entry.runtime.version);
+    }
+
+    if (
+      type === "message" &&
+      "message" in entry &&
+      typeof entry.message === "object" &&
+      entry.message !== null &&
+      "role" in entry.message &&
+      entry.message.role === "assistant" &&
+      "usage" in entry.message &&
+      typeof entry.message.usage === "object" &&
+      entry.message.usage !== null
+    ) {
+      addUsage(entry.message.usage);
+    } else if (
+      type === "model_usage" &&
+      "usage" in entry &&
+      typeof entry.usage === "object" &&
+      entry.usage !== null
+    ) {
+      addUsage(entry.usage);
+    }
+  }
+
+  const durationSec = timestampCount >= 2 ? (lastTs - firstTs) / 1000 : undefined;
+
+  return {
+    host: "omp",
+    cli_version: cliVersion,
+    scope_id: scopeId,
+    input_tokens: {
+      value: hasUsage ? input : undefined,
+      state: hasUsage ? "observed" : "absent",
+      note: "usage.input",
+    },
+    output_tokens: {
+      value: hasUsage ? output : undefined,
+      state: hasUsage ? "observed" : "absent",
+      note: "usage.output",
+    },
+    cache_read_tokens: {
+      value: hasUsage ? cacheRead : undefined,
+      state: hasUsage ? "observed" : "absent",
+      note: "usage.cacheRead",
+    },
+    cache_write_tokens: {
+      value: hasUsage ? cacheWrite : undefined,
+      state: hasUsage ? "observed" : "absent",
+      note: "usage.cacheWrite",
+    },
+    thinking_tokens: {
+      state: "unsupported",
+      note: "OMP folds reasoning into output",
+    },
+    total_tokens: {
+      value: hasUsage ? total : undefined,
+      state: hasUsage ? "observed" : "absent",
+      note: "sum(usage.totalTokens)",
+    },
+    wall_duration_seconds: {
+      value: durationSec,
+      state: durationSec !== undefined ? "derived" : "absent",
+      note: "last minus first entry timestamp",
+    },
+    cost_usd_estimate: {
+      value: hasCost ? costUsd : undefined,
+      state: hasCost ? "estimated" : "absent",
+      note: "OMP model catalog pricing",
+    },
+    rate_limit_5h_used_pct: {
+      state: "unsupported",
+      note: "unsupported in OMP",
+    },
+    rate_limit_7d_used_pct: {
+      state: "unsupported",
+      note: "unsupported in OMP",
     },
   };
 }
