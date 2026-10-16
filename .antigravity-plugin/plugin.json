@@ -1,0 +1,10 @@
+{
+  "name": "g-inga",
+  "description": "G-Ingá SDLC harness skills: /work, /drive, /orchestrate, /sharpen",
+  "author": {
+    "name": "Eduardo Shibukawa"
+  },
+  "repository": "https://github.com/EduardoShibukawa/G-Inga",
+  "keywords": ["sdlc", "harness", "workflow"],
+  "skills": ["./.agents/skills/"]
+}
