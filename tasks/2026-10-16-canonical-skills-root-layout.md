@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: heavy
-status: active
+status: verified
+verified_at: "070dbaa"
 spec: 2026-10-16-canonical-skills-root-layout@1
 ---
 
@@ -44,20 +45,35 @@ SC1–SC8 from spec `2026-10-16-canonical-skills-root-layout@1`. Parent also tra
 
 ## Verification
 
-| Check | Ref | Status | Note |
-|---|---|---|---|
-| B1 `bun run validate` | 3bd870f | pass | Pre-change validation baseline |
-| B2 `bun test` | 3bd870f | pass | Pre-change test baseline (332 passed) |
+| ID | Check | Result | Ref | Note |
+|---|---|---|---|---|
+| B1 | bun run validate baseline | pass | 3bd870f | Pre-change validation baseline |
+| B2 | bun test baseline | pass | 3bd870f | Pre-change test baseline (332 passed) |
+| SC1 | ls skills/ contains 5 skills | pass | 070dbaa | Root skills/ directory contains all 5 skills |
+| SC2 | readlink host directories | pass | 070dbaa | Host directories (.claude/skills, .agents/skills, .opencode/skills) symlinked |
+| SC3 | cat .claude-plugin/plugin.json | pass | 070dbaa | .claude-plugin/plugin.json specifies ./skills/ |
+| SC4 | packages/opencode-plugin/index.ts | pass | 070dbaa | packages/opencode-plugin/index.ts searches skills/ |
+| SC5 | contract-copy.mjs --check | pass | 070dbaa | contract-copy.mjs verifies skills/work/references/artifact-contracts.md |
+| SC6 | manifest.mjs --check | pass | 070dbaa | bundle.json and manifest.json updated for skills/ |
+| SC7 | bun test tools/eval/ab_runner.test.ts | pass | 070dbaa | ab_runner.ts detects and strips root skills/ |
+| SC8 | bun run validate && bun test | pass | 070dbaa | bun run validate and bun test pass (362 tests), gira index at 0 lag |
+| V1 | full verification pass | pass | 070dbaa | Full verification passed |
 
 ## Review
 
-skip: active parent awaiting children completion
+- reviewer: independent verification gate and multi-agent peer review
+- verdict: pass
+- findings: none (all criteria SC1–SC8 satisfied)
+
+## Outcome
+
+Canonical skills root layout migration delivered. All harness skills unified under root `skills/`, distributed via relative symlinks to Claude Code, Antigravity, and OpenCode without code duplication. Packaging, bundle, and verification tools updated. 362 tests passing, 0 lint or contract errors, 0 lag in architectural index.
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/canonical-skills-03-integration`, head bbc898b, worktree clean
-- done: intent approved; ADR 0014 authored and accepted; spec approved v1; children 01 (verified at fdbc022) and 02 (verified at bbc898b) completed; child 03 completed
-- active: 2026-10-16-canonical-skills-root-layout-03-integration-and-verification
+- as of: 2026-10-16, branch `work/canonical-skills-03-integration`, head 070dbaa, worktree clean
+- done: intent approved; ADR 0014 authored and accepted; spec approved v1; children 01, 02, and 03 all verified; parent verified at 070dbaa
+- active: none
 - blocked: none
-- next: verify parent epic upon integration completion
-- revalidate: B1 and B2 pass on 3bd870f
+- next: open PR and merge to main
+- revalidate: none
