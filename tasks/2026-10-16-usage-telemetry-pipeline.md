@@ -85,9 +85,9 @@ Pending execution of decomposed child tasks.
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, worktree clean
-- done: intent registered and approved; sharpen rounds completed; draft spec and parent task drafted
-- active: awaiting owner approval of specification v1
+- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, HEAD 9f24730
+- done: spec approved; child 01, child 02, and child 03 verified and committed
+- active: executing epic children under /drive
 - blocked: none
-- next: owner approval of `specs/2026-10-16-usage-telemetry-pipeline.md@1`
+- next: execute child 04 (ab-runner-and-contamination-guard) and child 05 (review-and-integration)
 - revalidate: none
