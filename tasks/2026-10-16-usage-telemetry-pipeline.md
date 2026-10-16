@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: heavy
-status: active
+status: verified
+verified_at: "141a6e0"
 spec: 2026-10-16-usage-telemetry-pipeline@1
 ---
 
@@ -62,32 +63,40 @@ SC1–SC10 from spec `2026-10-16-usage-telemetry-pipeline` once approved. Parent
 |---|---|---|---|---|
 | B1 | full repository validation before change | pass | e1b407a | `bun run validate` |
 | B2 | evaluation test suite before change | pass | e1b407a | `bun test tools/eval` (60 pass, 0 fail) |
-| SC1 | multi-host ingestion parses Claude Code, Antigravity, OpenCode | pass | c76f884 | child 02 verified |
-| SC2 | honest absent/unsupported recording without fabrication | pass | c76f884 | child 02 verified |
-| SC3 | aggregate_usage produces Markdown summary tables and JSON | pass | e51f617 | child 03 verified |
-| SC4 | ab_runner executes N=3 runs with worktree isolation and zero skill contamination | not run | - | pending child 04 |
-| SC5 | deterministic quality_score and ledger updates | not run | - | pending child 04 |
-| SC6 | raw jsonl traces git-ignored and ledger/summary tracked | pass | e51f617 | child 03 verified |
-| SC7 | research documentation and decision-map updates | pass | 1c8dbc6 | child 01 verified |
-| SC8 | mise.toml allows clean-clone installation | pass | 1c8dbc6 | child 01 verified |
-| SC9 | mise tasks eval:usage and eval:ab execute within safety ceiling | not run | - | pending child 04 |
-| SC10 | evaluation tests and repository validation pass cleanly | not run | - | pending child 05 |
-| R1 | integrated regression run | not run | - | on verified_at |
-| V1 | self-review diff against spec SC1–SC10 | not run | - | on verified_at |
+| SC1 | multi-host ingestion parses Claude Code, Antigravity, OpenCode | pass | 141a6e0 | child 02 verified at c76f884 |
+| SC2 | honest absent/unsupported recording without fabrication | pass | 141a6e0 | child 02 verified at c76f884 |
+| SC3 | aggregate_usage produces Markdown summary tables and JSON | pass | 141a6e0 | child 03 verified at e51f617 |
+| SC4 | ab_runner executes N=3 runs with worktree isolation and zero skill contamination | pass | 141a6e0 | child 04 verified at a16a52e |
+| SC5 | deterministic quality_score and ledger updates | pass | 141a6e0 | child 04 verified at a16a52e |
+| SC6 | raw jsonl traces git-ignored and ledger/summary tracked | pass | 141a6e0 | child 03 verified at e51f617 |
+| SC7 | research documentation and decision-map updates | pass | 141a6e0 | child 01 verified at 1c8dbc6 |
+| SC8 | mise.toml allows clean-clone installation | pass | 141a6e0 | child 01 verified at 1c8dbc6 |
+| SC9 | mise tasks eval:usage and eval:ab execute within safety ceiling | pass | 141a6e0 | child 04 verified at a16a52e |
+| SC10 | evaluation tests and repository validation pass cleanly | pass | 141a6e0 | child 05 verified at 141a6e0 |
+| R1 | integrated regression run | pass | 141a6e0 | `bun test tools/eval` (104 pass), `bun run test` (332 pass), `bun run validate` pass |
+| V1 | self-review diff against spec SC1–SC10 | pass | 141a6e0 | diff reviewed against all 10 success criteria |
 
 ## Review
 
-skip: parent task is active; review runs before verified.
+- review: fresh-context review against spec SC1–SC10 confirmed all 10 criteria delivered across child tasks 01–05 with zero regressions: resolved
+- verification: live runs of `eval:usage` and `eval:ab` recorded into `records/usage-summary.md` and `records/usage-ledger.tsv`: resolved
+- suite: full test suites (`bun test tools/eval` 104 pass, `bun run test` 332 pass) and repository validation (`bun run validate` pass) green: resolved
 
 ## Outcome
 
-Pending execution of decomposed child tasks.
+Delivered the complete continuous usage telemetry pipeline and multi-host A/B baseline across five decomposed child tasks (01–05):
+
+- Research & Environment (child 01): documented OpenCode telemetry surfaces and Antigravity hook integration (`docs/research/2026-10-16-multi-host-telemetry-and-opencode-pipeline.md`), updated `docs/decision-map.md`, and fixed clean-clone installation in `mise.toml`.
+- Multi-host Ingestion (child 02): implemented `tools/eval/run_usage.ts` ingesting Claude Code (OTel), Antigravity (envelopes/transcripts), and OpenCode (JSON/OTel) with PII sanitization and honest reporting (`absent`/`unsupported`). Integrated Antigravity lifecycle hook in `.agents/hooks.json`.
+- Aggregator & Ledger (child 03): implemented `tools/eval/aggregate_usage.ts`, configured `records/usage-ledger.tsv` (18-column ADR 0006 taxonomy), and updated `.gitignore` for raw traces in `records/usage/*.jsonl`.
+- A/B Runner & Contamination Guard (child 04): implemented `tools/eval/ab_runner.ts` executing N=3 comparisons under isolated ephemeral worktrees with automated skill absence assertion, deterministic `quality_score`, and mise tasks `eval:usage` and `eval:ab` bounded by `SHE_BUDGET_USD=5.00`.
+- End-to-End Review & Integration (child 05): executed live operational runs of `eval:usage` and `eval:ab`, committed real benchmark evidence to ledger and summary, conducted fresh-context spec compliance review, and verified full test suite and repository validation.
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, HEAD 9f24730
-- done: spec approved; child 01, child 02, and child 03 verified and committed
-- active: executing epic children under /drive
+- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, HEAD 141a6e0
+- done: all child tasks 01–05 verified; parent review and end-to-end verification (SC1–SC10, R1, V1) passed; epic verified
+- active: none
 - blocked: none
-- next: execute child 04 (ab-runner-and-contamination-guard) and child 05 (review-and-integration)
+- next: deliver PR and handoff to owner
 - revalidate: none
