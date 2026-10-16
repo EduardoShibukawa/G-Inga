@@ -1,6 +1,6 @@
 # 0013 — Intent artifact and phased subagent portfolio for heavy tasks
 
-- **Status:** proposed
+- **Status:** accepted (accepted by project owner 2026-10-16)
 - **Date:** 2026-10-15
 - **Deciders:** project owner
 
