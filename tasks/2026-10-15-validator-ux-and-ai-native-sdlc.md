@@ -58,8 +58,8 @@ skip: runs after children are verified
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/validator-ux-redesign-analysis, head 5fdda76, worktree clean
-- done: child 01, child 02, child 03, and child 04 (history audit refinement for intents, findings doc F4/F8) verified
-- next: execute child 05 (tasks/2026-10-15-validator-ux-and-ai-native-sdlc-05-review-fixes-integration.md)
-- open: child 05; parent review and verification
-- resume prompt: /drive --tag 2026-10-15-validator-ux-and-ai-native-sdlc --limit 1
+- as of: 2026-10-16, branch work/validator-ux-redesign-analysis, head ee06676, worktree clean
+- done: all child tasks 01–05 verified (01: spec & intent schema, 02: authoring/full modes & UX, 03: subagents & validator-flow skill, 04: history audit refinement & findings doc, 05: review fixes & integration)
+- next: run parent review and verification (SC1, R1, V1, and Review on heavy parent task)
+- open: parent review and verification
+- resume prompt: /drive --tag 2026-10-15-validator-ux-and-ai-native-sdlc
