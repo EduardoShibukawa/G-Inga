@@ -1039,9 +1039,13 @@ export async function appendLedger(
   await fs.mkdir(path.dirname(resolved), { recursive: true });
 
   let exists = false;
+  let existingContent = "";
   try {
     const stat = await fs.stat(resolved);
     exists = stat.size > 0;
+    if (exists) {
+      existingContent = await fs.readFile(resolved, "utf8");
+    }
   } catch {
     exists = false;
   }
@@ -1054,7 +1058,23 @@ export async function appendLedger(
   if (typeof rowsOrResult === "string") {
     contentToAppend += rowsOrResult;
   } else {
-    contentToAppend += formatLedgerRows(rowsOrResult);
+    const existingRunIds = new Set<string>();
+    if (existingContent) {
+      const lines = existingContent.split("\n");
+      for (const line of lines) {
+        const parts = line.split("\t");
+        if (parts.length > 1 && parts[1]) {
+          existingRunIds.add(parts[1]);
+        }
+      }
+    }
+
+    const filteredResult: AggregationResult = {
+      ...rowsOrResult,
+      runs: rowsOrResult.runs.filter((r) => !existingRunIds.has(r.run_id)),
+    };
+
+    contentToAppend += formatLedgerRows(filteredResult);
   }
 
   if (contentToAppend) {

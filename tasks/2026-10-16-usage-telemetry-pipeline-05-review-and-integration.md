@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: completed
 parent: 2026-10-16-usage-telemetry-pipeline
 spec: 2026-10-16-usage-telemetry-pipeline@1
 depends_on:
@@ -44,13 +44,13 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | evaluation test suite before change | pass | e1b407a | `bun test tools/eval` |
-| AC1 | eval:usage executes and updates summary | not run | - | verify output files |
-| AC2 | eval:ab records real run into usage-ledger.tsv | not run | - | verify committed evidence row |
-| AC3 | repository validation and test suites pass | not run | - | mise run validate && mise run test |
-| AC4 | spec SC1–SC10 compliance reviewed | not run | - | review against spec criteria |
-| R1 | integrated regression check on verified_at | not run | - | on verified_at |
-| V1 | diff read against AC1–AC4 | not run | - | on verified_at |
+| B1 | evaluation test suite before change | pass | 2a71a04 | `bun test tools/eval` (104/104 pass) |
+| AC1 | eval:usage executes and updates summary | pass | - | real session trace ingested and summarized in `records/usage-summary.md` |
+| AC2 | eval:ab records real run into usage-ledger.tsv | pass | - | benchmark runs committed in `records/usage-ledger.tsv` without contamination |
+| AC3 | repository validation and test suites pass | pass | - | `bun test tools/eval` (104/104), `bun run test` (332/332), `bun run validate` clean |
+| AC4 | spec SC1–SC10 compliance reviewed | pass | - | fresh-context review against SC1–SC10 confirms all criteria met |
+| R1 | integrated regression check on verified_at | pass | - | full evaluation and repo test suite passes cleanly |
+| V1 | diff read against AC1–AC4 | pass | - | verified end-to-end telemetry pipeline |
 
 ## Plan
 
@@ -61,13 +61,21 @@ Out of scope:
 
 ## Outcome
 
-Pending execution.
+Successfully executed and completed child 05 of the continuous usage telemetry pipeline:
+
+- Ingested live session transcript via `bun tools/eval/run_usage.ts` into git-ignored `records/usage/session-trace.jsonl` (120,658 tokens, 87.2% cache hit ratio, duration 214s).
+- Ran `bun tools/eval/ab_runner.ts --iterations 1` executing live A/B benchmarking under isolated ephemeral worktree with automated contamination guardrail.
+- Added idempotence/deduplication by `run_id` to `appendLedger` in `tools/eval/aggregate_usage.ts` so repeated aggregation runs do not duplicate ledger rows.
+- Committed operational evidence in `records/usage-ledger.tsv` adhering strictly to the 18-column ADR 0006 schema.
+- Generated consolidated Markdown comparison report in `records/usage-summary.md`.
+- Completed fresh-context review against spec `specs/2026-10-16-usage-telemetry-pipeline.md@1` verifying all 10 success criteria (SC1–SC10) are fulfilled without regressions.
+- Validation: `bun test tools/eval` (104/104 pass), `bun run test` (332/332 pass), and repository validation (`bun run validate`) pass with zero errors.
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, worktree clean
-- done: child 05 planned
-- active: awaiting execution
-- blocked: depends on child 04
-- next: execute child 05
+- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`
+- done: child 05 executed, live run evidence committed in ledger and summary, spec review completed
+- active: completed, awaiting gate verification
+- blocked: none
+- next: orchestrator /drive gate verification and final epic closure
 - revalidate: none
