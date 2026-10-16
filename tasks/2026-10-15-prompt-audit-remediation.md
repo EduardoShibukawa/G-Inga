@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: heavy
-status: active
+status: verified
+verified_at: "6494ce3"
 spec: 2026-10-15-prompt-audit-remediation@1
 ---
 
@@ -49,8 +50,18 @@ SC1–SC9 from `specs/2026-10-15-prompt-audit-remediation.md`.
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` before change | pass | 48e1949 | Overall: pass |
-| B2 | `mise run test` before change | pass | 48e1949 | 257 tests, 0 fail |
+| B1 | `mise run validate` before change | pass | 48e1949 | Overall: pass; rerun on integration tree `6494ce3`: pass |
+| B2 | `mise run test` before change | pass | 48e1949 | 257 tests, 0 fail; rerun on integration tree `6494ce3`: 274 pass, 0 fail |
+| SC1 | No `map.md` or non-`task/1` states in `orchestrate`/`drive`; selection/start/seal name `task/1` states | pass | 6494ce3 | Child 02 AC1 ran at `34bc0d7`; re-checked end to end on integrated head `6494ce3`: grep zero matches across both host copies |
+| SC2 | `ooda-cycle.md` names the same five gate layers, same order, as `gate.md` | pass | 6494ce3 | Child 02 AC2 ran at `34bc0d7`; re-checked side-by-side on integrated head `6494ce3` |
+| SC3 | Contract status line states validator coverage; generated copy matches (`contract-copy`) | pass | 6494ce3 | Child 01 AC1 ran at `2b9c835`; `contract-copy` passes on integrated head `6494ce3` |
+| SC4 | `procedure.md` (both copies) no per-tier ceiling/ratio/SLA; names enforcing tooling; ADR 0006 kept | pass | 6494ce3 | Child 01 AC2 ran at `2b9c835`; grep for old terms: no matches on integrated head `6494ce3` |
+| SC5 | `orchestrate` no numeric context ceiling; `gate.md` Layer 4 no unmeasurable row | pass | 6494ce3 | Child 02 AC3 ran at `34bc0d7`; ceiling removed on integrated head `6494ce3` |
+| SC6 | `subagent-prompt.md` (both copies) all-English, no all-caps warning line; sections/report fields unchanged | pass | 6494ce3 | Child 02 AC4 ran at `34bc0d7`; grep zero matches on integrated head `6494ce3` |
+| SC7 | No whole-tree revert in `orchestrate`; circuit breaker scoped to in-scope files or isolated worktree | pass | 6494ce3 | Child 02 AC5 ran at `34bc0d7`; grep zero matches on integrated head `6494ce3` |
+| SC8 | `CLAUDE.md` rule 2: repository canonical, auto-memory a hint checked against it | pass | 6494ce3 | Child 01 AC3 ran at `2b9c835`; rule 2 present on integrated head `6494ce3` |
+| SC9 | No `run_in_background` in `orchestrate`; manifest regenerated; validate and test pass | pass | 6494ce3 | Child 01 AC4 at `2b9c835` and child 02 AC6 at `34bc0d7`; `manifest.mjs --check` pass; validate pass; test 0 fail on `6494ce3` |
+| V1 | Self-read of the integrated diff (`2b9c835` → `34bc0d7` → `6494ce3`) against SC1–SC9 | pass | 6494ce3 | Both host copies read side by side; no gate rule or circuit breaker weakened |
 
 ## Plan
 
@@ -61,17 +72,21 @@ SC1–SC9 from `specs/2026-10-15-prompt-audit-remediation.md`.
 
 None yet: the fresh-context review runs after integration (`work/review.md`).
 
+## Outcome
+
+All spec criteria SC1–SC9 delivered through the two verified children: procedure/contract/memory (child 01 at `2b9c835`) and orchestrate/drive alignment (child 02 at `34bc0d7`), integrated on `6494ce3`. `mise run validate` Overall: pass; `mise run test` 274 pass, 0 fail. Not delivered: nothing in scope of this spec. Follow-up outside scope: the pre-existing uncommitted `mise.toml` (`locked = false`) environment tweak.
+
 ## Checkpoint
 
-- as of: 2026-10-15, branch `work/prompt-audit-remediation-02-orchestrate`, HEAD `34bc0d7`, worktree clean (only the pre-existing uncommitted `mise.toml` environment tweak remains); branch not pushed (no upstream).
-- Done: `2026-10-15-prompt-audit-remediation-01-procedure-contract-memory` verified at `2b9c835`; `2026-10-15-prompt-audit-remediation-02-orchestrate` verified at `34bc0d7`. All children done.
+- as of: 2026-10-15, branch `work/prompt-audit-remediation-03-integration`, HEAD `6494ce3` (main), worktree clean except the pre-existing uncommitted `mise.toml` environment tweak (`locked = false`), which is out of scope of this spec and left uncommitted.
+- Done: `2026-10-15-prompt-audit-remediation-01-procedure-contract-memory` verified at `2b9c835`; `2026-10-15-prompt-audit-remediation-02-orchestrate` verified at `34bc0d7` (merged into main at `6494ce3`). All children done/verified; no next child in this spec.
 - Active: none.
 - Blocked: none.
-- Next: merge `work/prompt-audit-remediation-02-orchestrate` into `work/prompt-audit-remediation`, then open the PR.
-- Revalidate: parent B1/B2 (Ref `48e1949`) rerun before integration; `mise run validate` and `mise run test` pass on this tree.
+- Next: none — this is the final integration task of the spec; open the PR to merge the integration branch into `main`.
+- Revalidate: `mise run validate` Overall: pass; `mise run test` 274 pass, 0 fail on this tree.
+- Pending (out of scope of spec): `mise.toml` `locked = false` environment tweak remains uncommitted; include it in a later task if desired.
 - Resume prompt:
 
   ~~~text
-  Resume 2026-10-15-prompt-audit-remediation on branch work/prompt-audit-remediation-02-orchestrate. Expected head 34bc0d7.
-  Read the parent's ## Checkpoint, reconcile with `git status` and `git log -n 1`; both children are `verified`. Proceed to merge `work/prompt-audit-remediation-02-orchestrate` into `work/prompt-audit-remediation` and open the PR. Blocked: none.
+  Resume 2026-10-15-prompt-audit-remediation on branch work/prompt-audit-remediation-03-integration. Expected head 6494ce3 (main); parent status verified at 6494ce3, all children verified (01 at 2b9c835, 02 at 34bc0d7). SC1–SC9 all pass. `mise run validate` and `mise run test` pass with 0 fail. The pre-existing uncommitted `mise.toml` (`locked = false`) is out of scope of this spec and left uncommitted. No further work in this spec.
   ~~~
