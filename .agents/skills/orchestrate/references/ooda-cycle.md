@@ -10,27 +10,23 @@ A ticket moves through deterministic states across the OODA loop:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> open: Ticket created in map.md
-    open --> claimed: OODA Orient: Selected on unblocked frontier
-    claimed --> executing: OODA Act: Dispatched to worker subagent
-    executing --> gating: Subagent returns: Autonomous Gate initiated
-    gating --> resolved: Gate 1-4 pass: Atomic commit sealed
-    gating --> claimed: Gate fails (Attempts < 2): Failure log sent to the existing subagent
-    gating --> blocked: Gate fails (Attempts >= 2): Circuit breaker trips
+    [*] --> todo: Ticket created in tasks/
+    todo --> active: Selected on unblocked frontier (Orient)
+    active --> verified: Gate 1-5 pass: atomic commit sealed (Seal)
+    active --> blocked: Gate fails (Attempts >= 2): circuit breaker trips
+    active --> active: Gate fails (Attempts < 2): retry with failure log
     blocked --> [*]: Escalated to repository owner
-    resolved --> [*]: Graph frontier advances
+    verified --> [*]: Graph frontier advances
 ```
 
 ### State Definitions
 
 | State | Definition | Permitted Next States |
 |---|---|---|
-| `open` | Ticket exists in dependency graph; dependencies may or may not be met. | `claimed` |
-| `claimed` | Unblocked ticket locked by orchestrator; verification contract assigned. | `executing` |
-| `executing` | Subagent spawned via `invoke_subagent` and running tasks. | `gating` |
-| `gating` | Worker finished; orchestrator executing 4-layer verification gate. | `resolved`, `claimed`, `blocked` |
-| `resolved` | All gate layers passed (`exit 0`), commit sealed, ticket closed. | Final state |
-| `blocked` | Circuit breaker tripped after 2 failures, or environmental block (`exit 2`). | Human intervention |
+| `todo` | Recorded in `tasks/`; not started; dependencies may or may not be met. | `active` |
+| `active` | Work in progress: selected on the frontier, dispatched to a worker, or under gate verification. | `verified`, `blocked`, `active` (retry) |
+| `verified` | All 5 gate layers passed (`exit 0`), commit sealed, ticket closed. | Final state |
+| `blocked` | Circuit breaker tripped after 2 failures, or environmental block (`exit 2`). | Human intervention (owner) |
 
 ---
 
@@ -39,13 +35,13 @@ stateDiagram-v2
 ### Phase 1: OBSERVE
 
 - Read the repository status (`git status --porcelain`, current branch, HEAD).
-- Read the roadmap DAG (`map.md` or `tasks/`).
-- Parse dependencies: identify tickets whose prerequisites are completely in state `resolved`.
+- Read the task backlog (`tasks/`).
+- Parse dependencies: identify tickets whose prerequisites are completely in state `verified`.
 
 ### Phase 2: ORIENT
 
 - Prioritize unblocked tickets (e.g. foundational ADRs/schemas before implementation, core libraries before CLI wrappers).
-- Transition selected ticket to `claimed`.
+- Transition selected ticket to `active`.
 - Extract constraints and define the **Verification Contract** (allowed paths, required commands, metrics).
 
 ### Phase 3: DECIDE
@@ -65,18 +61,19 @@ stateDiagram-v2
 - Intercept subagent completion.
 - Run Layer 1 (Scope & Diff Gate): verify zero out-of-scope edits.
 - Run Layer 2 (Deterministic Command Gate): execute test suites; map exit codes strictly (`pass`, `fail`, `blocked`).
-- Run Layer 3 (Quantitative Metric Gate): verify zero regressions, linter errors, or latency thresholds.
-- Run Layer 4 (Circuit Breaker): if failures $\ge 2$, escalate and mark `blocked`.
+- Run Layer 3 (Task Ancestry & Lineage Gate): verify task record ancestry via `git merge-base --is-ancestor`.
+- Run Layer 4 (Quantitative Metric Gate): verify zero regressions, linter errors, or latency thresholds.
+- Run Layer 5 (Circuit Breaker): if failures $\ge 2$, escalate and mark `blocked`.
 
 ### Phase 6: SEAL & ADVANCE
 
-- Mark ticket `resolved` in `map.md`.
+- Mark ticket `verified` in `tasks/`.
 - Commit changes atomically:
 
 ```bash
-git add <scope-files> map.md
+git add <scope-files>
 git commit -m "<type>(<scope>): <summary> [resolves #ID]"
 ```
 
 - Re-evaluate the dependency graph to uncover newly unblocked tickets.
-- Repeat until the entire graph is resolved or remaining items are blocked.
+- Repeat until the entire graph is `verified` or `blocked`.

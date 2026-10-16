@@ -25,7 +25,7 @@ Autonomous backlog execution driver for G-Ingá. Governs multi-task continuous d
 ```mermaid
 flowchart TD
     subgraph L1["L1: Driver (/drive)"]
-        SCAN["1. Scan Backlog (tasks/, map.md)"] --> DEPS["2. Resolve Deps & Gira-G Index"]
+        SCAN["1. Scan Backlog (tasks/)"] --> DEPS["2. Order Deps & Gira-G Index"]
         DEPS --> BUDGET["3. Enforce Global Run Budget (< 100k tokens)"]
         BUDGET --> BATCH["4. Form Candidate Batch (limit N)"]
     end
@@ -57,7 +57,7 @@ flowchart TD
 The `/drive` driver accepts configuration flags to control execution scope and resource limits:
 
 - `--limit <N>`: Maximum number of tasks to process in a single continuous drive session (default: `3`).
-- `--dry-run`: Scan backlog, resolve dependencies, query Gira-G slices, and output execution plan without executing workers or modifying files.
+- `--dry-run`: Scan backlog, resolve dependencies, query Gira-G slices, and output execution plan without running workers or modifying files.
 - `--tag <tag>`: Filter candidate tasks by tag or parent spec (e.g., `--tag standard`, `--tag v1`).
 - `--max-tokens <tokens>`: Maximum token budget for the continuous run (default: `100000`).
 
@@ -66,10 +66,10 @@ The `/drive` driver accepts configuration flags to control execution scope and r
 ### Step 1: Backlog Discovery & Dependency Ordering (L1)
 
 - Inspect `git status`, HEAD SHA, and branch.
-- Scan active and open tasks in `tasks/*.md` (and `map.md` if present).
+- Scan active and todo tasks in `tasks/*.md`.
 - Filter tasks by eligibility:
   - Schema is valid (`schema: task/1`).
-  - Status is `todo` or `active`, or `blocked` with its `## Blockers` entry resolved (contract §3.3: `blocked --> active` when the blocker is resolved). Never `completed`, `verified`, `accepted`, `partial` or `cancelled`.
+  - Status is `todo` or `active`, or `blocked` with its `## Blockers` entry cleared (contract §3.3: `blocked --> active` when the blocker is cleared). Never `completed`, `verified`, `accepted`, `partial` or `cancelled`.
   - Dependencies listed in `depends_on` are fully `verified` or `accepted`.
 - Sort candidates topologically by dependency depth and limit candidates to `--limit <N>`.
 
@@ -147,7 +147,7 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 ### Step 6: Atomic Seal & Continuous Handoff
 
 - Update task records with verification results.
-- Seal atomic commit per resolved ticket wave.
+- Seal atomic commit per verified ticket wave.
 - Decrement token budget by recorded consumption.
 - If remaining budget > 0 and eligible tasks remain under `--limit`, repeat from Step 1.
 - Otherwise, exit cleanly and output the final `/drive` session ledger.

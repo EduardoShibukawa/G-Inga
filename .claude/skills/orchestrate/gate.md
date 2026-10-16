@@ -28,7 +28,7 @@ flowchart TD
 
 ## 2. Layer 1: Scope & Diff Gate (Structural Integrity)
 
-Before executing test suites or reading reports, the orchestrator inspects the physical Git changes.
+Before running test suites or reading reports, the orchestrator inspects the physical Git changes.
 
 ### Commands
 
@@ -160,7 +160,6 @@ For tickets specifying numerical acceptance thresholds (e.g., benchmark latency,
 |---|---|---|
 | **Linter / Schema Issues** | `0` issues | `mise run validate` exits `0` with 0 warnings |
 | **Test Regressions** | `0` regressions | `mise run test` reports 0 failed tests |
-| **Token Economy** | Main context $< 25\text{k}$ tokens | Main transcript inspection |
 | **Subagent Execution Attempts** | $\le 2$ attempts | Circuit breaker counter |
 
 If any threshold is not satisfied, the gate evaluates to `fail`.
@@ -177,8 +176,8 @@ To prevent infinite loops and runaway token expenditure:
   - Dispatch a new `Agent` with `model: "opus"` (per `.claude/skills/work/references/model-policy.md`) carrying the factual failure report and the same contract. Continuing the existing Sonnet worker does not change its model, so it is not the retry.
 - **Second Failure ($N = 2$):**
   - **Circuit Breaker Trips:** Immediately halt subagent execution.
-  - Revert dirty changes: `git checkout HEAD . && git clean -fd`.
-  - Mark ticket status as `blocked` in the roadmap (`map.md`).
+  - Revert dirty changes: `git checkout HEAD -- <file>` for each ticket in-scope file, or discard the ticket's isolated worktree. Never revert the whole tree or run a pathless clean.
+  - Mark ticket status as `blocked` in the roadmap (`tasks/`).
   - Escalate to the repository owner with:
     - Root cause failure log.
     - Attempt history ($N = 2$).
