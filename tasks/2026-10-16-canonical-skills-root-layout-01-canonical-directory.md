@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "fdbc022"
 parent: 2026-10-16-canonical-skills-root-layout
 spec: 2026-10-16-canonical-skills-root-layout@1
 ---
@@ -45,6 +46,11 @@ Out of scope:
 | AC2 | readlink .claude/skills | pass | fdbc022 | Host directories symlinked to ../skills |
 | AC3 | cat .claude-plugin/plugin.json | pass | fdbc022 | Plugin sources ./skills/ |
 | AC4 | bun test packages/opencode-plugin/index.test.ts | pass | fdbc022 | Plugin tests pass |
+| V1 | check | pass | fdbc022 | Autonomous verification gate passed |
+
+## Outcome
+
+All 5 canonical harness skills (`drive`, `orchestrate`, `sharpen`, `validator-flow`, `work`) unified into repository root `skills/` directory with relative symlinks established for `.claude/skills`, `.agents/skills`, and `.opencode/skills`.
 
 ## Checkpoint
 

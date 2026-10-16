@@ -55,9 +55,9 @@ skip: active parent awaiting children completion
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/canonical-skills-root-layout`, head 3bd870f, worktree clean
-- done: intent approved; ADR 0014 authored and accepted; spec approved v1
-- active: 2026-10-16-canonical-skills-root-layout-01-canonical-directory
+- as of: 2026-10-16, branch `work/canonical-skills-03-integration`, head bbc898b, worktree clean
+- done: intent approved; ADR 0014 authored and accepted; spec approved v1; children 01 (verified at fdbc022) and 02 (verified at bbc898b) completed; child 03 completed
+- active: 2026-10-16-canonical-skills-root-layout-03-integration-and-verification
 - blocked: none
-- next: dispatch child 01 in isolated worktree
+- next: verify parent epic upon integration completion
 - revalidate: B1 and B2 pass on 3bd870f

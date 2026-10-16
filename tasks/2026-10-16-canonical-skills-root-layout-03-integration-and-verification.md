@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: completed
 parent: 2026-10-16-canonical-skills-root-layout
 spec: 2026-10-16-canonical-skills-root-layout@1
 ---
@@ -37,16 +37,20 @@ Out of scope:
 
 ## Verification
 
-| Check | Ref | Status | Note |
-|---|---|---|---|
-| B1 `bun run validate` | 3bd870f | pass | Pre-change validation baseline |
-| B2 `bun test` | 3bd870f | pass | Pre-change test baseline |
+| ID | Check | Result | Ref | Note |
+|---|---|---|---|---|
+| B1 | bun run validate baseline | pass | 3bd870f | Pre-change validation baseline |
+| B2 | bun test baseline | pass | 3bd870f | Pre-change test baseline |
+| AC1 | bun run validate | pass | bbc898b | 0 issues across all layers |
+| AC2 | bun test | pass | bbc898b | 100% pass across 362 tests |
+| AC3 | gira index | pass | bbc898b | docs/architecture/macro-map.json synchronized with 0 lag |
+| AC4 | parent task check | pass | bbc898b | Parent epic checkpoint updated with verified children |
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/canonical-skills-root-layout`, head 3bd870f, worktree clean
-- done: task authored
+- as of: 2026-10-16, branch `work/canonical-skills-03-integration`, head bbc898b, worktree clean
+- done: macro-map updated, test and validation passed, child tasks verified, parent checkpoint updated
 - active: none
 - blocked: none
-- next: dispatch execution after children 01 and 02
-- revalidate: B1 and B2 pass on 3bd870f
+- next: ready for verification gate and commit
+- revalidate: none
