@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "ec6da30"
 ---
 
 # Ship an OMP plugin hook that enforces the commit-gate bypass deny list
@@ -40,13 +41,13 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | `mise run validate` and `mise run test` before the first edit | pass | f678867 | Re-run on a quiet machine under `flock /tmp/g-inga-test.lock mise run test`: 332 pass, 0 fail (100.8 s); `mise run validate` pass (Overall: pass). History: the earlier run at f678867 under CPU contention from parallel workers gave 331 pass, 1 fail (`tools/validate/validate.test.ts` "this repository > every layer applies..." hit its 120000 ms timeout; isolated runs timed out at 125 s and failed at 107.7 s with a null exit code). That failure was not caused by this task |
-| AC1 | `bun test tools/gate/omp-guard.test.ts` (parse cases) | pass | feeb331 | real settings give 12 rules; non-Bash entries ignored; invalid JSON, missing or non-array deny give `[]` |
-| AC2 | `bun test tools/gate/omp-guard.test.ts` (block cases) | pass | feeb331 | all 8 commands blocked; reason has the matched `Bash(...)` rule and `ADR 0009` |
-| AC3 | `bun test tools/gate/omp-guard.test.ts` (allow cases) | pass | feeb331 | 4 commands return `undefined` |
-| AC4 | `bun test tools/gate/omp-guard.test.ts` (eval cases) | pass | feeb331 | `!git commit --no-verify -m x` blocked; `print("hello")` allowed |
-| AC5 | `bun test tools/gate/omp-guard.test.ts` (temp dir without settings, invalid JSON) | pass | feeb331 | no settings and invalid JSON give no block; handler never throws on malformed input |
-| AC6 | `mise run validate` and `mise run test` | not run | - | run at the commit that records `active`; see Checkpoint |
-| V1 | diff read against AC1–AC6 and the out-of-scope list | pass | feeb331 | diff is two new in-scope files (+246); `.claude/settings.json`, `hooks/hooks.json`, `.omp/config.yml`, no npm dependency, no OMP import |
+| AC1 | `bun test tools/gate/omp-guard.test.ts` (parse cases) | pass | ec6da30 | real settings give 12 rules; non-Bash entries ignored; invalid JSON, missing or non-array deny give `[]`. Code unchanged since feeb331; re-run at ec6da30: 24 pass |
+| AC2 | `bun test tools/gate/omp-guard.test.ts` (block cases) | pass | ec6da30 | all 8 commands blocked; reason has the matched `Bash(...)` rule and `ADR 0009`. Re-run at ec6da30: 24 pass |
+| AC3 | `bun test tools/gate/omp-guard.test.ts` (allow cases) | pass | ec6da30 | 4 commands return `undefined`. Re-run at ec6da30: 24 pass |
+| AC4 | `bun test tools/gate/omp-guard.test.ts` (eval cases) | pass | ec6da30 | `!git commit --no-verify -m x` blocked; `print("hello")` allowed. Re-run at ec6da30: 24 pass |
+| AC5 | `bun test tools/gate/omp-guard.test.ts` (temp dir without settings, invalid JSON) | pass | ec6da30 | no settings and invalid JSON give no block; handler never throws on malformed input. Re-run at ec6da30: 24 pass |
+| AC6 | `mise run validate` and `mise run test` | pass | ec6da30 | validate: Overall pass (exit 0). `flock /tmp/g-inga-test.lock mise run test`: 356 pass, 0 fail (101.8 s, exit 0) |
+| V1 | diff read against AC1–AC6 and the out-of-scope list | pass | ec6da30 | `git diff feeb331..ec6da30` touches only the task record; `git diff --stat feeb331 HEAD -- hooks tools` is empty. Two new in-scope files (+246); no changes to `.claude/settings.json`, `hooks/hooks.json`, `.omp/config.yml`; no npm dependency; no OMP import |
 
 ## Blockers
 
@@ -110,6 +111,12 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-02-commit-bypass-guard, HEAD at the commit that records this state (implementation at feeb331), worktree clean after that commit
-- done: B1 re-run at f678867 on a quiet machine under `flock /tmp/g-inga-test.lock mise run test`: 332 pass, 0 fail. The earlier fail was CPU contention from parallel workers. Implementation at feeb331 (`hooks/pre/g-inga-guard.ts`, `tools/gate/omp-guard.test.ts`). AC1–AC5 and V1 pass. Deviation: the project TypeScript rules forbid `any`, so the OMP API is a typed structural interface (`OmpHookApi`) with `unknown` narrowing instead of `any`; no OMP import.
-- next: run AC6 (`mise run validate`, `mise run test` under flock) on this commit, record it in the table, then set `verified` with `verified_at` set to this commit and add `## Outcome`.
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-02-commit-bypass-guard, verified at ec6da30, worktree clean after the final commit
+- done: AC1–AC6 and V1 pass at ec6da30 (AC6: `mise run validate` pass; `flock /tmp/g-inga-test.lock mise run test`: 356 pass, 0 fail). B1 pass at f678867. Implementation at feeb331 (`hooks/pre/g-inga-guard.ts`, `tools/gate/omp-guard.test.ts`), unchanged since.
+- next: none in this task. The branch is ready for the owner's PR review.
+
+## Outcome
+
+- Delivered: `hooks/pre/g-inga-guard.ts`, an OMP plugin `tool_call` hook. It reads the `Bash(...)` deny rules of the project `.claude/settings.json` and blocks matching `bash` and `eval` calls; the reason cites the rule and ADR 0009. `tools/gate/omp-guard.test.ts` has 24 tests. All 12 deny rules parse, all 8 bypass commands are blocked, and the 4 allow commands pass.
+- Not delivered: nothing in scope. The OMP API is typed as a structural `OmpHookApi` with `unknown` narrowing, not `any`, because of the project TypeScript rule. `hooks/pre/*.ts` is outside `bun run typecheck`, as the record notes.
+- Follow-ups: a live OMP session check of the installed plugin hook is not part of this record (needs a plugin install, out of scope).
