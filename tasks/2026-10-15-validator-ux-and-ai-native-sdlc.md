@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: heavy
-status: active
+status: verified
+verified_at: "f332da836e249dcce1e6b9d4fa8f8cd766d9147a"
 spec: 2026-10-15-validator-ux-and-ai-native-sdlc@1
 ---
 
@@ -11,7 +12,8 @@ spec: 2026-10-15-validator-ux-and-ai-native-sdlc@1
 
 - tier: heavy (H1, H3, H4, H5)
 - confirmed: heavy by owner (2026-10-15, "inicie heavy")
-- approved: spec v1 by owner (2026-10-15, "spec aprovada")- decided: Q11 heavy requires intent artifact → heavy task starts from an intent artifact created by a subagent, with the original prompt preserved verbatim by owner (2026-10-15, "sharpen 2026-10-15")
+- approved: spec v1 by owner (2026-10-15, "spec aprovada")
+- decided: Q11 heavy requires intent artifact → heavy task starts from an intent artifact created by a subagent, with the original prompt preserved verbatim by owner (2026-10-15, "sharpen 2026-10-15")
 - decided: Q12 subagent rollout → phased validator-guide + researcher first, then reviewer, then verifier; one job per subagent with least tools by owner (2026-10-15, "sharpen 2026-10-15")
 - decided: Q13 scope → intent artifact and subagents included in this same spec, not a separate project by owner (2026-10-15, "sharpen 2026-10-15")
 - decided: Q14 authority → human authority at gates remains; agents prepare and execute by owner (2026-10-15, "sharpen 2026-10-15")
@@ -48,18 +50,42 @@ SC1–SCn from spec `2026-10-15-validator-ux-and-ai-native-sdlc` once approved. 
 |---|---|---|---|---|
 | B1 | full repository validation before change | pass | cebd090 | `bun run validate` |
 | B2 | validator module tests before change | pass | cebd090 | `bun test tools/validate` |
-| SC1 | end-to-end spec criteria | not run |  | |
-| R1 | integrated regression on merged head | not run |  | |
-| V1 | integrated diff read against SCs | not run |  | |
+| SC1 | validate --authoring runs only current-state checks | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 02 and test suite |
+| SC2 | full validate keeps history and ancestry checks | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 02 and test suite |
+| SC3 | authoring and full mode share one finding/rule vocabulary | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 02 and test suite |
+| SC4 | SHA canonicalization prevents abbreviation/log mismatches | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 02 and test suite |
+| SC5 | validator findings include observed/expected/next and explain mode | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 02 and test suite |
+| SC6 | heavy parents may keep review skip: until verified | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 02 and test suite |
+| SC7 | intent/1 artifact round-trips through validator with history walk | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 01, 04 and test suite |
+| SC8 | validator-guide and researcher subagents exist with minimal tools | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 03 |
+| SC9 | skills explaining validator flow exist and linked in docs | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 03 |
+| SC10 | decision map records policy changes and proposed ADRs 0012, 0013 | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | verified in child 05 |
+| SC11 | baseline and verification test suites pass cleanly | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | `bun run validate && bun test tools/validate` (136 pass, 8 skip, 0 fail) |
+| R1 | integrated regression on merged head | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | `mise run validate && bun test tools/validate` |
+| V1 | integrated diff read against SCs | pass | f332da836e249dcce1e6b9d4fa8f8cd766d9147a | diff read across children 01–05 commits against SC1–SC11 |
 
 ## Review
 
-skip: runs after children are verified
+- finding: missing X10–X15 fixtures in contract §7.2 table: fixed in 19f94fd
+- finding: full gate history applicability coverage for intents/ records: fixed in c3536a2
+- review: fresh-context review against spec SC1–SC11 confirmed all 11 criteria delivered across child tasks 01–05 with zero regressions: resolved
+
+## Outcome
+
+Delivered the complete validator UX redesign and AI-native SDLC alignment across five decomposed standard child tasks (01–05):
+
+- Schema `intent/1` registered under `intents/` preserving original prompts verbatim (`intents/2026-10-15-validator-ux-and-ai-native-sdlc.md`).
+- Validation authoring mode (`bun run validate:authoring` / `--authoring`) skipping history/ancestry while retaining current-tree checks.
+- SHA canonicalization, error templates (`observed`, `expected`, `next`), and `--explain <rule>` explain mode.
+- Phased subagents (`validator-guide`, `researcher`) and `validator-flow` skill linked in documentation.
+- History audit refinement for `intents/`, F4/F8 documentation in `docs/research/artifact-contract-validator-findings.md`.
+- Synchronized contract fixture tables and proposed ADRs 0012 and 0013.
+- Integrated test suite and full validation pass cleanly (136 passed, 8 skipped, 0 failed).
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/validator-ux-redesign-analysis, head ee06676, worktree clean
-- done: all child tasks 01–05 verified (01: spec & intent schema, 02: authoring/full modes & UX, 03: subagents & validator-flow skill, 04: history audit refinement & findings doc, 05: review fixes & integration)
-- next: run parent review and verification (SC1, R1, V1, and Review on heavy parent task)
-- open: parent review and verification
+- as of: 2026-10-16, branch work/validator-ux-redesign-analysis, head f332da8, worktree clean
+- done: all child tasks 01–05 verified; parent review and end-to-end verification (SC1–SC11, R1, V1) passed
+- next: deliver PR and request owner acceptance (verified → accepted)
+- open: owner review and acceptance
 - resume prompt: /drive --tag 2026-10-15-validator-ux-and-ai-native-sdlc
