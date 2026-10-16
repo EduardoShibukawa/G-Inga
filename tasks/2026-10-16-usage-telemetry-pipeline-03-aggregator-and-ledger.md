@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: completed
 parent: 2026-10-16-usage-telemetry-pipeline
 spec: 2026-10-16-usage-telemetry-pipeline@1
 depends_on:
@@ -48,13 +48,13 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | evaluation test suite before change | pass | e1b407a | `bun test tools/eval` |
-| AC1 | aggregate_usage calculates sums and cache ratios | not run | - | verify math and groupings |
-| AC2 | records/usage-summary.md produced with clean tables | not run | - | verify markdown generation |
-| AC3 | records/usage-ledger.tsv structured correctly | not run | - | verify TSV columns |
-| AC4 | git status confirms raw traces ignored | not run | - | verify gitignore behavior |
-| AC5 | eval tests and repository validation green | not run | - | bun test tools/eval && bun run validate |
+| AC1 | aggregate_usage calculates sums and cache ratios | pass | tools/eval/aggregate_usage.ts | verify math and groupings |
+| AC2 | records/usage-summary.md produced with clean tables | pass | tools/eval/aggregate_usage.ts | verify markdown generation |
+| AC3 | records/usage-ledger.tsv structured correctly | pass | records/usage-ledger.tsv | verify TSV columns |
+| AC4 | git status confirms raw traces ignored | pass | .gitignore | verify gitignore behavior |
+| AC5 | eval tests and repository validation green | pass | tools/eval/aggregate_usage.test.ts | bun test tools/eval (85 pass) && bun run validate pass |
 | R1 | regression check on verified_at | not run | - | on verified_at |
-| V1 | diff read against AC1–AC5 | not run | - | on verified_at |
+| V1 | diff read against AC1–AC5 | pass | - | changes verified against AC1–AC5 |
 
 ## Plan
 
@@ -66,13 +66,27 @@ Out of scope:
 
 ## Outcome
 
-Pending execution.
+Delivered child 03 aggregator and ledger persistence:
+
+- Implemented `tools/eval/aggregate_usage.ts`:
+  - Multi-host aggregation engine grouping observations by `epic_id`, `task_id`, `run_id`, `host`, and `condition` (`with` vs `without`).
+  - Computes total tokens, cache hit ratio (`cache_read / (input + cache_read)`), cost estimates, and wall duration.
+  - Generates comprehensive Markdown summary tables (`records/usage-summary.md` or `--out`) comparing conditions, task breakdowns, host distributions, and individual run details.
+  - Emits structured JSON summary metrics when `--json [path]` is specified.
+  - Appends normalized run records to TSV ledger when `--ledger [path]` is specified.
+- Initialized `records/usage-ledger.tsv`:
+  - Created tab-separated ledger tracking 18 columns matching ADR 0006 honest reporting taxonomy (`observed`, `estimated`, `derived`, `absent`, `unsupported`) plus `condition` and `quality_score`.
+- Updated `.gitignore`:
+  - Added ignore rules for `records/usage/*.jsonl` and `records/usage/**/*.jsonl` while ensuring `records/usage-summary.md` and `records/usage-ledger.tsv` are tracked.
+- Authored test suite `tools/eval/aggregate_usage.test.ts`:
+  - 12 comprehensive unit tests covering cache hit ratio math, multi-turn accumulation, A/B delta savings, markdown formatting, JSON structure, 18-column TSV ledger alignment, and git-ignore behavior.
+- Verified test suite (`bun test tools/eval` 85 pass) and repository validation (`bun run validate` pass).
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, worktree clean
-- done: child 03 planned
-- active: awaiting execution
-- blocked: depends on child 02
-- next: execute child 03
+- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, HEAD fd5e345
+- done: child 03 implemented, tested, and verified locally (AC1–AC5 pass)
+- active: completed, awaiting parent commit and verified_at transition
+- blocked: none
+- next: commit child 03 changes, transition to verified_at, and proceed to child 04 (A/B benchmark runner)
 - revalidate: none
