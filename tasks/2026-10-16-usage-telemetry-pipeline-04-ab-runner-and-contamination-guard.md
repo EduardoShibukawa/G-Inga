@@ -1,11 +1,12 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-16-usage-telemetry-pipeline
 spec: 2026-10-16-usage-telemetry-pipeline@1
 depends_on:
   - 2026-10-16-usage-telemetry-pipeline-03-aggregator-and-ledger
+verified_at: "a16a52e"
 ---
 
 # A/B benchmark runner and contamination guard
@@ -50,13 +51,13 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | evaluation test suite before change | pass | a9acefe | `bun test tools/eval` (85/85 pass) |
-| AC1 | ab_runner executes iterations with config | pass | a9acefe | `ab_runner.ts` supports `--task-id`, `--task-file`, `--iterations`, `--host`, `--dry-run`, `--max-cost-usd` |
-| AC2 | contamination guard asserts skill absence | pass | a9acefe | `assertNoContamination` & `stripSkills` guard `.claude/skills` and `.agents/skills` |
-| AC3 | quality_score computed deterministically | pass | a9acefe | `calculateQualityScore` derives [0.0, 1.0] and appends to TSV ledger |
-| AC4 | mise eval:usage and eval:ab tasks operational | pass | a9acefe | `mise run eval:usage` and `mise run eval:ab` registered and operational |
-| AC5 | eval tests and repository validation green | pass | a9acefe | 104/104 eval tests pass; `bun run validate` and `bun run test` pass |
-| R1 | regression check on verified_at | not run | - | on verified_at |
-| V1 | diff read against AC1–AC5 | not run | - | on verified_at |
+| AC1 | ab_runner executes iterations with config | pass | a16a52e | `ab_runner.ts` supports `--task-id`, `--task-file`, `--iterations`, `--host`, `--dry-run`, `--max-cost-usd` |
+| AC2 | contamination guard asserts skill absence | pass | a16a52e | `assertNoContamination` & `stripSkills` guard `.claude/skills` and `.agents/skills` |
+| AC3 | quality_score computed deterministically | pass | a16a52e | `calculateQualityScore` derives [0.0, 1.0] and appends to TSV ledger |
+| AC4 | mise eval:usage and eval:ab tasks operational | pass | a16a52e | `mise run eval:usage` and `mise run eval:ab` registered and operational |
+| AC5 | eval tests and repository validation green | pass | a16a52e | 104/104 eval tests pass; `bun run validate` and `bun run test` pass |
+| R1 | regression check on verified_at | pass | a16a52e | full repository validation and test suite green |
+| V1 | diff read against AC1–AC5 | pass | a16a52e | diff reviewed against spec SC4, SC5, SC9 |
 
 ## Plan
 
@@ -80,9 +81,9 @@ Implemented child 04 of continuous usage telemetry pipeline:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, worktree clean
-- done: child 04 completed (ab_runner, contamination guard, quality_score, mise tasks, unit tests)
-- active: awaiting gate verification
+- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, HEAD a16a52e
+- done: child 04 verified at a16a52e
+- active: child 05 unblocked
 - blocked: none
-- next: advance to verified via orchestrator /drive gate
+- next: execute child 05 (review and integration)
 - revalidate: none
