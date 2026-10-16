@@ -102,3 +102,16 @@ fi
 echo "eval:skills: raw results and verdict.json files in $out (git-ignored)"
 exit $(( t > c ? t : c ))
 '''
+
+[tasks."eval:usage"]
+description = "Run usage telemetry aggregation and summary generation"
+run = "mkdir -p records/usage && bun tools/eval/aggregate_usage.ts --in records/usage/ --out records/usage-summary.md --ledger records/usage-ledger.tsv"
+
+[tasks."eval:ab"]
+description = "Run A/B benchmark comparisons with contamination guard bounded by SHE_BUDGET_USD (default 5.00)"
+run = '''
+#!/usr/bin/env bash
+set -uo pipefail
+budget="${SHE_BUDGET_USD:-5.00}"
+bun tools/eval/ab_runner.ts --max-cost-usd "$budget" "$@"
+'''

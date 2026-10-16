@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: completed
 parent: 2026-10-16-usage-telemetry-pipeline
 spec: 2026-10-16-usage-telemetry-pipeline@1
 depends_on:
@@ -49,12 +49,12 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | evaluation test suite before change | pass | e1b407a | `bun test tools/eval` |
-| AC1 | ab_runner executes iterations with config | not run | - | verify runner flags and execution |
-| AC2 | contamination guard asserts skill absence | not run | - | verify isolated worktree behavior |
-| AC3 | quality_score computed deterministically | not run | - | verify repo test/AC validation logic |
-| AC4 | mise eval:usage and eval:ab tasks operational | not run | - | verify mise task execution |
-| AC5 | eval tests and repository validation green | not run | - | bun test tools/eval && bun run validate |
+| B1 | evaluation test suite before change | pass | a9acefe | `bun test tools/eval` (85/85 pass) |
+| AC1 | ab_runner executes iterations with config | pass | a9acefe | `ab_runner.ts` supports `--task-id`, `--task-file`, `--iterations`, `--host`, `--dry-run`, `--max-cost-usd` |
+| AC2 | contamination guard asserts skill absence | pass | a9acefe | `assertNoContamination` & `stripSkills` guard `.claude/skills` and `.agents/skills` |
+| AC3 | quality_score computed deterministically | pass | a9acefe | `calculateQualityScore` derives [0.0, 1.0] and appends to TSV ledger |
+| AC4 | mise eval:usage and eval:ab tasks operational | pass | a9acefe | `mise run eval:usage` and `mise run eval:ab` registered and operational |
+| AC5 | eval tests and repository validation green | pass | a9acefe | 104/104 eval tests pass; `bun run validate` and `bun run test` pass |
 | R1 | regression check on verified_at | not run | - | on verified_at |
 | V1 | diff read against AC1–AC5 | not run | - | on verified_at |
 
@@ -69,13 +69,20 @@ Out of scope:
 
 ## Outcome
 
-Pending execution.
+Implemented child 04 of continuous usage telemetry pipeline:
+
+- `tools/eval/ab_runner.ts`: A/B benchmark iteration harness executing across `with` and `without` conditions, with host disable flags (`--disable-slash-commands`, `--disable-custom-skills`, `--no-skills`) and cost ceiling enforcement (`--max-cost-usd`).
+- Contamination guard: exported `assertNoContamination`, `checkScaffoldContamination`, `stripSkills`, and `prepareIsolatedWorktree` guaranteeing zero harness skill leakage in the baseline arm.
+- Deterministic quality score: `calculateQualityScore` evaluates test and build outcomes into proportional score [0.0, 1.0].
+- Formats Markdown summary (`records/usage-summary.md`) and appends normalized rows adhering strictly to the 18-column TSV schema (`records/usage-ledger.tsv`).
+- `mise.toml`: added `eval:usage` and `eval:ab` tasks respecting `SHE_BUDGET_USD` default ceiling ($5.00).
+- `tools/eval/ab_runner.test.ts`: 19/19 tests pass; 104/104 eval suite tests pass; repository validation passes.
 
 ## Checkpoint
 
 - as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, worktree clean
-- done: child 04 planned
-- active: awaiting execution
-- blocked: depends on child 03
-- next: execute child 04
+- done: child 04 completed (ab_runner, contamination guard, quality_score, mise tasks, unit tests)
+- active: awaiting gate verification
+- blocked: none
+- next: advance to verified via orchestrator /drive gate
 - revalidate: none
