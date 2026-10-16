@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "d24dc6c"
 ---
 
 # Load G-Ingá in OMP only through the plugin channel
@@ -40,12 +41,12 @@ Out of scope:
 |---|---|---|---|---|
 | B1 | `mise run validate` and `mise run test` before the first edit | pass | f678867 | re-run on a quiet machine: validate exit 0 (79.6 s, Overall pass); test `flock /tmp/g-inga-test.lock mise run test`: 332 pass, 0 fail, exit 0 (100.4 s). Earlier contention failure (fail, 120 s timeout, 2 runs) kept in Checkpoint history |
 | B2 | `omp plugin marketplace list` (default profile) before the task | pass | f678867 | `No marketplaces configured` / `Add one with: omp plugin marketplace add <source>` (exit 0; taken under /tmp/g-inga-omp-probe.lock, released) |
-| AC1 | `omp config get` for both keys | not run | - | |
-| AC2 | `omp --profile g-inga-check read skill://work` without the plugin | not run | - | |
-| AC3 | the same read with the plugin installed in the isolated profile | not run | - | |
-| AC4 | profile removed; default marketplace list unchanged | not run | - | |
-| AC5 | `mise run validate` and `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | |
+| AC1 | `omp config get` for both keys | pass | d24dc6c | `omp config get skills.enableClaudeProject` = `false`; `skills.enableAgentsProject` = `false`; `disabledProviders` = `["opencode"]` (run from the repository root) |
+| AC2 | `omp --profile g-inga-check read skill://work` without the plugin | pass | d24dc6c | `Unknown skill: work`; `Available: diagnose-crash, omarchy` (none of work, drive, orchestrate, sharpen, validator-flow) |
+| AC3 | the same read with the plugin installed in the isolated profile | pass | d24dc6c | `marketplace add "$PWD"` and `install g-inga@g-inga` (0.0.0) exit 0; first line `[Skill file: /home/shibuka/.omp/profiles/g-inga-check/plugins/cache/plugins/g-inga___g-inga___0.0.0/.claude/skills/work/SKILL.md]`; `skill://does-not-exist` lists `diagnose-crash, drive, omarchy, orchestrate, sharpen, validator-flow, work`; no `agents/` entry |
+| AC4 | profile removed; default marketplace list unchanged | pass | d24dc6c | `rm -rf ~/.omp/profiles/g-inga-check` (exit 0, directory gone); default `omp plugin marketplace list` = `No marketplaces configured` / `Add one with: omp plugin marketplace add <source>`, equal to B2; probe lock released |
+| AC5 | `mise run validate` and `mise run test` | pass | d24dc6c | validate exit 0 (Overall pass, 72.6 s); `flock /tmp/g-inga-test.lock mise run test`: 332 pass, 0 fail, exit 0 (85.0 s) |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | pass | d24dc6c | `git diff de588c3 d24dc6c`: only `.omp/config.yml` (new, 7 lines) and this record; no changes to `.claude-plugin/`, `.claude/settings.json`, `commands/`, hooks, agents or docs |
 
 ## Constraints and budget
 
@@ -76,7 +77,14 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-01-plugin-channel, head de588c3 (code base f678867; only task-record commits since), no edits to `.omp/config.yml`
-- history: B1 failed at f678867 under CPU contention from 5 parallel workers. The full `mise run test` timed out the test "every layer applies" at 120000 ms on two runs (161 s, 150 s); a solo rerun passed (112.08 s). Superseded by the quiet-machine re-run below.
-- done: B2 recorded at f678867. B1 re-run pending; AC1-AC5 and V1 pending.
-- next: re-run B1 with `flock /tmp/g-inga-test.lock`, then Plan step 2.
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-01-plugin-channel, implementation commit d24dc6c (verified_at); final record commit is the branch HEAD
+- history: B1 failed at f678867 under CPU contention from 5 parallel workers. The full `mise run test` timed out the test "every layer applies" at 120000 ms on two runs (161 s, 150 s); a solo rerun passed (112.08 s). The quiet-machine re-run at f678867 passed (see B1).
+- done: B1 and B2 pass; `.omp/config.yml` committed (d24dc6c); AC1-AC5 and V1 pass at d24dc6c; isolated profile removed.
+- next: none for this task; owner review and PR merge.
+
+## Outcome
+
+- `.omp/config.yml` sets `skills.enableClaudeProject: false`, `skills.enableAgentsProject: false` and `disabledProviders: [opencode]`. In this repository OMP reads the G-Ingá skills only from the `g-inga@g-inga` plugin: without the plugin `skill://work` is unknown, and with the plugin in the isolated profile it resolves to the plugin cache.
+- The default OMP profile was not changed (marketplace list equals B2). The plugin was installed only in the `g-inga-check` profile, which was removed.
+- Observed, not a G-Ingá issue: `skill://does-not-exist` also lists `diagnose-crash` and `omarchy` (non-G-Ingá skills available in that profile). No `agents/` entries appear.
+- Out of scope items were not touched. `.claude/settings.json` was left unchanged as the record requires.
