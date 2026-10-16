@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "24dc79b"
 spec: 2026-10-16-decouple-commit-gate-and-trunk-linear-history@1
 ---
 
@@ -43,27 +44,27 @@ SC6 from spec `2026-10-16-decouple-commit-gate-and-trunk-linear-history@1`.
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | contract-copy.mjs --check before change | pass | 75d2f05 | Current copy in sync |
-| AC1 | docs/artifact-contracts.md updated | not run | - | |
-| AC2 | contract-copy.mjs --check passes | not run | - | |
-| AC3 | validate.js and manifest.json updated | not run | - | |
-| AC4 | bun run validate && bun test pass | not run | - | |
-| V1 | Diff review against plan and out-of-scope | not run | - | |
+| AC1 | docs/artifact-contracts.md updated | pass | 24dc79b | Updated in commit c7e901d |
+| AC2 | contract-copy.mjs --check passes | pass | 24dc79b | contract copy matches canonical contract |
+| AC3 | validate.js and manifest.json updated | pass | 24dc79b | validate.js rebuilt in c7e901d, manifest regenerated in 24dc79b |
+| AC4 | bun run validate && bun test pass | pass | 24dc79b | bun run validate passes, bun test passes (400 tests) |
+| V1 | Diff review against plan and out-of-scope | pass | 24dc79b | Clean sync of bundle and contract copy |
 
 ## Review
 
 - reviewer: skip: child task of heavy parent
-- verdict: -
+- verdict: pass
 - findings: none
 
 ## Outcome
 
-Pending execution of children 01 and 02.
+`docs/artifact-contracts.md` updated with ADR 0015 definitions, contract copy regenerated in `skills/work/references/artifact-contracts.md`, validator bundle rebuilt as `tools/validate/validate.js`, and `manifest.json` regenerated and verified.
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/2026-10-16-decouple-commit-gate-and-trunk-linear-history`, head 75d2f05, worktree clean
-- done: child 03 authored with baseline B1 established
+- as of: 2026-10-16, branch `work/2026-10-16-decouple-commit-gate-and-trunk-linear-history`, head 24dc79b, task verified
+- done: AC1, AC2, AC3, AC4, V1 verified at 24dc79b
 - active: none
-- blocked: waiting for children 01 and 02
-- next: execute child 01
+- blocked: none
+- next: finalize parent task verification
 - revalidate: none

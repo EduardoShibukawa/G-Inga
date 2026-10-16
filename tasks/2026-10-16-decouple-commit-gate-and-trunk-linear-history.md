@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: heavy
-status: active
+status: verified
+verified_at: "259af09"
 spec: 2026-10-16-decouple-commit-gate-and-trunk-linear-history@1
 ---
 
@@ -49,29 +50,34 @@ SC1–SC6 from spec `2026-10-16-decouple-commit-gate-and-trunk-linear-history@1`
 |---|---|---|---|---|
 | B1 | bun run validate baseline on main | pass | 75d2f05 | Pre-change validation baseline on main |
 | B2 | bun test baseline on main | pass | 75d2f05 | Pre-change test baseline (399 tests pass) |
-| SC1 | mise.toml defines validate:authoring | not run | - | |
-| SC2 | mise.toml pre-commit depends on validate:authoring | not run | - | |
-| SC3 | CI workflow runs mise run validate | not run | - | |
-| SC4 | history.ts invokes rev-list with --first-parent | not run | - | |
-| SC5 | artifacts.test.ts verifies --first-parent behavior | not run | - | |
-| SC6 | bun run validate && bun test pass | not run | - | |
-| V1 | Full diff review against SC1–SC6 and out-of-scope list | not run | - | |
+| SC1 | mise.toml defines validate:authoring | pass | 259af09 | Defined in mise.toml line 34 |
+| SC2 | mise.toml pre-commit depends on validate:authoring | pass | 259af09 | Configured in mise.toml line 39 |
+| SC3 | CI workflow runs mise run validate | pass | 259af09 | .github/workflows/validate.yml pre-commit job runs mise run validate |
+| SC4 | history.ts invokes rev-list with --first-parent | pass | 259af09 | checkHistory uses --first-parent in rev-list |
+| SC5 | artifacts.test.ts verifies --first-parent behavior | pass | 259af09 | Unit and regression tests passing |
+| SC6 | bun run validate && bun test pass | pass | 259af09 | validate passes, bun test passes (400 tests) |
+| V1 | Full diff review against SC1–SC6 and out-of-scope list | pass | 259af09 | All criteria verified across children 01, 02, and 03 |
 
 ## Review
 
-- reviewer: skip: initial authoring of heavy task and spec
-- verdict: -
-- findings: none
+- reviewer: independent verification gate and multi-agent peer review
+- verdict: pass
+- findings: none (all criteria SC1–SC6 satisfied, 400 tests passing)
 
 ## Outcome
 
-In progress.
+Decoupling of commit gate and trunk-linear history walk delivered:
+
+1. Pre-commit hook now runs `validate:authoring`, reducing commit latency and eliminating history walk during local development.
+2. Full repository audit remains strictly enforced on pull requests and pushes to `main` via GitHub Actions CI workflow.
+3. §7.1 history walk refactored to `--first-parent`, linearizing merge commits on trunk and eliminating DAG interleaving false positives.
+4. Contract documentation, contract copy, validator bundle, and manifest fully synchronized and passing 400 tests.
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/2026-10-16-decouple-commit-gate-and-trunk-linear-history`, head 75d2f05, worktree clean
-- done: ADR 0015 accepted; spec v1 drafted and approved with SHA-256 hash; parent task authored with baseline B1–B2 established
-- active: 2026-10-16-decouple-commit-gate-01-hooks-and-ci
+- as of: 2026-10-16, branch `work/2026-10-16-decouple-commit-gate-and-trunk-linear-history`, head 259af09, task verified
+- done: children 01, 02, and 03 verified; parent heavy task verified at 259af09
+- active: none
 - blocked: none
-- next: decompose child tasks 01, 02, and 03
+- next: commit task records, push branch and open pull request
 - revalidate: none
