@@ -117,26 +117,16 @@ describe("committed bundle in this repository", () => {
 
   test("the /work procedures cite the delivered contract copy, never docs/artifact-contracts.md", () => {
     expect(bundle.assets).toContain(CONTRACT_COPY);
-    const skill = bundle.assets.filter((p) => p.startsWith(".claude/skills/work/") && p !== CONTRACT_COPY);
+    const skill = bundle.assets.filter((p) => p.startsWith("skills/work/") && p !== CONTRACT_COPY);
     expect(skill.length).toBeGreaterThan(0);
     for (const p of skill) expect(`${p}: ${readFileSync(join(REPO, p), "utf8")}`).not.toContain("docs/artifact-contracts.md");
     const cited = skill.filter((p) => readFileSync(join(REPO, p), "utf8").includes(CONTRACT_COPY));
-    expect(cited).toEqual(expect.arrayContaining([".claude/skills/work/references/procedure.md", ".claude/skills/work/standard.md", ".claude/skills/work/resume.md"]));
-  });
-
-  test("the Antigravity /work procedures cite their delivered contract copy, never docs/artifact-contracts.md", () => {
-    const agyContract = ".agents/skills/work/references/artifact-contracts.md";
-    expect(bundle.assets).toContain(agyContract);
-    const skill = bundle.assets.filter((p) => p.startsWith(".agents/skills/work/") && p !== agyContract);
-    expect(skill.length).toBeGreaterThan(0);
-    for (const p of skill) expect(`${p}: ${readFileSync(join(REPO, p), "utf8")}`).not.toContain("docs/artifact-contracts.md");
-    const cited = skill.filter((p) => readFileSync(join(REPO, p), "utf8").includes(agyContract));
-    expect(cited).toEqual(expect.arrayContaining([".agents/skills/work/references/procedure.md", ".agents/skills/work/standard.md", ".agents/skills/work/resume.md"]));
+    expect(cited).toEqual(expect.arrayContaining(["skills/work/references/procedure.md", "skills/work/standard.md", "skills/work/resume.md"]));
   });
 
   test("every documented validator CLI path exists in the bundle", () => {
     for (const p of ["tools/validate/validate.js", "tools/validate/validate.ts"]) expect(bundle.assets).toContain(p);
-    const docs = [".claude/skills/work/references/procedure.md", ".claude/skills/work/standard.md", ".agents/skills/work/references/procedure.md", ".agents/skills/work/standard.md"].map((p) => readFileSync(join(REPO, p), "utf8")).join("\n");
+    const docs = ["skills/work/references/procedure.md", "skills/work/standard.md"].map((p) => readFileSync(join(REPO, p), "utf8")).join("\n");
     for (const m of docs.matchAll(/`(?:node|bun) (tools\/validate\/[\w.]+)`/g)) expect(bundle.assets).toContain(m[1]);
   });
 });
@@ -187,10 +177,10 @@ for (const rt of RUNTIMES) {
 
     test.skipIf(!rt.available)("exit 1: an altered bundle asset fails the manifest check", () => {
       const dir = installedTarget();
-      appendFileSync(join(dir, ".claude/skills/work/SKILL.md"), "\nlocal edit\n");
+      appendFileSync(join(dir, "skills/work/SKILL.md"), "\nlocal edit\n");
       const r = validate(dir);
       expect(status("manifest-integrity", r.out)).toBe("fail");
-      expect(r.out).toContain(".claude/skills/work/SKILL.md: hash mismatch");
+      expect(r.out).toContain("skills/work/SKILL.md: hash mismatch");
       expect(r.code).toBe(1);
     }, 30000);
 
@@ -261,7 +251,7 @@ describe("update procedure (SC6)", () => {
     expect(existsSync(join(dir, WORK_DIR))).toBe(false);
   });
 
-  test("the contract copy installs under .claude/skills/work/references/; a target's docs/artifact-contracts.md is untouched", () => {
+  test("the contract copy installs under skills/work/references/; a target's docs/artifact-contracts.md is untouched", () => {
     const own = "# Our own artifact contracts\n\nUser content, not G-Ingá's.\n";
     const dir = gitRepo({ ...USER_FILES, "docs/artifact-contracts.md": own });
     const r = updateBundle(REPO, dir);
@@ -302,7 +292,7 @@ describe("update procedure (SC6)", () => {
     updateBundle(REPO, dir);
     const before = snapshot(dir);
     const v2 = sourceV2();
-    appendFileSync(join(v2, ".claude/skills/work/heavy.md"), "tampered after manifest\n");
+    appendFileSync(join(v2, "skills/work/heavy.md"), "tampered after manifest\n");
     const runtime = hasNode22 ? "node" : "bun";
     const r = run([runtime, join(REPO, "tools/validate/update.mjs"), dir, "--source", v2], tmpdir());
     expect(r.out).toContain("heavy.md doesn't match the source manifest");

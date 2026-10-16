@@ -2,7 +2,7 @@
 /**
  * Builds or checks the bundle's copy of the artifact contract (task 2026-10-11-minimal-v1-specification-04).
  * Source-repository utility: `docs/artifact-contracts.md` stays the canonical text in G-Ingá; the bundle delivers
- * `.claude/skills/work/references/artifact-contracts.md` so a target repository has the contract `/work` cites.
+ * `skills/work/references/artifact-contracts.md` so a target repository has the contract `/work` cites.
  *
  *   bun tools/validate/contract-copy.mjs           write the copy from the canonical file
  *   bun tools/validate/contract-copy.mjs --check   exit 0 when the copy is current, 1 when it drifted or is missing
@@ -19,10 +19,9 @@ import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const CONTRACT_SOURCE = "docs/artifact-contracts.md";
-export const CONTRACT_COPY = ".claude/skills/work/references/artifact-contracts.md";
-export const CONTRACT_COPY_AGENTS = ".agents/skills/work/references/artifact-contracts.md";
-export const CONTRACT_COPIES = [CONTRACT_COPY, CONTRACT_COPY_AGENTS];
-export const LINK_PREFIX = "../../../../docs/";
+export const CONTRACT_COPY = "skills/work/references/artifact-contracts.md";
+export const CONTRACT_COPIES = [CONTRACT_COPY];
+export const LINK_PREFIX = "../../../docs/";
 export const HEADER =
   `<!-- Generated copy of ${CONTRACT_SOURCE} from G-Ingá, delivered in the /work bundle. Do not edit: ` +
   `change the canonical file and run \`bun tools/validate/contract-copy.mjs\`. Transform: this comment is added ` +

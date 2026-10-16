@@ -386,7 +386,7 @@ The validator supports two modes ([ADR 0012](../../../docs/decisions/0012-author
 - **Authoring mode (`bun run validate:authoring`, `bun tools/validate/main.ts --authoring`, `node tools/validate/validate.js --authoring`):** runs locally during iteration, checks current-tree structure and records using the same rule and finding vocabulary (`observed`, `expected`, `next`), and skips the Git history walk and commit-order ancestry checks. Not accepted as merge/CI evidence.
 - **Explain mode (`--explain <rule>` or `--explain list`):** prints the rationale and repair step for any contract rule (`§2.2`–`§8`).
 
-Detailed workflow and repair procedures are described in [validator-flow](../../validator-flow/SKILL.md).
+Detailed workflow and repair procedures are described in [validator-flow](../../../docs/../.claude/skills/validator-flow/SKILL.md).
 
 | Check | Deterministic script | Agent judgment | Owner |
 |---|---|---|---|

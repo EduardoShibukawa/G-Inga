@@ -87,7 +87,7 @@ export function contractSync(files: MdFile[]): CheckResult {
 function contractCopyApplies(ctx: Context): true | string {
   const present = contractPresent(ctx);
   if (present !== true) return present;
-  return existsSync(join(ctx.root, ".claude/skills/work")) || "no .claude/skills/work/ to deliver the contract copy";
+  return existsSync(join(ctx.root, "skills/work")) || existsSync(join(ctx.root, ".claude/skills/work")) || "no skills/work/ to deliver the contract copy";
 }
 
 export function contractCopy(root: string): CheckResult {

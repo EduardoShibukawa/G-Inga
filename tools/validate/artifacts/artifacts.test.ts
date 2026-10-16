@@ -145,11 +145,11 @@ describe("contract checks apply where the contract document is", () => {
 });
 
 describe("the bundle's contract copy matches the canonical contract (task 04, AC1, AC2)", () => {
-  /** docs/ and .claude/skills/work/ of this repository, copied: the layout where the copy check applies. */
+  /** docs/ and skills/work/ of this repository, copied: the layout where the copy check applies. */
   const copyBundleSource = () => {
     const dir = fixtureDir({});
     cpSync(join(REPO, "docs"), join(dir, "docs"), { recursive: true });
-    cpSync(join(REPO, ".claude/skills/work"), join(dir, ".claude/skills/work"), { recursive: true });
+    cpSync(join(REPO, "skills/work"), join(dir, "skills/work"), { recursive: true });
     return dir;
   };
 
@@ -191,7 +191,7 @@ describe("the bundle's contract copy matches the canonical contract (task 04, AC
     expect(contractCopy(dir).status).toBe("pass");
   });
 
-  test("without .claude/skills/work/ there is no copy to check: not run", () => {
+  test("without skills/work/ there is no copy to check: not run", () => {
     const dir = fixtureDir({});
     cpSync(join(REPO, "docs"), join(dir, "docs"), { recursive: true });
     const r = validate(dir, NO_BROWSER);
