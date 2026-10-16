@@ -155,7 +155,7 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
   if (!isGitRepo(root)) return { blocked: "not a Git repository" };
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true") return { blocked: "shallow clone: the history walk and deleted-record detection need full history (§7.1)" };
   const hasHead = git(root, ["rev-parse", "--verify", "--quiet", "HEAD"]).ok;
-  const commits = hasHead ? git(root, ["rev-list", "--reverse", "HEAD", "--", "tasks", "specs", "intents"]).out.split("\n").filter(Boolean) : [];
+  const commits = hasHead ? git(root, ["rev-list", "--first-parent", "--reverse", "HEAD", "--", "tasks", "specs", "intents"]).out.split("\n").filter(Boolean) : [];
   const revs = [...commits, WT];
   const findings: Finding[] = [];
   const frozen: string[] = [];

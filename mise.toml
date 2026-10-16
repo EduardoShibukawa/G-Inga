@@ -27,13 +27,18 @@ description = "Install dev dependencies exactly as locked in bun.lock"
 run = "bun install --frozen-lockfile"
 
 [tasks.validate]
-description = "Run every required deterministic repository check"
+description = "Run every required deterministic repository check (full audit gate)"
 depends = ["setup"]
 run = "bun run validate"
 
+[tasks."validate:authoring"]
+description = "Fast authoring checks for working tree / staged content (ADR 0012, ADR 0015)"
+depends = ["setup"]
+run = "bun run validate:authoring"
+
 [tasks.pre-commit]
-description = "Steps the Git pre-commit hook runs (hk.pkl); CI runs the same task (ADR 0009 §2)"
-depends = ["validate"]
+description = "Steps the Git pre-commit hook runs (hk.pkl; ADR 0015 §1)"
+depends = ["validate:authoring"]
 
 [tasks."validate:external"]
 description = "Check external URL availability (network; separate from validate)"

@@ -562,3 +562,48 @@ describe("validator UX and AI-native SDLC (spec 2026-10-15-validator-ux-and-ai-n
   });
 });
 
+describe("decouple commit gate and trunk-linear history (spec 2026-10-16-decouple-commit-gate-and-trunk-linear-history SC4, SC5)", () => {
+  test("SC4 & SC5: checkHistory follows the first-parent lineage of HEAD, linearizing trunk merges", () => {
+    const X = "tasks/2026-10-12-x.md";
+    const dir = fixtureDir({ "README.md": "# R\n" }, { git: true });
+    const g = (...args: string[]) => {
+      const r = git(dir, ...args);
+      if (r.exitCode !== 0) throw new Error(`git ${args.join(" ")}: ${r.stderr.toString()}`);
+      return r.stdout.toString().trim();
+    };
+    const commitAt = (msg: string) => {
+      g("add", "-A");
+      const r = Bun.spawnSync(["git", "-c", "user.email=f@example.invalid", "-c", "user.name=f", "-c", "commit.gpgsign=false", "commit", "-q", "-m", msg], { cwd: dir, stderr: "pipe" });
+      if (r.exitCode !== 0) throw new Error(r.stderr.toString());
+    };
+    const mergeNoFF = (rev: string) => {
+      const r = Bun.spawnSync(["git", "-c", "user.email=f@example.invalid", "-c", "user.name=f", "-c", "commit.gpgsign=false", "merge", "-q", "--no-ff", "-m", `merge ${rev}`, rev], { cwd: dir, stderr: "pipe" });
+      if (r.exitCode !== 0) throw new Error(r.stderr.toString());
+    };
+
+    const mainBranch = g("rev-parse", "--abbrev-ref", "HEAD");
+    mkdirSync(join(dir, "tasks"), { recursive: true });
+
+    // Branch 1 creates task X at todo
+    g("checkout", "-q", "-b", "feature-x");
+    writeFileSync(join(dir, X), task({ status: "todo" }));
+    commitAt("create task X as todo");
+
+    // Branch 2 forks from feature-x and cancels task X
+    g("checkout", "-q", "-b", "feature-x-cancel");
+    writeFileSync(join(dir, X), task({ status: "cancelled" }));
+    commitAt("cancel task X");
+
+    // Return to main and merge feature-x first, then feature-x-cancel
+    g("checkout", "-q", mainBranch);
+    mergeNoFF("feature-x");
+    mergeNoFF("feature-x-cancel");
+
+    // With --first-parent, the walk follows the two merge commits on main in linear sequence (todo -> cancelled)
+    const res = validate(dir, NO_BROWSER);
+    expect(res.code).toBe(0);
+    expect(status("artifact-records", res.out)).toBe("pass");
+  });
+});
+
+

@@ -1,20 +1,20 @@
 {
   "release": "1.0.0",
-  "commit": "03d9db9f1526476020f96418e01bbc5ab27a5fb2",
+  "commit": "c7e901d2b76cfc8ebcae3377351c4f7dc4d44838",
   "files": {
     "skills/work/SKILL.md": "740280b416a4d1f01a2cdfb9f6b8ff4f784e8eb838629e0b2624f7570d492c8e",
     "skills/work/heavy.md": "14ba9205d12fddfeb456e49857b58234b8afd103fb3230f8355956f8263a1cf7",
     "skills/work/resume.md": "356868ad00903e9fa099edc57167668afaee60c52036a8c3575661c2a0480332",
     "skills/work/review.md": "d0d5a605790048c69acb70f03a3da246b92122131dbac9f7eb04d78551363cff",
     "skills/work/standard.md": "c2790fbf2903092aba14cbac467331afe208770e188b06dae679a53b10525096",
-    "skills/work/references/artifact-contracts.md": "45ce788546d32921fbc96336df22a6b8ee5bcf3a65f4203c7f831f8301ccc06a",
+    "skills/work/references/artifact-contracts.md": "0621b1bb9485353689db5c71e6951716443f5260a8dc568004bbe9a9859224ae",
     "skills/work/references/model-policy.md": "a8f7e3633f222d97061628e5063664ac4685cf5c2a630cb0892068c0febae9c6",
     "skills/work/references/procedure.md": "909bfd261e2da7eedb042046d5d562c4dba45e74352e416dd63476fbf0a3b76f",
     "skills/work/references/question-rounds.md": "54476727460b809a2ebfcbe6f7aea4c95ace4af87068570359027a4c91ab1969",
     "skills/sharpen/SKILL.md": "1a4714c6a26fa38bc85d038b516e31ac3e77baf18c5a15d24955d4956bb66b65",
     ".mise/tasks/g-inga/validate": "c527f505d4dcefd72aa7e2f873173376dfd7f878160cf935511bee89b31e2601",
     "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
-    "tools/validate/validate.js": "96e408da81b851b87c7776c1caeaa4516e86403492492b645c0d8dd73f42d69b",
+    "tools/validate/validate.js": "b3659cca6de6ef61c3ea6397233c05c195d20bf7834260fde4613f88e8996da2",
     "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
