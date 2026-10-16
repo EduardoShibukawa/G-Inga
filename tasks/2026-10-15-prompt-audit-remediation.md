@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: heavy
-status: verified
+status: accepted
 verified_at: "6494ce3"
 spec: 2026-10-15-prompt-audit-remediation@1
 ---
@@ -20,6 +20,7 @@ spec: 2026-10-15-prompt-audit-remediation@1
 - decided: memory rule → the repository is canonical; auto-memory is a hint checked against the repository before acting by owner (2026-10-15, "Q6. ok")
 - decided: skill layout → moving skills to a root `skills/` directory distributed by plugin is a separate heavy task with an ADR amending ADR 0005, after this one; this task edits the current paths by owner (2026-10-15, "Q8l. Sim")
 - approved: spec v1 by owner (2026-10-15, "sim")
+- accepted: by owner (2026-10-16, "accepted formal prompt audit remediation epic")
 
 ## Objective
 
@@ -74,19 +75,13 @@ None yet: the fresh-context review runs after integration (`work/review.md`).
 
 ## Outcome
 
-All spec criteria SC1–SC9 delivered through the two verified children: procedure/contract/memory (child 01 at `2b9c835`) and orchestrate/drive alignment (child 02 at `34bc0d7`), integrated on `6494ce3`. `mise run validate` Overall: pass; `mise run test` 274 pass, 0 fail. Not delivered: nothing in scope of this spec. Follow-up outside scope: the pre-existing uncommitted `mise.toml` (`locked = false`) environment tweak.
+All spec criteria SC1–SC9 delivered through the two verified children: procedure/contract/memory (child 01 at `2b9c835`) and orchestrate/drive alignment (child 02 at `34bc0d7`), integrated on `6494ce3`. Formally accepted by repository owner on 2026-10-16 ("accepted formal prompt audit remediation epic"). `mise run validate` Overall: pass; `mise run test` 274 pass, 0 fail. Not delivered: nothing in scope of this spec. Follow-up outside scope: the pre-existing uncommitted `mise.toml` (`locked = false`) environment tweak.
 
 ## Checkpoint
 
-- as of: 2026-10-15, branch `work/prompt-audit-remediation-03-integration`, HEAD `6494ce3` (main), worktree clean except the pre-existing uncommitted `mise.toml` environment tweak (`locked = false`), which is out of scope of this spec and left uncommitted.
-- Done: `2026-10-15-prompt-audit-remediation-01-procedure-contract-memory` verified at `2b9c835`; `2026-10-15-prompt-audit-remediation-02-orchestrate` verified at `34bc0d7` (merged into main at `6494ce3`). All children done/verified; no next child in this spec.
-- Active: none.
-- Blocked: none.
-- Next: none — this is the final integration task of the spec; open the PR to merge the integration branch into `main`.
-- Revalidate: `mise run validate` Overall: pass; `mise run test` 274 pass, 0 fail on this tree.
-- Pending (out of scope of spec): `mise.toml` `locked = false` environment tweak remains uncommitted; include it in a later task if desired.
-- Resume prompt:
-
-  ~~~text
-  Resume 2026-10-15-prompt-audit-remediation on branch work/prompt-audit-remediation-03-integration. Expected head 6494ce3 (main); parent status verified at 6494ce3, all children verified (01 at 2b9c835, 02 at 34bc0d7). SC1–SC9 all pass. `mise run validate` and `mise run test` pass with 0 fail. The pre-existing uncommitted `mise.toml` (`locked = false`) is out of scope of this spec and left uncommitted. No further work in this spec.
-  ~~~
+- as of: 2026-10-16, branch `main`, HEAD `622554e`, worktree clean
+- done: all children 01–02 verified; SC1–SC9 and V1 verified at `6494ce3`; formally accepted by owner
+- active: none
+- blocked: none
+- next: none (epic completed and accepted)
+- revalidate: none
