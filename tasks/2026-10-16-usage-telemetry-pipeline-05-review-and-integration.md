@@ -1,11 +1,12 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-16-usage-telemetry-pipeline
 spec: 2026-10-16-usage-telemetry-pipeline@1
 depends_on:
   - 2026-10-16-usage-telemetry-pipeline-04-ab-runner-and-contamination-guard
+verified_at: "141a6e0"
 ---
 
 # End-to-end integration, live run evidence, and review
@@ -45,12 +46,12 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | evaluation test suite before change | pass | 2a71a04 | `bun test tools/eval` (104/104 pass) |
-| AC1 | eval:usage executes and updates summary | pass | - | real session trace ingested and summarized in `records/usage-summary.md` |
-| AC2 | eval:ab records real run into usage-ledger.tsv | pass | - | benchmark runs committed in `records/usage-ledger.tsv` without contamination |
-| AC3 | repository validation and test suites pass | pass | - | `bun test tools/eval` (104/104), `bun run test` (332/332), `bun run validate` clean |
-| AC4 | spec SC1–SC10 compliance reviewed | pass | - | fresh-context review against SC1–SC10 confirms all criteria met |
-| R1 | integrated regression check on verified_at | pass | - | full evaluation and repo test suite passes cleanly |
-| V1 | diff read against AC1–AC4 | pass | - | verified end-to-end telemetry pipeline |
+| AC1 | eval:usage executes and updates summary | pass | 141a6e0 | real session trace ingested and summarized in `records/usage-summary.md` |
+| AC2 | eval:ab records real run into usage-ledger.tsv | pass | 141a6e0 | benchmark runs committed in `records/usage-ledger.tsv` without contamination |
+| AC3 | repository validation and test suites pass | pass | 141a6e0 | `bun test tools/eval` (104/104), `bun run test` (332/332), `bun run validate` clean |
+| AC4 | spec SC1–SC10 compliance reviewed | pass | 141a6e0 | fresh-context review against SC1–SC10 confirms all criteria met |
+| R1 | integrated regression check on verified_at | pass | 141a6e0 | full evaluation and repo test suite passes cleanly |
+| V1 | diff read against AC1–AC4 | pass | 141a6e0 | verified end-to-end telemetry pipeline |
 
 ## Plan
 
@@ -73,9 +74,9 @@ Successfully executed and completed child 05 of the continuous usage telemetry p
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`
-- done: child 05 executed, live run evidence committed in ledger and summary, spec review completed
-- active: completed, awaiting gate verification
+- as of: 2026-10-16, branch `work/usage-telemetry-pipeline`, HEAD 141a6e0
+- done: child 05 verified at 141a6e0
+- active: epic completion
 - blocked: none
-- next: orchestrator /drive gate verification and final epic closure
+- next: update parent epic record and handoff
 - revalidate: none
