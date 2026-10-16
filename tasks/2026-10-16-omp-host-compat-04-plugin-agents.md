@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "50eb9be"
 ---
 
 # Ship the ADR 0013 subagents in the plugin's `agents/` folder
@@ -40,14 +41,14 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | not run | - | record the commit SHA you ran on |
-| B2 | `omp plugin marketplace list` (default profile) before the probe | not run | - | paste the output |
-| AC1 | `ls agents/` and `readlink .claude/agents` | not run | - | |
-| AC2 | `git diff -M main -- agents/` | not run | - | |
-| AC3 | Plan step 4 probe (paid, cheapest model, one run) | not run | - | paste the answer |
-| AC4 | marketplace list compared with B2; temp dirs removed | not run | - | |
-| AC5 | `mise run validate` and `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | |
+| B1 | `mise run validate` and `mise run test` before the first edit | pass | f678867 | `validate` pass. First `test` run: 331 pass, 1 fail (repo self-validation test hit its 120 s timeout under load average 17 on 12 cores). Retry on the same SHA: 332 pass, 0 fail (144 s) |
+| B2 | `omp plugin marketplace list` (default profile) before the probe | pass | f678867 | output: `No marketplaces configured` / `Add one with: omp plugin marketplace add <source>` (exit 0). Taken while holding `/tmp/g-inga-omp-probe.lock` |
+| AC1 | `ls agents/` and `readlink .claude/agents` | pass | 50eb9be | `agents/`: `researcher.md`, `validator-guide.md`; `readlink .claude/agents` prints `../agents` |
+| AC2 | `git diff -M main -- agents/` | pass | 50eb9be | Literal pathspec shows the two files as additions (rename source is outside `agents/`). `git diff -M main -- agents .claude/agents` shows `R099` for both, each with one changed line: `- ReadFile` -> `- Read` in `tools` |
+| AC3 | Plan step 4 probe (paid, cheapest model, one run) | pass | 50eb9be | answer: `researcher`, `validator-guide`, `scout`, `reviewer`, `security-reviewer`, `task`, `sonic` (plugin agents plus OMP built-ins). Install and marketplace add/remove succeeded |
+| AC4 | marketplace list compared with B2; temp dirs removed | pass | 50eb9be | `omp plugin marketplace list` prints `No marketplaces configured` (same as B2). Probe temp dir and `~/.omp/plugins/cache/plugins/g-inga___g-inga___*` absent. Probe lock released |
+| AC5 | `mise run validate` and `mise run test` | pass | 50eb9be | `validate`: Overall pass (exit 0). `test`: 332 pass, 0 fail (236 s wall for both) |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | pass | 50eb9be | Diff vs. 50eb9be^ is only the `tools` item line 5 in each agent and the symlink. Body unchanged (including the `ReadFile` prose mention at researcher.md line 18, which the record's byte-identical body rule keeps). No `model` key, no `.omp/agents/`, no macro-map, manifest, skills, or hooks touched |
 
 ## Constraints and budget
 
@@ -77,6 +78,13 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/omp-host-compat-tasks, head 47e8c69, task recorded, no edits
-- done: probe on OMP 18.11.2. A throwaway marketplace plugin with `agents/ptest-agent.md` (`tools: Read, Grep`) was listed by the `task` tool. `.claude/agents/*.md` currently declares `tools: [ReadFile, Glob, Grep(, Bash)]`
-- next: step 1 of the plan
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-04-plugin-agents, implementation head 50eb9be, verified; record commit follows this one
+- done: B1 and B2 on f678867; implementation in 50eb9be (`agents/` with two renamed agents, `.claude/agents` symlink, `tools` `ReadFile`→`Read`); AC1–AC5 and V1 pass at 50eb9be; probe lock released
+- next: none in this task; main agent to run the gate and merge
+
+## Outcome
+
+- Delivered: `researcher` and `validator-guide` moved to `agents/`; `.claude/agents` is now a relative symlink to `../agents`; `tools` entry `ReadFile` renamed to `Read` in both files.
+- Probe: OMP lists `researcher` and `validator-guide` from the installed plugin (plus OMP built-ins).
+- Notes for the owner: `researcher.md` line 18 still mentions `ReadFile` in body prose (the record kept the body byte-identical). Branch base lacks some `main` content, so `git diff main` also shows unrelated files; the agent-scoped diff is clean.
+- B1 first `test` run hit a 120 s timeout in `validate.test.ts` under load average 17 (CPU contention with sibling workers); the retry and the AC5 run both passed.
