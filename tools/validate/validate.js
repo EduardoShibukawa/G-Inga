@@ -7817,8 +7817,11 @@ function checkHistory(root, opts = {}) {
       if (!before && !now)
         continue;
       if (rev !== WT && before && now && ancestry(before.rev, rev) === false) {
-        const parentRec = parentSnap(rev).get(key);
-        if (parentRec && sameRec(parentRec, now))
+        const parents = git(root, ["rev-list", "--parents", "-n", "1", rev]).out.trim().split(/\s+/).slice(1);
+        if (parents.some((p) => {
+          const parentRec = snap(p).get(key);
+          return parentRec !== undefined && sameRec(parentRec, now);
+        }))
           continue;
       }
       touched.add(key);

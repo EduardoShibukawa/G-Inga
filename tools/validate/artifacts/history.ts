@@ -204,11 +204,12 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
       const sameRec = (a: Artifact, b: Artifact) => a.body === b.body && JSON.stringify(a.fm) === JSON.stringify(b.fm);
       if (before && now && sameRec(before.rec, now)) continue;
       if (!before && !now) continue;
-      // Unchanged from its parent at a sibling-branch commit (where `before.rev` is not an ancestor) is
-      // the pre-divergence state, not a transition: keep `lastState` so `verified` doesn't regress to `todo`.
+      // Unchanged from one of its parents at a sibling-branch commit (where `before.rev` is not an ancestor)
+      // is the pre-divergence state, not a transition: keep `lastState` so `verified` doesn't regress to
+      // `todo`. Every parent counts, so a merge that brings in the record's older creation is no regression.
       if (rev !== WT && before && now && ancestry(before.rev, rev) === false) {
-        const parentRec = parentSnap(rev).get(key);
-        if (parentRec && sameRec(parentRec, now)) continue;
+        const parents = git(root, ["rev-list", "--parents", "-n", "1", rev]).out.trim().split(/\s+/).slice(1);
+        if (parents.some((p) => { const parentRec = snap(p).get(key); return parentRec !== undefined && sameRec(parentRec, now); })) continue;
       }
       touched.add(key);
       const file = (now ?? before!.rec).path;
