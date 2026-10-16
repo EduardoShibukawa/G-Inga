@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { parse as parseYaml } from "yaml";
 import contract from "./contract.json" with { type: "json" };
 
-export type Kind = "task" | "spec";
+export type Kind = "task" | "spec" | "intent";
 
 export interface Row {
   id: string;
@@ -35,7 +35,7 @@ export const RESULTS = new Set(contract.results);
 
 /** `tasks/<id>.md` or `specs/<id>.md` → parsed record. */
 export function parseRecord(path: string, text: string): Artifact {
-  const kind: Kind = path.startsWith("specs/") ? "spec" : "task";
+  const kind: Kind = path.startsWith("specs/") ? "spec" : path.startsWith("intents/") ? "intent" : "task";
   const id = path.replace(/^.*\//, "").replace(/\.md$/, "");
   const norm = text.replace(/\r\n/g, "\n");
   const m = /^---\n([\s\S]*?)\n---\n?/.exec(norm);
@@ -69,9 +69,20 @@ export function parseRecord(path: string, text: string): Artifact {
     const cells = line.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
     const kindMatch = /^(AC|SC|B|R|V)\d+$/.exec(cells[0] ?? "");
     if (!kindMatch || cells.length < 4) continue;
-    rec.rows.push({ id: cells[0], kind: kindMatch[1], result: cells[2], sha: (cells[3] ?? "").split(/\s+/)[0], note: cells[4] ?? "" });
+    rec.rows.push({ id: cells[0], kind: kindMatch[1], result: cells[2], sha: extractRefSha(cells[3] ?? ""), note: cells[4] ?? "" });
   }
   return rec;
+}
+
+/**
+ * Extracts the commit SHA token from a `Ref` cell (`<sha>` or `<sha> <log-path>` / `<sha>:<log-path>` / `<sha> (<log-path>)`).
+ */
+export function extractRefSha(refCell: string): string {
+  const trimmed = refCell.trim();
+  if (!trimmed) return "";
+  const m = /^`?([0-9a-fA-F]{7,40})`?(?:[\s,:;—–(-].*)?$/.exec(trimmed);
+  if (m) return m[1].toLowerCase();
+  return trimmed.split(/\s+/)[0].replace(/^`+|`+$|[,:;]+$/g, "");
 }
 
 /**

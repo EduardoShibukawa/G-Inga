@@ -19,7 +19,9 @@ describe("contract rule fixtures (§7.2 table and review cases)", () => {
     T2: "§3.3", T3: "§4.4", T4: "§4.4", T6: "§4.4", T7b: "§3.3", T9: "§4.3", T10: "§7.1", T12: "§7.1",
     T14a: "§3.4", T14b: "§3.4", T15a: "§3.4", T15b: "§3.4", T16: "§3.4", T18b: "§8", T18c: "§8", T19: "§8",
     X1: "§4.4", X2: "§3.4", X3: "§3.4", X4: "§6.1", X5: "§2.2", X6: "§3.3/§4.4", X7: "§3.4", X8: "§3.3", X9: "§8",
+    X11: "§3.3", X12: "§3.3", X14: "§3.4",
     "H-del": "§6.1", "H-squash-no-entry": "§7.1", "H-squash-bad-hash": "§7.1", "H-squash-v2": "§7.1", "H-squash-old-entry": "§7.1", "H-forbidden": "§3.3", "H-baseline-refreshed": "§3.4", "H-spec-version": "§4.4",
+    "H-intent-del": "§7.1", "H-intent-reopen": "§4.5",
   };
   for (const c of allCases) {
     test(`${c.id}: ${c.title} → ${c.expect}`, () => {
@@ -417,3 +419,103 @@ for (const c of allCases.filter((x) => x.id.startsWith("H-"))) {
     expect(config()).toBe(before);
   }, 60_000);
 });
+
+describe("validator UX and AI-native SDLC (spec 2026-10-15-validator-ux-and-ai-native-sdlc SC1–SC6)", () => {
+  test("SC1 & SC2: --authoring ignores historical commit violations while reporting identical current-tree findings", () => {
+    const dir = fixtureDir(
+      { "tasks/2026-10-12-x.md": task({ status: "cancelled", log: ["tier: standard (S2 fails)", "downgraded: standard → light because typo"] }) },
+      { git: true },
+    );
+    // Commit a forbidden transition (cancelled → active) in history, then keep current tree valid.
+    writeFileSync(join(dir, "tasks/2026-10-12-x.md"), task({ status: "active" }));
+    commitAll(dir);
+    const full = validate(dir, NO_BROWSER);
+    const auth = validate(dir, NO_BROWSER, ["--authoring"]);
+    expect(status("artifact-records", full.out)).toBe("fail");
+    expect(full.out).toContain("cancelled → active is not reachable");
+    expect(status("artifact-records", auth.out)).toBe("pass");
+    expect(auth.code).toBe(0);
+
+    // Introduce a current-tree violation (verified missing V row): both modes report the exact same current-tree finding.
+    const head = Bun.spawnSync(["git", "rev-parse", "--short=7", "HEAD"], { cwd: dir }).stdout.toString().trim();
+    writeFileSync(
+      join(dir, "tasks/2026-10-12-x.md"),
+      task({ status: "verified", verifiedAt: head, rows: [ROW("B1", "pass", "1111111"), ROW("AC1", "pass", head), ROW("R1", "pass", head)] }),
+    );
+    const fullCurr = validate(dir, NO_BROWSER);
+    const authCurr = validate(dir, NO_BROWSER, ["--authoring"]);
+    const currFinding = "tasks/2026-10-12-x.md §3.4 working tree: needs at least one V row";
+    expect(fullCurr.out).toContain(currFinding);
+    expect(authCurr.out).toContain(currFinding);
+  }, 60_000);
+
+  test("SC3: every current-tree finding includes rule id, file path, observed, expected, and next action", () => {
+    for (const c of allCases.filter((x) => !x.id.startsWith("H-") && !x.id.startsWith("T10") && !x.id.startsWith("T12") && !x.id.startsWith("T18") && !x.id.startsWith("T19") && (x.expect === "fail" || x.expect === "blocked"))) {
+      const { findings } = c.run();
+      expect(findings.length).toBeGreaterThan(0);
+      for (const f of findings) {
+        expect(f.rule).toMatch(/^§/);
+        expect(f.file.length).toBeGreaterThan(0);
+        expect(f.msg).toContain("(observed: ");
+        expect(f.msg).toContain("; expected: ");
+        expect(f.msg).toContain("; next: ");
+      }
+    }
+  });
+
+  test("SC4: SHA canonicalization resolves 7-char vs 40-char SHAs and extracts SHAs with trailing log paths", () => {
+    const dir = fixtureDir({ "README.md": "# R\n" }, { git: true });
+    const base7 = Bun.spawnSync(["git", "rev-parse", "--short=7", "HEAD"], { cwd: dir }).stdout.toString().trim();
+    const base40 = Bun.spawnSync(["git", "rev-parse", "HEAD"], { cwd: dir }).stdout.toString().trim();
+    writeFileSync(join(dir, "src.txt"), "change\n");
+    commitAll(dir);
+    const head7 = Bun.spawnSync(["git", "rev-parse", "--short=7", "HEAD"], { cwd: dir }).stdout.toString().trim();
+    const head40 = Bun.spawnSync(["git", "rev-parse", "HEAD"], { cwd: dir }).stdout.toString().trim();
+
+    // Same commit as 7-char in B1 and 40-char in verified_at fails B != verified_at.
+    mkdirSync(join(dir, "tasks"), { recursive: true });
+    writeFileSync(
+      join(dir, "tasks/2026-10-12-x.md"),
+      task({ status: "verified", verifiedAt: head40, rows: [ROW("B1", "pass", `${head7} logs/b1.log`), ROW("AC1", "pass", `${head7} (logs/ac1.log)`), ROW("R1", "pass", head7), ROW("V1", "pass", head7)] }),
+    );
+    const sameCommit = validate(dir, NO_BROWSER, ["--authoring"]);
+    expect(status("artifact-records", sameCommit.out)).toBe("fail");
+    expect(sameCommit.out).toContain("B1 ran on verified_at");
+
+    // Distinct commits with mixed 7-char/40-char and trailing log paths pass.
+    writeFileSync(
+      join(dir, "tasks/2026-10-12-x.md"),
+      task({ status: "verified", verifiedAt: head40, rows: [ROW("B1", "pass", `${base40.slice(0, 7)} logs/b1.log`), ROW("AC1", "pass", `${head7} (logs/ac1.log)`), ROW("R1", "pass", `${head7}:logs/r1.log`), ROW("V1", "pass", head7)] }),
+    );
+    const distinctCommit = validate(dir, NO_BROWSER, ["--authoring"]);
+    expect(status("artifact-records", distinctCommit.out)).toBe("pass");
+    expect(distinctCommit.code).toBe(0);
+    void base7;
+  }, 60_000);
+
+  test("SC5: --explain prints rule explanations without running repo checks", () => {
+    const allExplain = validate(REPO, NO_BROWSER, ["--explain"]);
+    expect(allExplain.code).toBe(0);
+    expect(allExplain.out).toContain("§3.4");
+    expect(allExplain.out).toContain("§4.5");
+    expect(allExplain.out).not.toContain("artifact-records");
+
+    const oneRule = validate(REPO, NO_BROWSER, ["--explain", "3.4"]);
+    expect(oneRule.code).toBe(0);
+    expect(oneRule.out).toContain("§3.4 — Verification table");
+
+    const unknownRule = validate(REPO, NO_BROWSER, ["--explain", "99.9"]);
+    expect(unknownRule.code).toBe(1);
+    expect(unknownRule.out).toContain("Unknown rule");
+  });
+
+  test("SC6: heavy parent allows ## Review: skip: <reason> while active and rejects it at verified/accepted", () => {
+    const activeCase = allCases.find((c) => c.id === "X10")!;
+    const verifiedCase = allCases.find((c) => c.id === "X11")!;
+    expect(activeCase.run().outcome).toBe("pass");
+    const verRes = verifiedCase.run();
+    expect(verRes.outcome).toBe("fail");
+    expect(verRes.findings.some((f) => f.msg.includes("heavy parent cannot be verified while ## Review is skip: or empty"))).toBe(true);
+  });
+});
+

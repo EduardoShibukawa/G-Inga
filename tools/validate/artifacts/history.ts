@@ -7,7 +7,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import contract from "./contract.json" with { type: "json" };
 import { bodyHash, parseRecord, specRef, str, type Artifact } from "./records.ts";
-import { checkSnapshot, loadSnapshot, schemaStanding, type Ancestry, type Finding, type Options } from "./rules.ts";
+import { checkSnapshot, loadSnapshot, schemaStanding, type Ancestry, type Finding, type Options, type ShaResolver } from "./rules.ts";
 
 export interface HistoryResult {
   findings: Finding[];
@@ -62,22 +62,49 @@ export function recordHistory(root: string): RecordHistory {
   if (!isGitRepo(root)) return { kind: "unknown", reason: "not-git" };
   if (!git(root, ["rev-parse", "--verify", "--quiet", "HEAD"]).ok) return { kind: "none" };
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true") return { kind: "unknown", reason: "shallow" };
-  const hit = git(root, ["log", "-E", "-G", "^schema:[[:space:]]*[\"']?(task|spec)/[0-9]+", "--format=%h", "-1", "HEAD", "--", "tasks", "specs"]).out.trim();
+  const hit = git(root, ["log", "-E", "-G", "^schema:[[:space:]]*[\"']?(task|spec|intent)/[0-9]+", "--format=%h", "-1", "HEAD", "--", "tasks", "specs", "intents"]).out.trim();
   return hit ? { kind: "some", commit: hit } : { kind: "none" };
 }
 
+export function gitResolveSha(root: string): ShaResolver {
+  if (!isGitRepo(root)) return () => "shallow";
+  const shallow = git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true";
+  const cache = new Map<string, string | "shallow" | undefined>();
+  return (sha: string) => {
+    if (cache.has(sha)) return cache.get(sha);
+    const r = git(root, ["rev-parse", "--verify", "--quiet", `${sha}^{commit}`]);
+    const val = r.ok ? r.out.trim() : shallow ? "shallow" : undefined;
+    cache.set(sha, val);
+    return val;
+  };
+}
+
 export function gitAncestry(root: string): Ancestry {
+  const resolve = gitResolveSha(root);
+  const cache = new Map<string, boolean | undefined>();
   return (a, b) => {
-    const ra = git(root, ["rev-parse", "--verify", "--quiet", `${a}^{commit}`]);
-    const rb = git(root, ["rev-parse", "--verify", "--quiet", `${b}^{commit}`]);
-    if (!ra.ok || !rb.ok) return undefined;
-    if (ra.out.trim() === rb.out.trim()) return false;
-    if (typeof Bun !== "undefined" && Bun.spawnSync) {
-      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
-      return p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
+    const key = `${a}|${b}`;
+    if (cache.has(key)) return cache.get(key);
+    const ra = resolve(a);
+    const rb = resolve(b);
+    if (!ra || ra === "shallow" || !rb || rb === "shallow") {
+      cache.set(key, undefined);
+      return undefined;
     }
-    const p = spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
-    return p.status === 0 ? true : p.status === 1 ? false : undefined;
+    if (ra === rb) {
+      cache.set(key, false);
+      return false;
+    }
+    let res: boolean | undefined;
+    if (typeof Bun !== "undefined" && Bun.spawnSync) {
+      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", ra, rb], { cwd: root, env: gitEnv() });
+      res = p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
+    } else {
+      const p = spawnSync("git", ["merge-base", "--is-ancestor", ra, rb], { cwd: root, env: gitEnv() });
+      res = p.status === 0 ? true : p.status === 1 ? false : undefined;
+    }
+    cache.set(key, res);
+    return res;
   };
 }
 
@@ -86,14 +113,14 @@ export function gitAncestry(root: string): Ancestry {
 function filesAt(root: string, rev: string): Map<string, string> {
   const files = new Map<string, string>();
   if (rev === WT) {
-    for (const dir of ["tasks", "specs"]) {
+    for (const dir of ["tasks", "specs", "intents"]) {
       const abs = join(root, dir);
       if (!existsSync(abs)) continue;
       for (const name of readdirSync(abs)) if (name.endsWith(".md")) files.set(`${dir}/${name}`, readFileSync(join(abs, name), "utf8"));
     }
     return files;
   }
-  const list = git(root, ["ls-tree", "-r", "--name-only", rev, "--", "tasks", "specs"]).out.split("\n").filter((p) => /^(tasks|specs)\/[^/]+\.md$/.test(p));
+  const list = git(root, ["ls-tree", "-r", "--name-only", rev, "--", "tasks", "specs", "intents"]).out.split("\n").filter((p) => /^(tasks|specs|intents)\/[^/]+\.md$/.test(p));
   for (const p of list) files.set(p, git(root, ["show", `${rev}:${p}`]).out);
   return files;
 }
@@ -110,11 +137,25 @@ export function reachable(from: string, to: string): boolean {
   return false;
 }
 
+/**
+ * Authoring mode: checks only the current working tree snapshot, skipping Git history walk and commit-order ancestry.
+ * Shares the exact same current-tree finding format (`working tree: <msg>`) as `checkHistory`.
+ */
+export function checkAuthoring(root: string, opts: Options = {}): HistoryResult {
+  const cur = loadSnapshot(filesAt(root, WT));
+  const resolveSha = opts.resolveSha ?? (isGitRepo(root) ? gitResolveSha(root) : undefined);
+  const findings = checkSnapshot(cur, { ...opts, mode: "authoring", ancestry: undefined, resolveSha }).map((fd) => ({
+    ...fd,
+    msg: `${WT}: ${fd.msg}`,
+  }));
+  return { findings, frozen: [] };
+}
+
 export function checkHistory(root: string, opts: Options = {}): HistoryResult | { blocked: string } {
   if (!isGitRepo(root)) return { blocked: "not a Git repository" };
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true") return { blocked: "shallow clone: the history walk and deleted-record detection need full history (§7.1)" };
   const hasHead = git(root, ["rev-parse", "--verify", "--quiet", "HEAD"]).ok;
-  const commits = hasHead ? git(root, ["rev-list", "--reverse", "HEAD", "--", "tasks", "specs"]).out.split("\n").filter(Boolean) : [];
+  const commits = hasHead ? git(root, ["rev-list", "--reverse", "HEAD", "--", "tasks", "specs", "intents"]).out.split("\n").filter(Boolean) : [];
   const revs = [...commits, WT];
   const findings: Finding[] = [];
   const frozen: string[] = [];
@@ -130,6 +171,7 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
     return parent ? snap(parent) : new Map<string, Artifact>();
   };
   const ancestry = opts.ancestry ?? gitAncestry(root);
+  const resolveSha = opts.resolveSha ?? gitResolveSha(root);
   const at = (rev: string) => (rev === WT ? WT : rev.slice(0, 7));
 
   // A record is only deleted when a commit actually removes it relative to its parent(s). The linear
@@ -138,7 +180,7 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
   // DAG-aware source of truth; the working tree stays handled by the walk itself.
   const realDeletions = new Map<string, Set<string>>();
   if (hasHead) {
-    const out = git(root, ["log", "--full-history", "--diff-filter=D", "--name-only", "-z", "--format=%H", "HEAD", "--", "tasks", "specs"]).out;
+    const out = git(root, ["log", "--full-history", "--diff-filter=D", "--name-only", "-z", "--format=%H", "HEAD", "--", "tasks", "specs", "intents"]).out;
     let rev = "";
     for (const token of out.split("\0")) {
       const tok = token.trim();
@@ -175,12 +217,19 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
         // Absent at a sibling-branch commit is no deletion: keep the last state, or the record would
         // later "reappear" as newly created and fail its creation rules.
         if (rev === WT || realDeletions.get(rev)?.has(file)) {
-          f(`${file} was deleted; ${key.startsWith("spec") ? "a spec is never deleted (§4.3)" : "a committed task record is closed as cancelled, never deleted (§6.1)"}`, key.startsWith("spec") ? "§7.1" : "§6.1");
+          const reason = key.startsWith("spec")
+            ? "a spec is never deleted (§4.3)"
+            : key.startsWith("intent")
+            ? "an intent artifact is never deleted (§4.5)"
+            : "a committed task record is closed as cancelled, never deleted (§6.1)";
+          const rule = key.startsWith("spec") || key.startsWith("intent") ? "§7.1" : "§6.1";
+          f(`${file} was deleted; ${reason}`, rule);
           lastState.delete(key);
         }
         continue;
       }
       if (now.kind === "spec") checkSpecTransition(before?.rec, now, snap(rev), before ? snap(before.rev) : parentSnap(rev), f);
+      else if (now.kind === "intent") checkIntentTransition(before?.rec, now, f);
       else if (before) checkTaskTransition(before.rec, now, f);
       if (!before || str(before.rec.fm.status) !== str(now.fm.status)) {
         changedStatus.add(key);
@@ -190,7 +239,7 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
     }
     // Guards of the new status hold at this revision; the spec gate holds at every revision that touched records.
     if (touched.size || rev === WT)
-      for (const fd of checkSnapshot(cur, { ...opts, ancestry })) {
+      for (const fd of checkSnapshot(cur, { ...opts, ancestry, resolveSha })) {
         const key = [...cur.entries()].find(([, r]) => r.path === fd.file)?.[0];
         const dedupe = `${fd.file}|${fd.rule}|${fd.msg}`;
         if ((rev === WT || fd.specGate || (key && changedStatus.has(key))) && !reported.has(dedupe)) {
@@ -278,3 +327,27 @@ function checkTaskTransition(prev: Artifact, cur: Artifact, f: (m: string, rule?
       f(`task ${cur.id}: moved @${pv} → @${cv} without a "spec-version: v${pv} → v${cv}; rerun: …" or "…; unaffected: …" entry`, "§4.4");
   }
 }
+
+function checkIntentTransition(prev: Artifact | undefined, cur: Artifact, f: (m: string, rule?: string) => void) {
+  const ps = str(prev?.fm.status);
+  const cs = str(cur.fm.status);
+  if (!prev) {
+    if (cs !== "draft" && cs !== "approved") {
+      f(`intent ${cur.id} must be created as draft or approved`, "§4.5");
+    }
+    return;
+  }
+  if (ps === "superseded") {
+    f(`intent ${cur.id} changed after it was superseded`, "§4.5");
+    return;
+  }
+  if (ps === "approved" && cs === "draft") {
+    f(`intent ${cur.id}: transition approved → draft is not allowed`, "§4.5");
+    return;
+  }
+  if (ps === "approved" && prev.sections.get("Original prompt") !== cur.sections.get("Original prompt")) {
+    f(`intent ${cur.id}: ## Original prompt is immutable once approved`, "§4.5");
+    return;
+  }
+}
+

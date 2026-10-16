@@ -6998,9 +6998,10 @@ var contract_default = {
   },
   schema_registry: [
     { schema: "task/1", terminal: ["verified", "accepted", "partial", "cancelled"] },
-    { schema: "spec/1", terminal: ["superseded"] }
+    { schema: "spec/1", terminal: ["superseded"] },
+    { schema: "intent/1", terminal: ["approved", "superseded"] }
   ],
-  current_major: { task: 1, spec: 1 },
+  current_major: { task: 1, spec: 1, intent: 1 },
   results: ["pass", "fail", "blocked", "not run"],
   verification_row_kinds: {
     B: { runs_on: "strict ancestor of verified_at", result_for_verified: "any" },
@@ -7063,7 +7064,7 @@ var $visitAsync = visit.visitAsync;
 // tools/validate/artifacts/records.ts
 var RESULTS = new Set(contract_default.results);
 function parseRecord(path, text) {
-  const kind = path.startsWith("specs/") ? "spec" : "task";
+  const kind = path.startsWith("specs/") ? "spec" : path.startsWith("intents/") ? "intent" : "task";
   const id = path.replace(/^.*\//, "").replace(/\.md$/, "");
   const norm = text.replace(/\r\n/g, `
 `);
@@ -7107,9 +7108,18 @@ function parseRecord(path, text) {
     const kindMatch = /^(AC|SC|B|R|V)\d+$/.exec(cells[0] ?? "");
     if (!kindMatch || cells.length < 4)
       continue;
-    rec.rows.push({ id: cells[0], kind: kindMatch[1], result: cells[2], sha: (cells[3] ?? "").split(/\s+/)[0], note: cells[4] ?? "" });
+    rec.rows.push({ id: cells[0], kind: kindMatch[1], result: cells[2], sha: extractRefSha(cells[3] ?? ""), note: cells[4] ?? "" });
   }
   return rec;
+}
+function extractRefSha(refCell) {
+  const trimmed = refCell.trim();
+  if (!trimmed)
+    return "";
+  const m = /^`?([0-9a-fA-F]{7,40})`?(?:[\s,:;—–(-].*)?$/.exec(trimmed);
+  if (m)
+    return m[1].toLowerCase();
+  return trimmed.split(/\s+/)[0].replace(/^`+|`+$|[,:;]+$/g, "");
 }
 function bodyHash(text) {
   const lines = text.replace(/\r\n/g, `
@@ -7145,15 +7155,177 @@ function specRef(rec) {
 var str = (v) => typeof v === "string" ? v : v === undefined || v === null ? undefined : String(v);
 
 // tools/validate/artifacts/rules.ts
+var RULE_EXPLANATIONS = {
+  "§2.2": {
+    rule: "§2.2",
+    title: "Frontmatter quoting and conditional section skip reason",
+    rationale: "YAML parses unquoted all-digit SHAs as numbers, corrupting commit references; `skip:` requires an explicit reason so intentional omissions stay auditable.",
+    repair: 'Quote `verified_at: "<sha>"` in frontmatter and write `skip: <reason>` with a non-empty reason in conditional sections.'
+  },
+  "§2.3": {
+    rule: "§2.3",
+    title: "Routing and approvals log grammar and current tier",
+    rationale: "The append-only routing log records how a task entered its ceremony tier and tracks escalations, downgrades, and owner decisions.",
+    repair: "Start `## Routing and approvals` with `- tier: <tier> (<signals>)` once and keep frontmatter `tier` aligned with the last tier-changing entry."
+  },
+  "§2.4": {
+    rule: "§2.4",
+    title: "Deterministic verification result vocabulary",
+    rationale: "Check results must use the strict four-value vocabulary (`pass`, `fail`, `blocked`, `not run`) so gates never guess completion.",
+    repair: "Set each `## Verification` row `Result` cell to `pass`, `fail`, `blocked`, or `not run`."
+  },
+  "§3.1": {
+    rule: "§3.1",
+    title: "Task record frontmatter keys",
+    rationale: "Scripts rely on fixed frontmatter keys (`schema`, `tier`, `status`, `parent`, `spec`, `depends_on`, `verified_at`) to validate state and lineage.",
+    repair: "Set `tier` to `standard` or `heavy`, provide `spec: <id>@<version>` on heavy tasks/children, format `depends_on` as a list, and quote `verified_at` when `verified` or `accepted`."
+  },
+  "§3.2": {
+    rule: "§3.2",
+    title: "Task record required sections",
+    rationale: "Every task needs fixed sections (`Routing and approvals`, `Objective`, `Acceptance criteria`, `Verification`), plus `Plan`/`Review` on heavy parents and `Outcome` when closed.",
+    repair: "Add the missing `## <Section>` heading to the task record (`## Review` on a heavy parent may use `skip: <reason>` until review runs)."
+  },
+  "§3.3": {
+    rule: "§3.3",
+    title: "Task state machine and transition guards",
+    rationale: "Separates `completed`, `verified`, and `accepted` and enforces start, completion, review, and child-alignment guards.",
+    repair: "Ensure every AC/SC has a verification row before `completed`, resolve all `## Review` findings (not `skip:` or `open`) and child states before `verified`, and record `confirmed:`/`accepted:` entries when required."
+  },
+  "§3.3/§4.4": {
+    rule: "§3.3/§4.4",
+    title: "Heavy parent verification with partial child",
+    rationale: "Contract §3.3 requires every non-cancelled child to be `verified` or `accepted`, whereas §4.4 states a `partial` child does not count toward the parent.",
+    repair: "Transition the `partial` child to `verified`, `accepted`, or `cancelled`, or record an explicit owner decision before marking the parent `verified`."
+  },
+  "§3.4": {
+    rule: "§3.4",
+    title: "Verification table and commit-order evidence",
+    rationale: "Proves baselines (`B` rows) ran on a strict ancestor commit before the change and `AC`, `SC`, `R`, and `V` rows ran on `verified_at`.",
+    repair: "Keep `B` row `Ref` at the pre-change ancestor commit, set `AC`/`SC`/`R`/`V` row `Ref` to `verified_at`, and include at least one `B` and one `V` row."
+  },
+  "§4.1": {
+    rule: "§4.1",
+    title: "Specification frontmatter keys",
+    rationale: "Tracks spec lifecycle (`draft`, `approved`, `superseded`), integer `version`, and approval metadata (`approved_version`, `approved_hash`, `superseded_by`).",
+    repair: "Provide valid `status`, integer `version >= 1`, paired `approved_version`/`approved_hash` after approval, and `superseded_by` when superseded."
+  },
+  "§4.2": {
+    rule: "§4.2",
+    title: "Specification required sections",
+    rationale: "Ensures every `heavy` spec covers problem, expected behavior, scope, acceptance criteria, interfaces, decisions, risks, verification, rollback, open questions, and revisions.",
+    repair: "Add the missing `## <Section>` heading to `specs/<id>.md` (use `skip: <reason>` in `## Rollback` when no one-way door applies)."
+  },
+  "§4.3": {
+    rule: "§4.3",
+    title: "Specification approval, body hash freeze, and reopening",
+    rationale: "Prevents silent edits to an approved specification by hashing its body and requiring `version + 1` plus a `## Revisions` line when reopened.",
+    repair: "Recompute `approved_hash` only with a new owner `approved: spec v<N>` entry, or reopen as `status: draft` at `version: <approved_version + 1>` with a new `## Revisions` bullet."
+  },
+  "§4.4": {
+    rule: "§4.4",
+    title: "Child task spec gate and version alignment",
+    rationale: "Prevents children from executing against an unapproved or reopened draft spec without blocking and re-aligning on reapproval.",
+    repair: "Approve the spec before creating children, set active children to `blocked` while the spec is `draft`, and add `spec-version: v<N> → v<N+1>; rerun/unaffected: ...` when moving to a reapproved version."
+  },
+  "§4.5": {
+    rule: "§4.5",
+    title: "Intent artifact schema (`intent/1`)",
+    rationale: "Preserves the originator's request verbatim in `intents/<id>.md` before a `heavy` task drafts its specification.",
+    repair: "Set `schema: intent/1`, `status` to `draft`, `approved`, or `superseded`, and include a non-empty `## Original prompt` section."
+  },
+  "§6.1": {
+    rule: "§6.1",
+    title: "Downgrade closure (`standard → light`) and no-deletion rule",
+    rationale: "Committed task records are part of the audit trail and must be closed as `cancelled` on downgrade rather than deleted.",
+    repair: "Keep `tier: standard`, set `status: cancelled`, append `downgraded: standard → light because <reason>`, add `## Outcome`, and never delete a committed record."
+  },
+  "§7": {
+    rule: "§7",
+    title: "Cross-record reference resolution and dependency DAG",
+    rationale: "Every `parent`, `spec`, and `depends_on` target must exist and `depends_on` must form a directed acyclic graph.",
+    repair: "Ensure referenced `tasks/<id>.md` and `specs/<id>.md` files exist and remove any cycle in `depends_on`."
+  },
+  "§7.1": {
+    rule: "§7.1",
+    title: "Git history walk and transition audit",
+    rationale: "Audits committed transitions across `tasks/`, `specs/`, and `intents/` in full validation mode so invalid lifecycle jumps or silent rewrites are caught.",
+    repair: "Use `--authoring` while iterating locally; before commit/merge, ensure committed transitions follow the state diagram and run in a full (non-shallow) Git clone."
+  },
+  "§8": {
+    rule: "§8",
+    title: "Schema registry, versioning, and retired-major freeze",
+    rationale: "Ensures every record declares a known schema version, migrations stay isolated from status/evidence changes, and retired schemas remain frozen.",
+    repair: "Declare a registered `schema` (`task/1`, `spec/1`, `intent/1`) in YAML frontmatter and keep schema migrations in dedicated commits."
+  }
+};
+function explainRule(query) {
+  const keys = Object.keys(RULE_EXPLANATIONS);
+  if (!query || query === "list" || query === "--list") {
+    const lines = [
+      "G-Ingá validator rules (--explain <rule>):",
+      ...keys.map((k) => `  ${k.padEnd(10)} ${RULE_EXPLANATIONS[k].title}`)
+    ];
+    return { ok: true, output: lines.join(`
+`) };
+  }
+  const norm = query.startsWith("§") ? query : `§${query}`;
+  const item = RULE_EXPLANATIONS[norm];
+  if (!item) {
+    return {
+      ok: false,
+      output: `Unknown rule "${query}" (observed: "${query}"; expected: one of ${keys.join(", ")}; next: run with --explain list to see available rules)`
+    };
+  }
+  return {
+    ok: true,
+    output: [
+      `${item.rule} — ${item.title}`,
+      `  Rationale: ${item.rationale}`,
+      `  Repair:    ${item.repair}`
+    ].join(`
+`)
+  };
+}
+function compareShas(a, b, resolveSha) {
+  const na = extractRefSha(a);
+  const nb = extractRefSha(b);
+  if (!na || !nb)
+    return "different";
+  if (na === nb)
+    return "same";
+  if (resolveSha) {
+    const ra = resolveSha(na);
+    const rb = resolveSha(nb);
+    if (ra && ra !== "shallow" && rb && rb !== "shallow") {
+      return ra === rb ? "same" : "different";
+    }
+  }
+  if ((na.startsWith(nb) || nb.startsWith(na)) && /^[0-9a-f]{4,40}$/i.test(na) && /^[0-9a-f]{4,40}$/i.test(nb)) {
+    return "blocked";
+  }
+  return "different";
+}
+function attachTemplate(rule, rec, msg) {
+  if (/\(observed: .+;\s*expected: .+;\s*next: .+\)/.test(msg))
+    return msg;
+  const exp = RULE_EXPLANATIONS[rule];
+  const observed = `${rec.path} (${str(rec.fm.status) ?? "no-status"})`;
+  const expected = exp ? exp.title.toLowerCase() : `compliance with ${rule}`;
+  const next = exp ? exp.repair : `inspect ${rec.path} against contract ${rule}`;
+  return `${msg} (observed: ${observed}; expected: ${expected}; next: ${next})`;
+}
 var TASK_STATES = new Set(contract_default.task.states);
 var SPEC_STATES = new Set(contract_default.spec.states);
 var NOT_CURRENT = new Set(contract_default.task.not_current_spec_states);
 var ALWAYS_TASK = ["Routing and approvals", "Objective", "Acceptance criteria", "Verification"];
 var ALWAYS_SPEC = ["Problem", "Expected behavior", "Scope", "Acceptance criteria", "Interfaces and dependencies", "Decisions", "Risks and constraints", "Verification", "Rollback", "Open questions", "Revisions"];
+var INTENT_STATES = new Set(["draft", "approved", "superseded"]);
+var ALWAYS_INTENT = ["Original prompt"];
 function loadSnapshot(files) {
   const out = new Map;
   for (const [path, text] of files) {
-    if (!/^(tasks|specs)\/[^/]+\.md$/.test(path))
+    if (!/^(tasks|specs|intents)\/[^/]+\.md$/.test(path))
       continue;
     const r = parseRecord(path, text);
     out.set(`${r.kind}:${r.id}`, r);
@@ -7161,7 +7333,7 @@ function loadSnapshot(files) {
   return out;
 }
 function schemaMajor(rec) {
-  const m = /^(task|spec)\/(\d+)$/.exec(str(rec.fm.schema) ?? "");
+  const m = /^(task|spec|intent)\/(\d+)$/.exec(str(rec.fm.schema) ?? "");
   return m ? { family: m[1], major: Number(m[2]) } : undefined;
 }
 function schemaStanding(rec, opts) {
@@ -7169,6 +7341,8 @@ function schemaStanding(rec, opts) {
   if (!s || s.family !== rec.kind)
     return "unknown";
   const cur = (opts.currentMajor ?? contract_default.current_major)[rec.kind];
+  if (cur === undefined)
+    return "unknown";
   if (s.major === cur)
     return "current";
   if (s.major === cur - 1)
@@ -7179,7 +7353,7 @@ function schemaStanding(rec, opts) {
 }
 function checkSnapshot(records, opts = {}) {
   const out = [];
-  const add = (level, rule, rec, msg, specGate = false) => out.push({ level, rule, file: rec.path, msg, specGate });
+  const add = (level, rule, rec, msg, specGate = false) => out.push({ level, rule, file: rec.path, msg: attachTemplate(rule, rec, msg), specGate });
   const tasks = [...records.values()].filter((r) => r.kind === "task");
   const spec = (id) => records.get(`spec:${id}`);
   const task = (id) => records.get(`task:${id}`);
@@ -7195,6 +7369,8 @@ function checkSnapshot(records, opts = {}) {
       continue;
     if (rec.kind === "spec")
       checkSpec(rec, records, add);
+    if (rec.kind === "intent")
+      checkIntent(rec, add);
   }
   for (const rec of tasks) {
     if (rec.unreadable || !["current", "previous"].includes(schemaStanding(rec, opts)))
@@ -7292,7 +7468,7 @@ function checkSnapshot(records, opts = {}) {
       }
     }
     if (status === "verified" || status === "accepted")
-      checkVerified(rec, isHeavyParent || tier === "standard", opts.ancestry, add);
+      checkVerified(rec, isHeavyParent || tier === "standard", opts, add);
     if (status === "accepted" && !rec.log.some((e) => e.keyword === "accepted"))
       add("fail", "§3.3", rec, "accepted without an accepted: entry");
     if (isHeavyParent && (status === "verified" || status === "accepted") && ref && sp) {
@@ -7309,7 +7485,10 @@ function checkSnapshot(records, opts = {}) {
         else if (!["verified", "accepted"].includes(cs) || cv !== v)
           add("fail", "§3.3", rec, `parent is ${status} but child ${c.id} is ${cs} at @${cv} (needs verified or accepted at @${v})`);
       }
-      if (/^\s*[-*].*(?:[:—–-]\s*|\b)open\s*$/m.test(section(rec, "Review")))
+      const reviewText = section(rec, "Review");
+      if (!reviewText || /^\s*skip:/m.test(reviewText))
+        add("fail", "§3.3", rec, "heavy parent cannot be verified while ## Review is skip: or empty");
+      else if (/^\s*[-*].*(?:[:—–-]\s*|\b)open\s*$/m.test(reviewText))
         add("fail", "§3.3", rec, "a ## Review finding is still open");
       rec.log.forEach((e, i) => {
         if (e.keyword === "divergence" && !rec.log.slice(i + 1).some((x) => x.keyword === "approved"))
@@ -7375,7 +7554,7 @@ function checkSpec(rec, records, add) {
       add("fail", "§4.3", rec, `superseded_by "${by}" does not resolve`);
   }
 }
-function checkVerified(rec, needsBaselineAndReview, ancestry, add) {
+function checkVerified(rec, needsBaselineAndReview, opts, add) {
   const at = rec.fm.verified_at;
   if (at === undefined)
     return add("fail", "§3.1", rec, "verified and accepted need verified_at");
@@ -7386,18 +7565,26 @@ function checkVerified(rec, needsBaselineAndReview, ancestry, add) {
     if (r.kind === "B") {
       if (!r.sha)
         add("fail", "§3.4", rec, `${r.id} has no Ref commit`);
-      else if (r.sha === at)
-        add("fail", "§3.4", rec, `${r.id} ran on verified_at ${at}; a baseline must run before the change`);
       else {
-        const anc = ancestry?.(r.sha, at);
-        if (anc === false)
-          add("fail", "§3.4", rec, `${r.id} commit ${r.sha} is not a strict ancestor of verified_at ${at}`);
-        else if (anc === undefined)
-          add("blocked", "§3.4", rec, `can't tell whether ${r.id} commit ${r.sha} is an ancestor of ${at} (no Git history)`);
+        const cmp = compareShas(r.sha, at, opts.resolveSha);
+        if (cmp === "same")
+          add("fail", "§3.4", rec, `${r.id} ran on verified_at ${at}; a baseline must run before the change`);
+        else if (cmp === "blocked")
+          add("blocked", "§3.4", rec, `can't canonicalize ${r.id} commit ${r.sha} against ${at} (no Git history)`);
+        else if (opts.mode !== "authoring") {
+          const anc = opts.ancestry?.(r.sha, at);
+          if (anc === false)
+            add("fail", "§3.4", rec, `${r.id} commit ${r.sha} is not a strict ancestor of verified_at ${at}`);
+          else if (anc === undefined)
+            add("blocked", "§3.4", rec, `can't tell whether ${r.id} commit ${r.sha} is an ancestor of ${at} (no Git history)`);
+        }
       }
       continue;
     }
-    if (r.sha !== at)
+    const cmp = compareShas(r.sha, at, opts.resolveSha);
+    if (cmp === "blocked")
+      add("blocked", "§3.4", rec, `can't canonicalize ${r.id} commit "${r.sha}" against verified_at ${at} (no Git history)`);
+    else if (cmp === "different")
       add("fail", "§3.4", rec, `${r.id} ran on "${r.sha}", not verified_at ${at}`);
     if (r.result === "pass")
       continue;
@@ -7422,6 +7609,17 @@ function checkSkips(rec, add) {
   for (const [name, body] of rec.sections)
     if (/^\s*skip:\s*$/m.test(body))
       add("fail", "§2.2", rec, `## ${name} has skip: without a reason`);
+}
+function checkIntent(rec, add) {
+  const status = str(rec.fm.status) ?? "";
+  if (!INTENT_STATES.has(status))
+    add("fail", "§4.5", rec, `status "${status}" is not draft, approved or superseded`);
+  for (const s of ALWAYS_INTENT)
+    if (!rec.sections.has(s))
+      add("fail", "§4.5", rec, `missing section "## ${s}"`);
+    else if (!section(rec, "Original prompt"))
+      add("fail", "§4.5", rec, `## Original prompt must not be empty`);
+  checkSkips(rec, add);
 }
 function section(rec, name) {
   return (rec.sections.get(name) ?? "").trim();
@@ -7478,29 +7676,56 @@ function recordHistory(root) {
     return { kind: "none" };
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true")
     return { kind: "unknown", reason: "shallow" };
-  const hit = git(root, ["log", "-E", "-G", `^schema:[[:space:]]*["']?(task|spec)/[0-9]+`, "--format=%h", "-1", "HEAD", "--", "tasks", "specs"]).out.trim();
+  const hit = git(root, ["log", "-E", "-G", `^schema:[[:space:]]*["']?(task|spec|intent)/[0-9]+`, "--format=%h", "-1", "HEAD", "--", "tasks", "specs", "intents"]).out.trim();
   return hit ? { kind: "some", commit: hit } : { kind: "none" };
 }
+function gitResolveSha(root) {
+  if (!isGitRepo(root))
+    return () => "shallow";
+  const shallow = git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true";
+  const cache = new Map;
+  return (sha) => {
+    if (cache.has(sha))
+      return cache.get(sha);
+    const r = git(root, ["rev-parse", "--verify", "--quiet", `${sha}^{commit}`]);
+    const val = r.ok ? r.out.trim() : shallow ? "shallow" : undefined;
+    cache.set(sha, val);
+    return val;
+  };
+}
 function gitAncestry(root) {
+  const resolve = gitResolveSha(root);
+  const cache = new Map;
   return (a, b) => {
-    const ra = git(root, ["rev-parse", "--verify", "--quiet", `${a}^{commit}`]);
-    const rb = git(root, ["rev-parse", "--verify", "--quiet", `${b}^{commit}`]);
-    if (!ra.ok || !rb.ok)
+    const key = `${a}|${b}`;
+    if (cache.has(key))
+      return cache.get(key);
+    const ra = resolve(a);
+    const rb = resolve(b);
+    if (!ra || ra === "shallow" || !rb || rb === "shallow") {
+      cache.set(key, undefined);
       return;
-    if (ra.out.trim() === rb.out.trim())
-      return false;
-    if (typeof Bun !== "undefined" && Bun.spawnSync) {
-      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
-      return p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
     }
-    const p = spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
-    return p.status === 0 ? true : p.status === 1 ? false : undefined;
+    if (ra === rb) {
+      cache.set(key, false);
+      return false;
+    }
+    let res;
+    if (typeof Bun !== "undefined" && Bun.spawnSync) {
+      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", ra, rb], { cwd: root, env: gitEnv() });
+      res = p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
+    } else {
+      const p = spawnSync("git", ["merge-base", "--is-ancestor", ra, rb], { cwd: root, env: gitEnv() });
+      res = p.status === 0 ? true : p.status === 1 ? false : undefined;
+    }
+    cache.set(key, res);
+    return res;
   };
 }
 function filesAt(root, rev) {
   const files = new Map;
   if (rev === WT) {
-    for (const dir of ["tasks", "specs"]) {
+    for (const dir of ["tasks", "specs", "intents"]) {
       const abs = join(root, dir);
       if (!existsSync(abs))
         continue;
@@ -7510,8 +7735,8 @@ function filesAt(root, rev) {
     }
     return files;
   }
-  const list = git(root, ["ls-tree", "-r", "--name-only", rev, "--", "tasks", "specs"]).out.split(`
-`).filter((p) => /^(tasks|specs)\/[^/]+\.md$/.test(p));
+  const list = git(root, ["ls-tree", "-r", "--name-only", rev, "--", "tasks", "specs", "intents"]).out.split(`
+`).filter((p) => /^(tasks|specs|intents)\/[^/]+\.md$/.test(p));
   for (const p of list)
     files.set(p, git(root, ["show", `${rev}:${p}`]).out);
   return files;
@@ -7530,13 +7755,22 @@ function reachable(from, to) {
   }
   return false;
 }
+function checkAuthoring(root, opts = {}) {
+  const cur = loadSnapshot(filesAt(root, WT));
+  const resolveSha = opts.resolveSha ?? (isGitRepo(root) ? gitResolveSha(root) : undefined);
+  const findings = checkSnapshot(cur, { ...opts, mode: "authoring", ancestry: undefined, resolveSha }).map((fd) => ({
+    ...fd,
+    msg: `${WT}: ${fd.msg}`
+  }));
+  return { findings, frozen: [] };
+}
 function checkHistory(root, opts = {}) {
   if (!isGitRepo(root))
     return { blocked: "not a Git repository" };
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true")
     return { blocked: "shallow clone: the history walk and deleted-record detection need full history (§7.1)" };
   const hasHead = git(root, ["rev-parse", "--verify", "--quiet", "HEAD"]).ok;
-  const commits = hasHead ? git(root, ["rev-list", "--reverse", "HEAD", "--", "tasks", "specs"]).out.split(`
+  const commits = hasHead ? git(root, ["rev-list", "--reverse", "HEAD", "--", "tasks", "specs", "intents"]).out.split(`
 `).filter(Boolean) : [];
   const revs = [...commits, WT];
   const findings = [];
@@ -7552,10 +7786,11 @@ function checkHistory(root, opts = {}) {
     return parent ? snap(parent) : new Map;
   };
   const ancestry = opts.ancestry ?? gitAncestry(root);
+  const resolveSha = opts.resolveSha ?? gitResolveSha(root);
   const at = (rev) => rev === WT ? WT : rev.slice(0, 7);
   const realDeletions = new Map;
   if (hasHead) {
-    const out = git(root, ["log", "--full-history", "--diff-filter=D", "--name-only", "-z", "--format=%H", "HEAD", "--", "tasks", "specs"]).out;
+    const out = git(root, ["log", "--full-history", "--diff-filter=D", "--name-only", "-z", "--format=%H", "HEAD", "--", "tasks", "specs", "intents"]).out;
     let rev = "";
     for (const token of out.split("\x00")) {
       const tok = token.trim();
@@ -7591,13 +7826,17 @@ function checkHistory(root, opts = {}) {
       const f = (msg, rule = "§7.1") => findings.push({ level: "fail", rule, file, msg: `${at(rev)}: ${msg}` });
       if (!now) {
         if (rev === WT || realDeletions.get(rev)?.has(file)) {
-          f(`${file} was deleted; ${key.startsWith("spec") ? "a spec is never deleted (§4.3)" : "a committed task record is closed as cancelled, never deleted (§6.1)"}`, key.startsWith("spec") ? "§7.1" : "§6.1");
+          const reason = key.startsWith("spec") ? "a spec is never deleted (§4.3)" : key.startsWith("intent") ? "an intent artifact is never deleted (§4.5)" : "a committed task record is closed as cancelled, never deleted (§6.1)";
+          const rule = key.startsWith("spec") || key.startsWith("intent") ? "§7.1" : "§6.1";
+          f(`${file} was deleted; ${reason}`, rule);
           lastState.delete(key);
         }
         continue;
       }
       if (now.kind === "spec")
         checkSpecTransition(before?.rec, now, snap(rev), before ? snap(before.rev) : parentSnap(rev), f);
+      else if (now.kind === "intent")
+        checkIntentTransition(before?.rec, now, f);
       else if (before)
         checkTaskTransition(before.rec, now, f);
       if (!before || str(before.rec.fm.status) !== str(now.fm.status)) {
@@ -7607,7 +7846,7 @@ function checkHistory(root, opts = {}) {
       lastState.set(key, { rev, rec: now });
     }
     if (touched.size || rev === WT)
-      for (const fd of checkSnapshot(cur, { ...opts, ancestry })) {
+      for (const fd of checkSnapshot(cur, { ...opts, ancestry, resolveSha })) {
         const key = [...cur.entries()].find(([, r]) => r.path === fd.file)?.[0];
         const dedupe = `${fd.file}|${fd.rule}|${fd.msg}`;
         if ((rev === WT || fd.specGate || key && changedStatus.has(key)) && !reported.has(dedupe)) {
@@ -7702,6 +7941,28 @@ function checkTaskTransition(prev, cur, f) {
       f(`task ${cur.id}: moved @${pv} → @${cv} without a "spec-version: v${pv} → v${cv}; rerun: …" or "…; unaffected: …" entry`, "§4.4");
   }
 }
+function checkIntentTransition(prev, cur, f) {
+  const ps = str(prev?.fm.status);
+  const cs = str(cur.fm.status);
+  if (!prev) {
+    if (cs !== "draft" && cs !== "approved") {
+      f(`intent ${cur.id} must be created as draft or approved`, "§4.5");
+    }
+    return;
+  }
+  if (ps === "superseded") {
+    f(`intent ${cur.id} changed after it was superseded`, "§4.5");
+    return;
+  }
+  if (ps === "approved" && cs === "draft") {
+    f(`intent ${cur.id}: transition approved → draft is not allowed`, "§4.5");
+    return;
+  }
+  if (ps === "approved" && prev.sections.get("Original prompt") !== cur.sections.get("Original prompt")) {
+    f(`intent ${cur.id}: ## Original prompt is immutable once approved`, "§4.5");
+    return;
+  }
+}
 // tools/validate/bundle.json
 var bundle_default = {
   $comment: "Product bundle definition (V1 spec SC1, SC5). Read by standalone.ts (bundled into validate.js), manifest.mjs and update.mjs. tools/validate/ also holds this repository's development tooling, which isn't delivered.",
@@ -7742,24 +8003,26 @@ var bundle_default = {
 };
 
 // tools/validate/standalone.ts
-var RECORD_DIRS = ["tasks", "specs"];
+var RECORD_DIRS = ["tasks", "specs", "intents"];
 var BUNDLE_SCOPE = bundle_default.scope;
 function inBundleScope(relPath) {
   if (relPath.startsWith("/") || relPath.includes("\\") || relPath.split("/").some((s) => s === ".." || s === "." || s === ""))
     return false;
   return BUNDLE_SCOPE.some((p) => relPath.startsWith(p) && relPath.length > p.length);
 }
-function recordsPresent(root) {
+function recordsPresent(root, mode = "full") {
   for (const dir of RECORD_DIRS) {
     const abs = join2(root, dir);
     if (!existsSync2(abs))
       continue;
     for (const name of readdirSync2(abs).filter((n) => n.endsWith(".md"))) {
       const rec = parseRecord(`${dir}/${name}`, readFileSync2(join2(abs, name), "utf8"));
-      if (/^(task|spec)\/\d+$/.test(String(rec.fm.schema ?? "")))
+      if (/^(task|spec|intent)\/\d+$/.test(String(rec.fm.schema ?? "")))
         return true;
     }
   }
+  if (mode === "authoring")
+    return false;
   const history = recordHistory(root);
   return history.kind === "some" || history.kind === "unknown" && history.reason === "shallow";
 }
@@ -7799,11 +8062,16 @@ function checkManifestIntegrity(root) {
   const count = Object.keys(files).length;
   return details.length ? { name, status: "fail", summary: `${details.length} of ${count} bundle files drifted from manifest.json`, details } : { name, status: "pass", summary: `${count} bundle files match manifest.json`, details: [] };
 }
-function checkRecords(root) {
+function checkRecords(root, mode = "full") {
   const name = "artifact-records";
-  if (!recordsPresent(root))
-    return { name, status: "not run", summary: "no task or spec records, now or in Git history", details: [] };
-  const history = checkHistory(root);
+  if (!recordsPresent(root, mode))
+    return {
+      name,
+      status: "not run",
+      summary: mode === "authoring" ? "no task, spec or intent records in working tree" : "no task or spec records, now or in Git history",
+      details: []
+    };
+  const history = mode === "authoring" ? checkAuthoring(root) : checkHistory(root);
   if ("blocked" in history)
     return { name, status: "blocked", summary: history.blocked, details: [] };
   const fail = history.findings.filter((f) => f.level === "fail");
@@ -7816,26 +8084,39 @@ function checkRecords(root) {
     return { name, status: "fail", summary: `${fail.length} failing finding(s)`, details };
   if (blocked.length)
     return { name, status: "blocked", summary: `${blocked.length} blocked finding(s)`, details };
-  return { name, status: "pass", summary: `history walk done; ${history.frozen.length} frozen`, details: [] };
+  return {
+    name,
+    status: "pass",
+    summary: mode === "authoring" ? "authoring snapshot check done (history walk skipped)" : `history walk done; ${history.frozen.length} frozen`,
+    details: []
+  };
 }
-function runValidation(targetRoot) {
+function runValidation(targetRoot, mode = "full") {
   const root = resolve(targetRoot);
-  if (!isGitRepo(root)) {
+  if (mode === "full" && !isGitRepo(root)) {
     return { code: 2, results: [{ name: "git", status: "blocked", summary: "not a Git repository", details: [] }] };
   }
-  const results = [checkManifestIntegrity(root), checkRecords(root)];
+  const results = [checkManifestIntegrity(root), checkRecords(root, mode)];
   const code = results.some((r) => r.status === "fail") ? 1 : results.some((r) => r.status === "blocked") ? 2 : 0;
   return { code, results };
 }
 function main(argv) {
+  if (argv.includes("--explain")) {
+    const idx = argv.indexOf("--explain");
+    const ruleArg = argv[idx + 1] && !argv[idx + 1].startsWith("--") ? argv[idx + 1] : undefined;
+    const explained = explainRule(ruleArg);
+    console.log(explained.output);
+    return explained.ok ? 0 : 1;
+  }
   const i = argv.indexOf("--root");
-  if (i >= 0 && !argv[i + 1]) {
+  if (i >= 0 && (!argv[i + 1] || argv[i + 1].startsWith("--"))) {
     console.error("blocked: --root needs a directory");
     return 2;
   }
+  const mode = argv.includes("--authoring") ? "authoring" : "full";
   const root = resolve(i >= 0 ? argv[i + 1] : process.cwd());
-  console.log(`G-Ingá standalone validator (${root})`);
-  const { code, results } = runValidation(root);
+  console.log(`G-Ingá standalone validator (${root}${mode === "authoring" ? ", authoring mode" : ""})`);
+  const { code, results } = runValidation(root, mode);
   for (const r of results) {
     console.log(`  ${r.name.padEnd(20)} ${r.status.padEnd(8)} ${r.summary}`);
     for (const d of r.details)

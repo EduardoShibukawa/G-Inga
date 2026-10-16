@@ -1,7 +1,9 @@
 /**
  * Repository validation entry point (development tooling, not the G-Ingá product runtime).
  *
- *   bun tools/validate/main.ts                  required deterministic checks
+ *   bun tools/validate/main.ts                  required deterministic checks (full mode)
+ *   bun tools/validate/main.ts --authoring      current-tree checks only (skips Git history walk & ancestry)
+ *   bun tools/validate/main.ts --explain [rule] explain a contract rule (or list all rules)
  *   bun tools/validate/main.ts --external-only  external URL availability only (network)
  *   bun tools/validate/main.ts --root <dir>     validate another directory (used by tests)
  *
@@ -12,6 +14,7 @@
  */
 import { resolve } from "node:path";
 import { artifactChecks } from "./artifacts/checks.ts";
+import { explainRule } from "./artifacts/rules.ts";
 import { decisionChecks } from "./decisions/decisionRecords.ts";
 import { runChecks, type Context } from "./lib/check.ts";
 import { listMarkdown } from "./lib/markdown.ts";
@@ -20,9 +23,18 @@ import { externalLinks } from "./universal/externalLinks.ts";
 import { universalChecks } from "./universal/index.ts";
 
 const args = process.argv.slice(2);
+if (args.includes("--explain")) {
+  const explainIdx = args.indexOf("--explain");
+  const ruleArg = args[explainIdx + 1] && !args[explainIdx + 1].startsWith("--") ? args[explainIdx + 1] : undefined;
+  const explained = explainRule(ruleArg);
+  console.log(explained.output);
+  process.exit(explained.ok ? 0 : 1);
+}
+
 const rootArg = args.indexOf("--root");
 const root = resolve(rootArg >= 0 ? args[rootArg + 1] : resolve(import.meta.dir, "../.."));
-const ctx: Context = { root, files: listMarkdown(root) };
+const mode: "authoring" | "full" = args.includes("--authoring") ? "authoring" : "full";
+const ctx: Context = { root, files: listMarkdown(root), mode };
 
 let results: CheckResult[];
 if (args.includes("--external-only")) {
@@ -33,6 +45,6 @@ if (args.includes("--external-only")) {
     { name: "external-links", status: "not run", summary: "network check; run `mise run validate:external`", findings: [], notRun: [] },
   ];
 }
-console.log(`G-Ingá repository validation (${root})`);
+console.log(`G-Ingá repository validation (${root}${mode === "authoring" ? ", authoring mode" : ""})`);
 printReport(results);
 process.exit(exitCode(results));
