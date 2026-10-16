@@ -128,6 +128,27 @@ export function spec(s: SpecSpec): string {
   return ["---", ...fm, "---", body].join("\n");
 }
 
+export interface IntentSpec {
+  status: "draft" | "approved" | "superseded";
+  prompt?: string;
+}
+
+export function intent(i: IntentSpec): string {
+  return [
+    "---",
+    "schema: intent/1",
+    `status: ${i.status}`,
+    "---",
+    "",
+    "# Fixture intent",
+    "",
+    "## Original prompt",
+    "",
+    i.prompt ?? "Fixture request prompt.",
+    "",
+  ].join("\n");
+}
+
 const parentLog = (...extra: string[]) => ["tier: heavy (H3)", "confirmed: heavy by owner (2026-10-14, \"ok\")", ...extra];
 const verifiedRows = (at: string, base = "1111111"): RowSpec[] => [
   ["B1", "pass", base],
@@ -493,6 +514,20 @@ export const historyCases: Case[] = [
       [t(C1)]: child("active", 2, { log: ["tier: standard (decomposed from heavy parent)", "spec-version: v1 → v2; rerun: AC1"] }),
     }),
   ]),
+  historyCase("H-intent-create", "intent created as draft and approved in next commit (positive history)", "pass", [
+    () => ({ "intents/2026-10-12-x.md": intent({ status: "draft" }) }),
+    () => ({ "intents/2026-10-12-x.md": intent({ status: "approved" }) }),
+  ]),
+  historyCase("H-intent-del", "committed intent artifact deleted (intent is never deleted)", "fail", [
+    () => ({ "intents/2026-10-12-x.md": intent({ status: "draft" }) }),
+    () => ({ "intents/2026-10-12-x.md": null }),
+  ]),
+  historyCase("H-intent-reopen", "approved intent reopened to draft", "fail", [
+    () => ({ "intents/2026-10-12-x.md": intent({ status: "draft" }) }),
+    () => ({ "intents/2026-10-12-x.md": intent({ status: "approved" }) }),
+    () => ({ "intents/2026-10-12-x.md": intent({ status: "draft" }) }),
+  ]),
 ];
 
 export const allCases = [...stateCases, ...historyCases];
+

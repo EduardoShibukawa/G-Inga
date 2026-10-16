@@ -21,6 +21,7 @@ describe("contract rule fixtures (§7.2 table and review cases)", () => {
     X1: "§4.4", X2: "§3.4", X3: "§3.4", X4: "§6.1", X5: "§2.2", X6: "§3.3/§4.4", X7: "§3.4", X8: "§3.3", X9: "§8",
     X11: "§3.3", X12: "§3.3", X14: "§3.4",
     "H-del": "§6.1", "H-squash-no-entry": "§7.1", "H-squash-bad-hash": "§7.1", "H-squash-v2": "§7.1", "H-squash-old-entry": "§7.1", "H-forbidden": "§3.3", "H-baseline-refreshed": "§3.4", "H-spec-version": "§4.4",
+    "H-intent-del": "§7.1", "H-intent-reopen": "§4.5",
   };
   for (const c of allCases) {
     test(`${c.id}: ${c.title} → ${c.expect}`, () => {

@@ -7770,7 +7770,7 @@ function checkHistory(root, opts = {}) {
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true")
     return { blocked: "shallow clone: the history walk and deleted-record detection need full history (§7.1)" };
   const hasHead = git(root, ["rev-parse", "--verify", "--quiet", "HEAD"]).ok;
-  const commits = hasHead ? git(root, ["rev-list", "--reverse", "HEAD", "--", "tasks", "specs"]).out.split(`
+  const commits = hasHead ? git(root, ["rev-list", "--reverse", "HEAD", "--", "tasks", "specs", "intents"]).out.split(`
 `).filter(Boolean) : [];
   const revs = [...commits, WT];
   const findings = [];
@@ -7790,7 +7790,7 @@ function checkHistory(root, opts = {}) {
   const at = (rev) => rev === WT ? WT : rev.slice(0, 7);
   const realDeletions = new Map;
   if (hasHead) {
-    const out = git(root, ["log", "--full-history", "--diff-filter=D", "--name-only", "-z", "--format=%H", "HEAD", "--", "tasks", "specs"]).out;
+    const out = git(root, ["log", "--full-history", "--diff-filter=D", "--name-only", "-z", "--format=%H", "HEAD", "--", "tasks", "specs", "intents"]).out;
     let rev = "";
     for (const token of out.split("\x00")) {
       const tok = token.trim();
@@ -7826,13 +7826,17 @@ function checkHistory(root, opts = {}) {
       const f = (msg, rule = "§7.1") => findings.push({ level: "fail", rule, file, msg: `${at(rev)}: ${msg}` });
       if (!now) {
         if (rev === WT || realDeletions.get(rev)?.has(file)) {
-          f(`${file} was deleted; ${key.startsWith("spec") ? "a spec is never deleted (§4.3)" : "a committed task record is closed as cancelled, never deleted (§6.1)"}`, key.startsWith("spec") ? "§7.1" : "§6.1");
+          const reason = key.startsWith("spec") ? "a spec is never deleted (§4.3)" : key.startsWith("intent") ? "an intent artifact is never deleted (§4.5)" : "a committed task record is closed as cancelled, never deleted (§6.1)";
+          const rule = key.startsWith("spec") || key.startsWith("intent") ? "§7.1" : "§6.1";
+          f(`${file} was deleted; ${reason}`, rule);
           lastState.delete(key);
         }
         continue;
       }
       if (now.kind === "spec")
         checkSpecTransition(before?.rec, now, snap(rev), before ? snap(before.rev) : parentSnap(rev), f);
+      else if (now.kind === "intent")
+        checkIntentTransition(before?.rec, now, f);
       else if (before)
         checkTaskTransition(before.rec, now, f);
       if (!before || str(before.rec.fm.status) !== str(now.fm.status)) {
@@ -7935,6 +7939,28 @@ function checkTaskTransition(prev, cur, f) {
     const entry = cur.log.filter((e) => e.keyword === "spec-version").at(-1);
     if (!added || !new RegExp(`^v${pv}\\s*(?:→|->)\\s*v${cv};\\s*(rerun|unaffected):`).test(entry?.text ?? ""))
       f(`task ${cur.id}: moved @${pv} → @${cv} without a "spec-version: v${pv} → v${cv}; rerun: …" or "…; unaffected: …" entry`, "§4.4");
+  }
+}
+function checkIntentTransition(prev, cur, f) {
+  const ps = str(prev?.fm.status);
+  const cs = str(cur.fm.status);
+  if (!prev) {
+    if (cs !== "draft" && cs !== "approved") {
+      f(`intent ${cur.id} must be created as draft or approved`, "§4.5");
+    }
+    return;
+  }
+  if (ps === "superseded") {
+    f(`intent ${cur.id} changed after it was superseded`, "§4.5");
+    return;
+  }
+  if (ps === "approved" && cs === "draft") {
+    f(`intent ${cur.id}: transition approved → draft is not allowed`, "§4.5");
+    return;
+  }
+  if (ps === "approved" && prev.sections.get("Original prompt") !== cur.sections.get("Original prompt")) {
+    f(`intent ${cur.id}: ## Original prompt is immutable once approved`, "§4.5");
+    return;
   }
 }
 // tools/validate/bundle.json
