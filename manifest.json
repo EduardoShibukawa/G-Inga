@@ -1,13 +1,13 @@
 {
   "release": "1.0.0",
-  "commit": "94786d19cb7d39528cbd6dd7e286f376ab91a479",
+  "commit": "f08763187359262e58c765d025c48aca0ddaca03",
   "files": {
     ".claude/skills/work/SKILL.md": "b415ecb28b789a2466508f597fb9715670cb781cf34af16e584769cf5874b0b9",
     ".claude/skills/work/heavy.md": "c9be18d67cdb9bfe09954d70f62a4df2d63aa03f69a33fff5542985fccb9889e",
     ".claude/skills/work/resume.md": "86ff1c69148eb6a68da032adbc4197746412a725a8443d48b53a14bfc748b043",
     ".claude/skills/work/review.md": "d0d5a605790048c69acb70f03a3da246b92122131dbac9f7eb04d78551363cff",
     ".claude/skills/work/standard.md": "710b7ecff2d13f621bbbda2d699d08a9c2e9116494867d03c5c98b87dcc21bbd",
-    ".claude/skills/work/references/artifact-contracts.md": "588602bd23fa23be451f0d2a450f4a4ece9b8e7e7eae92473e01b98a7cf54111",
+    ".claude/skills/work/references/artifact-contracts.md": "d29051e92b3d36465baa103e540b273f03bb79ec6acac995388fae1aef387a02",
     ".claude/skills/work/references/model-policy.md": "a8f7e3633f222d97061628e5063664ac4685cf5c2a630cb0892068c0febae9c6",
     ".claude/skills/work/references/procedure.md": "366d7b4d34d743c297a6db1d8b78e630d78155283e4ecd6410ab9934711b4f86",
     ".claude/skills/work/references/question-rounds.md": "54476727460b809a2ebfcbe6f7aea4c95ace4af87068570359027a4c91ab1969",
@@ -17,13 +17,13 @@
     ".agents/skills/work/resume.md": "9cf004f6a32d3580299d05bd721124f52cf277f3de3a1cf202f7bc5008d33943",
     ".agents/skills/work/review.md": "bc7cf86ba63cc701bcbac8b63caa0e915a51ba7c3f9ece752331475bee22bda2",
     ".agents/skills/work/standard.md": "e9b4e80c30d8384b090aefcba65d67d7442f5f934a1a87e90d14f001c8e24e51",
-    ".agents/skills/work/references/artifact-contracts.md": "588602bd23fa23be451f0d2a450f4a4ece9b8e7e7eae92473e01b98a7cf54111",
+    ".agents/skills/work/references/artifact-contracts.md": "d29051e92b3d36465baa103e540b273f03bb79ec6acac995388fae1aef387a02",
     ".agents/skills/work/references/procedure.md": "13eccf1752634f7984e437430e04255ae96940e351540a172b018587015b7e9c",
     ".agents/skills/work/references/question-rounds.md": "54476727460b809a2ebfcbe6f7aea4c95ace4af87068570359027a4c91ab1969",
     ".agents/skills/sharpen/SKILL.md": "047fd45d7baca075ea00c7ef2410761ccc8921986555bffbb7cddd71a8df85a6",
     ".mise/tasks/g-inga/validate": "c527f505d4dcefd72aa7e2f873173376dfd7f878160cf935511bee89b31e2601",
     "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
-    "tools/validate/validate.js": "0599fa27939b21958581593e5edfa8a32ade09c3500b8e11509fac51b73a4175",
+    "tools/validate/validate.js": "51537e6922ee2d4e87cf6967cf9add48e5c5742be74a1f8cb7dada619b6dc503",
     "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
