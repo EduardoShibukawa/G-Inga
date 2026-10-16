@@ -1,6 +1,6 @@
 ---
 schema: intent/1
-status: draft
+status: approved
 ---
 
 # Canonical skills root layout migration
