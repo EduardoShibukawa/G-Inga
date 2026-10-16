@@ -41,16 +41,16 @@ Out of scope:
 |---|---|---|---|---|
 | B1 | check | fail | 3bd870f | Pre-change: skills/ does not exist |
 | B2 | check | pass | 3bd870f | Pre-change plugin tests pass |
-| AC1 | ls skills/ | pass | 25cabda | Canonical skills/ contains all 5 skills |
-| AC2 | readlink .claude/skills | pass | 25cabda | Host directories symlinked to ../skills |
-| AC3 | cat .claude-plugin/plugin.json | pass | 25cabda | Plugin sources ./skills/ |
-| AC4 | bun test packages/opencode-plugin/index.test.ts | pass | 25cabda | Plugin tests pass |
+| AC1 | ls skills/ | pass | fdbc022 | Canonical skills/ contains all 5 skills |
+| AC2 | readlink .claude/skills | pass | fdbc022 | Host directories symlinked to ../skills |
+| AC3 | cat .claude-plugin/plugin.json | pass | fdbc022 | Plugin sources ./skills/ |
+| AC4 | bun test packages/opencode-plugin/index.test.ts | pass | fdbc022 | Plugin tests pass |
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/canonical-skills-01-directory`, head 25cabda, worktree clean
+- as of: 2026-10-16, branch `work/canonical-skills-01-directory`, head fdbc022, worktree clean
 - done: unified skills/ directory, host symlinks created, plugin.json and opencode-plugin updated
 - active: none
 - blocked: none
-- next: ready for verification gate and commit
+- next: completed; follow-up tooling in child 02
 - revalidate: none
