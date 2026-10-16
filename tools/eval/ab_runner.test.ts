@@ -17,7 +17,9 @@ import * as os from "node:os";
 import {
   checkScaffoldContamination,
   assertNoContamination,
+  assertNoHarnessSkills,
   stripSkills,
+  stripHarnessSkills,
   prepareIsolatedWorktree,
   getHostDisableFlags,
   calculateQualityScore,
@@ -70,18 +72,31 @@ describe("Contamination Guardrail (AC2)", () => {
     expect(() => assertNoContamination(tmpDir)).toThrow(/Scaffold contamination detected/);
   });
 
-  test("stripSkills cleans both skill directories and makes directory pass assertion", async () => {
+  test("detects contamination when root skills/ exists", async () => {
+    const rootSkills = path.join(tmpDir, "skills", "work");
+    await fs.mkdir(rootSkills, { recursive: true });
+    await fs.writeFile(path.join(rootSkills, "SKILL.md"), "# Work");
+
+    expect(checkScaffoldContamination(tmpDir)).toBe(true);
+    expect(() => assertNoContamination(tmpDir)).toThrow(/Scaffold contamination detected/);
+    expect(() => assertNoContamination(tmpDir)).toThrow(/skills/);
+    expect(() => assertNoHarnessSkills(tmpDir)).toThrow(/Scaffold contamination detected/);
+  });
+
+  test("stripSkills cleans all skill directories including skills/ and makes directory pass assertion", async () => {
+    const rootSkillDir = path.join(tmpDir, "skills", "work");
     const claudeSkillDir = path.join(tmpDir, ".claude", "skills", "test-skill");
     const agentSkillDir = path.join(tmpDir, ".agents", "skills", "test-agent-skill");
+    await fs.mkdir(rootSkillDir, { recursive: true });
     await fs.mkdir(claudeSkillDir, { recursive: true });
     await fs.mkdir(agentSkillDir, { recursive: true });
 
     expect(checkScaffoldContamination(tmpDir)).toBe(true);
 
-    stripSkills(tmpDir);
+    stripHarnessSkills(tmpDir);
 
     expect(checkScaffoldContamination(tmpDir)).toBe(false);
-    expect(() => assertNoContamination(tmpDir)).not.toThrow();
+    expect(() => assertNoHarnessSkills(tmpDir)).not.toThrow();
   });
 
   test("prepareIsolatedWorktree strips skills and validates clean environment", async () => {

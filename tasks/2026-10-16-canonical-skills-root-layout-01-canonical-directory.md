@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "fdbc022"
 parent: 2026-10-16-canonical-skills-root-layout
 spec: 2026-10-16-canonical-skills-root-layout@1
 ---
@@ -37,16 +38,25 @@ Out of scope:
 
 ## Verification
 
-| Check | Ref | Status | Note |
-|---|---|---|---|
-| B1 `ls skills/` | 3bd870f | fail | Pre-change: skills/ does not exist |
-| B2 `bun test packages/opencode-plugin/index.test.ts` | 3bd870f | pass | Pre-change plugin tests pass |
+| ID | Check | Result | Ref | Note |
+|---|---|---|---|---|
+| B1 | check | fail | 3bd870f | Pre-change: skills/ does not exist |
+| B2 | check | pass | 3bd870f | Pre-change plugin tests pass |
+| AC1 | ls skills/ | pass | fdbc022 | Canonical skills/ contains all 5 skills |
+| AC2 | readlink .claude/skills | pass | fdbc022 | Host directories symlinked to ../skills |
+| AC3 | cat .claude-plugin/plugin.json | pass | fdbc022 | Plugin sources ./skills/ |
+| AC4 | bun test packages/opencode-plugin/index.test.ts | pass | fdbc022 | Plugin tests pass |
+| V1 | check | pass | fdbc022 | Autonomous verification gate passed |
+
+## Outcome
+
+All 5 canonical harness skills (`drive`, `orchestrate`, `sharpen`, `validator-flow`, `work`) unified into repository root `skills/` directory with relative symlinks established for `.claude/skills`, `.agents/skills`, and `.opencode/skills`.
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/canonical-skills-root-layout`, head 3bd870f, worktree clean
-- done: task authored
+- as of: 2026-10-16, branch `work/canonical-skills-01-directory`, head fdbc022, worktree clean
+- done: unified skills/ directory, host symlinks created, plugin.json and opencode-plugin updated
 - active: none
 - blocked: none
-- next: dispatch execution
-- revalidate: B1 and B2 pass on 3bd870f
+- next: completed; follow-up tooling in child 02
+- revalidate: none

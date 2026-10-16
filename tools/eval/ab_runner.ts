@@ -85,21 +85,26 @@ export interface AbRunResult {
  * Returns true if contamination is detected (skills present), false otherwise.
  */
 export function checkScaffoldContamination(dir: string): boolean {
+  const rootSkills = path.join(dir, "skills");
   const claudeSkills = path.join(dir, ".claude", "skills");
   const agentsSkills = path.join(dir, ".agents", "skills");
 
-  return existsSync(claudeSkills) || existsSync(agentsSkills);
+  return existsSync(rootSkills) || existsSync(claudeSkills) || existsSync(agentsSkills);
 }
 
 /**
  * Asserts that no harness skills exist in the specified directory.
- * Throws an Error immediately if .claude/skills/ or .agents/skills/ is present.
+ * Throws an Error immediately if skills/, .claude/skills/ or .agents/skills/ is present.
  */
 export function assertNoContamination(dir: string): void {
+  const rootSkills = path.join(dir, "skills");
   const claudeSkills = path.join(dir, ".claude", "skills");
   const agentsSkills = path.join(dir, ".agents", "skills");
 
   const violations: string[] = [];
+  if (existsSync(rootSkills)) {
+    violations.push(`skills (${rootSkills})`);
+  }
   if (existsSync(claudeSkills)) {
     violations.push(`.claude/skills (${claudeSkills})`);
   }
@@ -116,10 +121,13 @@ export function assertNoContamination(dir: string): void {
   }
 }
 
+export const assertNoHarnessSkills = assertNoContamination;
+
 /**
- * Strips all G-Ingá harness skill directories (.claude/skills and .agents/skills) from a directory.
+ * Strips all G-Ingá harness skill directories (skills, .claude/skills and .agents/skills) from a directory.
  */
 export function stripSkills(dir: string): void {
+  const rootSkills = path.join(dir, "skills");
   const claudeSkills = path.join(dir, ".claude", "skills");
   const agentsSkills = path.join(dir, ".agents", "skills");
 
@@ -129,7 +137,12 @@ export function stripSkills(dir: string): void {
   if (existsSync(agentsSkills)) {
     rmSync(agentsSkills, { recursive: true, force: true });
   }
+  if (existsSync(rootSkills)) {
+    rmSync(rootSkills, { recursive: true, force: true });
+  }
 }
+
+export const stripHarnessSkills = stripSkills;
 
 /**
  * Prepares an isolated worktree for the baseline 'without' arm by stripping skills

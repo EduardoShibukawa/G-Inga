@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 export interface MdFile {
@@ -17,7 +17,9 @@ export function listMarkdown(root: string): MdFile[] {
     for (const name of readdirSync(dir).sort()) {
       if (SKIP_DIRS.has(name)) continue;
       const abs = join(dir, name);
-      if (statSync(abs).isDirectory()) walk(abs);
+      const st = lstatSync(abs);
+      if (st.isSymbolicLink()) continue;
+      if (st.isDirectory()) walk(abs);
       else if (name.endsWith(".md")) {
         const text = readFileSync(abs, "utf8");
         out.push({ path: relative(root, abs).split("\\").join("/"), text, lines: text.split("\n") });
