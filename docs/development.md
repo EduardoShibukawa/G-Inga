@@ -44,7 +44,9 @@ The first `mise` command in the repository may ask you to trust `mise.toml`, bec
 ## Commands
 
 ```sh
-mise run validate            # every applicable deterministic check
+mise run validate            # every applicable deterministic check (full gate of record)
+bun run validate:authoring   # fast local current-tree check (skips history walk)
+bun tools/validate/main.ts --explain [rule] # show rule rationale and repair guidance
 mise run test                # type-check and test the validators
 mise run validate:external   # external URL availability (network)
 mise run setup               # only install dependencies (bun install --frozen-lockfile)
@@ -52,6 +54,8 @@ mise run pre-commit          # what the Git pre-commit hook and the CI pre-commi
 ```
 
 `mise run validate` is the canonical entry point. It runs `bun install --frozen-lockfile` first, then `bun run validate`. `bun tools/validate/main.ts --root <dir>` validates another directory. CI runs `mise run test` and `mise run pre-commit` (which runs `validate`) in `.github/workflows/validate.yml`, after installing the pinned mise with `jdx/mise-action`; it doesn't rely on a Bun or mise already on the runner. It also sets up Node 22 and sets `G_INGA_REQUIRE_RUNTIMES=1`, so the product bundle tests in `tools/validate/bundle.test.ts` fail instead of skipping when Node 22 or later is missing.
+
+For authoring workflows and agent procedures, see [validator-flow](../.claude/skills/validator-flow/SKILL.md).
 
 The product's standalone validator, manifest and update procedure are separate from this tooling; see [bundle](bundle.md). After changing `tools/validate/standalone.ts`, run `bun run build:validator`, commit the bundle assets, then regenerate `manifest.json` (`bun run manifest`) and commit it alone.
 
