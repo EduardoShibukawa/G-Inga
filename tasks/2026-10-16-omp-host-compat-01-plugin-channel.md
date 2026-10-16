@@ -38,7 +38,7 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | fail | f678867 | validate: pass (exit 0, 144s). test: 331 pass, 1 fail, twice (runs at 161s and 150s): "this repository > every layer applies, no check is named after a decision ID, and git status is unchanged" timed out at 120000ms (the test runs the full validator inside bun test; the standalone run takes ~144s) |
+| B1 | `mise run validate` and `mise run test` before the first edit | fail | f678867 | validate: pass (exit 0, 144s). test: full run failed twice (161s, 150s; 331 pass, 1 fail): "this repository > every layer applies, no check is named after a decision ID, and git status is unchanged" timed out at 120000ms. Solo rerun (`bun test tools/validate/validate.test.ts -t "every layer applies"`): pass (1 pass, 0 fail, 112.08s, exit 0). Timeout is 120 s against a ~112–144 s run; cause attributed to CPU contention with sibling workers per orchestrator, and the 120 s limit is tight either way |
 | B2 | `omp plugin marketplace list` (default profile) before the task | pass | f678867 | `No marketplaces configured` / `Add one with: omp plugin marketplace add <source>` (exit 0; taken under /tmp/g-inga-omp-probe.lock, released) |
 | AC1 | `omp config get` for both keys | not run | - | |
 | AC2 | `omp --profile g-inga-check read skill://work` without the plugin | not run | - | |
