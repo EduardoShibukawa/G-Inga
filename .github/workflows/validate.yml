@@ -28,8 +28,8 @@ jobs:
           MERMAID_BROWSER: /usr/bin/google-chrome
           G_INGA_REQUIRE_RUNTIMES: "1"
 
-  # The same task the Git pre-commit hook runs (ADR 0009 §2). Branch protection on main
-  # requires this job, so a commit made without the hook still can't merge red.
+  # The required merge audit check (ADR 0009 §2, ADR 0015 §2). Runs full repository validation.
+  # Retains the job name "pre-commit" to match GitHub branch protection required status checks.
   pre-commit:
     runs-on: ubuntu-24.04
     steps:
@@ -40,7 +40,7 @@ jobs:
       - uses: jdx/mise-action@v5.1.1
         with:
           version: 2026.10.7
-      - run: mise run pre-commit
+      - run: mise run validate
         env:
           # Preinstalled on GitHub's Ubuntu runners; Mermaid is rendered in it.
           MERMAID_BROWSER: /usr/bin/google-chrome
