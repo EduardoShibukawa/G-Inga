@@ -14,7 +14,7 @@ Macro-governor for autonomous multi-task execution over dependency graphs and ta
 2. **Strict 4-Value Vocabulary:** Report checks strictly using `pass`, `fail`, `blocked`, or `not run`. Exit code 0 is strictly forbidden if any mandatory check is skipped or unrun.
 3. **Context Isolation:** Keep the orchestrator root context lean. Exploration, iterative editing, and tool output belong strictly inside ephemeral subagents (`Agent` tool).
 4. **Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3):** Maximum 2 verification attempts per ticket without new information. On the second consecutive failure, halt the ticket, mark it `blocked`, and escalate to the repository owner.
-5. **Macro vs Micro Division:** `/orchestrate` governs the task backlog (`tasks/`), dependency resolution, parallel concurrency, and the verification gate. Micro-delivery within scoped boundaries is delegated to subagents that read and follow `skills/work/references/procedure.md`. They never invoke the `work` skill, which is user-invoked (ADR 0010).
+5. **Macro vs Micro Division:** `/orchestrate` governs the task backlog (`tasks/`), dependency resolution, parallel concurrency, and the verification gate. Micro-delivery within scoped boundaries is delegated to subagents that read and follow the work procedure (`../work/references/procedure.md`, relative to this skill's directory). They never invoke the `work` skill, which is user-invoked (ADR 0010).
 
 ## The 6-Step OODA Loop
 
@@ -82,9 +82,9 @@ flowchart TD
 
 - Dispatch worker subagents in parallel by issuing multiple `Agent` tool calls in a single message, each with role and scoped prompt:
   - Set `subagent_type: "general-purpose"` for implementation workers (or `subagent_type: "Explore"` for read-only spikes).
-  - Set the model by role from the shared table in `skills/work/references/model-policy.md`: `model: "sonnet"` for implementation workers, `model: "haiku"` for read-only `Explore` spikes.
+  - Set the model by role from the shared table in `../work/references/model-policy.md`: `model: "sonnet"` for implementation workers, `model: "haiku"` for read-only `Explore` spikes.
   - Include the verification contract directly in the prompt.
-  - Name `skills/work/references/procedure.md` as the procedure to follow, never the `work` skill (ADR 0010).
+  - Name the work procedure as the procedure to follow, never the `work` skill (ADR 0010): resolve `../work/references/procedure.md` against this skill's directory and give the worker the absolute path.
 - **Working Tree Selection:**
   - Default shared working tree: allowed only when the pre-dispatch collision check passes (mutually disjoint scopes).
   - Isolated worktrees: set `isolation: "worktree"` on the `Agent` call (or use `tools/gate/worktree-runner.ts`). Worktree results MUST be merged back into the orchestrator branch before Gate Layer 1.
@@ -114,12 +114,12 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
    - Verify objective thresholds (e.g. 0 lint warnings, schema validation, performance latency).
 5. **Layer 5 (Anti-Thrashing Circuit Breaker):**
    - Track verification failure count per ticket.
-   - First failure: dispatch a NEW `Agent` with `model: "opus"` (per `skills/work/references/model-policy.md`) carrying the deterministic failure log and the same contract (scope, acceptance criteria). Continuing the existing Sonnet worker does not change its model, so it is not the retry.
+   - First failure: dispatch a NEW `Agent` with `model: "opus"` (per `../work/references/model-policy.md`) carrying the deterministic failure log and the same contract (scope, acceptance criteria). Continuing the existing Sonnet worker does not change its model, so it is not the retry.
    - Second failure (count $\ge 2$, no new information): stop worker, mark ticket `blocked`, record escalation, and alert owner.
 
 ### 6. SEAL & ADVANCE (Atomic Integration)
 
-- Record each child's verification note with the model that ran it and its token totals, taken from the host's `Agent` result (never from the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — no prompt content (per `skills/work/references/model-policy.md`).
+- Record each child's verification note with the model that ran it and its token totals, taken from the host's `Agent` result (never from the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — no prompt content (per `../work/references/model-policy.md`).
 - Update ticket status in roadmap (`tasks/`) to `verified`.
 - Create an atomic descriptive Git commit referencing the verified ticket IDs:
   `git commit -m "<type>(<scope>): <summary> [resolves #ID]"`
@@ -130,7 +130,7 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
 ## References & Procedures
 
 - Verification Gate Rules & Rollback: [gate.md](gate.md)
-- Subagent Model Policy: [skills/work/references/model-policy.md](../work/references/model-policy.md)
+- Subagent Model Policy: [../work/references/model-policy.md](../work/references/model-policy.md)
 - Subagent Canonical Prompt Template: [subagent-prompt.md](subagent-prompt.md)
 - OODA State Machine & Transitions: [references/ooda-cycle.md](references/ooda-cycle.md)
 - Automated Wave Runner: [tools/gate/orchestrate-runner.ts](../../tools/gate/orchestrate-runner.ts)

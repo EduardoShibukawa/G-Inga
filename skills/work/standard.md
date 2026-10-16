@@ -9,7 +9,7 @@ Procedure for `standard` tasks in G-Ingá.
 
 2. **Initialize or Read Task Record (`tasks/<id>.md`):**
    - File naming: `tasks/<YYYY-MM-DD>-<slug>.md` (or decomposed `tasks/<parent-id>-<NN>-<slug>.md`).
-   - Schema: `task/1`, as defined in `skills/work/references/artifact-contracts.md` §3.
+   - Schema: `task/1`, as defined in `references/artifact-contracts.md` (relative to this skill's directory) §3.
    - Frontmatter keys: `schema: task/1`, `tier: standard`, `status: active` (plus `parent`, `spec`, `depends_on` if decomposed).
    - Sections required:
      - `## Routing and approvals`
@@ -27,7 +27,7 @@ Procedure for `standard` tasks in G-Ingá.
    - Make small, focused changes.
    - If blocked or stopping, write `## Checkpoint` with branch, commit, dirty status, completed items, and next steps. Set `status: blocked` or leave `active`.
 
-5. **Verification & Guarded Transition (`skills/work/references/artifact-contracts.md` §3.4):**
+5. **Verification & Guarded Transition (`references/artifact-contracts.md` §3.4):**
    - Execute each acceptance criterion check.
    - Record results using only `pass`, `fail`, `blocked`, `not run`.
    - Commit code changes so a concrete commit SHA exists for `verified_at`.
@@ -37,7 +37,7 @@ Procedure for `standard` tasks in G-Ingá.
      - Exit `1` (`fail`): invariant or schema violation. Transition forbidden. Fix record/code.
      - Exit `2` (`blocked`): environmental barrier, shallow clone, or prerequisite missing. Transition to `verified` forbidden; record stays `completed` or `blocked`.
    - Commit the verified task record update.
-   - If the session delivered work, close with "Session Close and Merge" in `skills/work/references/procedure.md`.
+   - If the session delivered work, close with "Session Close and Merge" in `references/procedure.md`.
 
 6. **Outcome:**
    - Write `## Outcome` summarizing delivered results.

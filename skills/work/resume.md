@@ -25,7 +25,7 @@ Called via `/work resume <task-id>` or when resuming work referenced in `tasks/<
 4. **Verify Spec Alignment (Heavy Children):**
    - If task has `spec: <spec-id>@<version>`, inspect `specs/<spec-id>.md`.
    - Verify that spec is `status: approved` at that version.
-   - If spec has been reopened or superseded, handle per `skills/work/references/artifact-contracts.md` §4.4.
+   - If spec has been reopened or superseded, handle per `references/artifact-contracts.md` (relative to this skill's directory) §4.4.
 
 5. **Resume Execution:**
    - Remove or update blocker in `## Blockers`.
@@ -34,7 +34,7 @@ Called via `/work resume <task-id>` or when resuming work referenced in `tasks/<
 
 ## Parent Checkpoint After Each Child (`/drive`, `/orchestrate`)
 
-Shared by `/drive` Step 1 and Step 6 and by `/orchestrate` OBSERVE and SEAL. The format is `skills/work/references/artifact-contracts.md` §3.6.
+Shared by `/drive` Step 1 and Step 6 and by `/orchestrate` OBSERVE and SEAL. The format is `references/artifact-contracts.md` §3.6.
 
 ### Write after each verified child
 

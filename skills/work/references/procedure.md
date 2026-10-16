@@ -9,7 +9,7 @@ Procedure for deliverables. Dispatches across `light`, `standard`, and `heavy` t
 
 1. Print routing line first: `tier: <tier> (<signals>)`.
 2. `light` persists ZERO files under `tasks/` or `specs/`; outputs concise terminal report with evidence.
-3. `standard` and `heavy` persist contract-compliant artifacts under `tasks/` and `specs/` (`skills/work/references/artifact-contracts.md`).
+3. `standard` and `heavy` persist contract-compliant artifacts under `tasks/` and `specs/` (`references/artifact-contracts.md`, relative to this skill's directory).
 4. Guarded transitions (`verified`, `accepted`, spec approvals) require running validator (`node tools/validate/validate.js` or `bun tools/validate/validate.ts`).
 5. Check failures (`fail` exit 1, `blocked` exit 2) block `verified` or `accepted`.
 
@@ -35,11 +35,11 @@ Evaluate S1–S8:
    - **H4:** S5 holds (sensitive behavior changes).
    - **H5:** S8 fails (multi-session decomposition required).
    - **H6:** S6 fails AND S7 fails (weak baseline and undetected error).
-   *Action:* Stop. Read `skills/work/heavy.md` and `skills/work/references/question-rounds.md`. Propose heavy to owner and await confirmation.
+   *Action:* Stop. Read `heavy.md` and `references/question-rounds.md`. Propose heavy to owner and await confirmation.
 2. **`light`** if ALL hold: S1, S2, S3, S4, S6 (or non-behavioral prose/formatting), S7, and NOT S5.
    *Action:* Follow light procedure below.
 3. **`standard`** otherwise (default when in doubt).
-   *Action:* Read `skills/work/standard.md`.
+   *Action:* Read `standard.md`.
 
 ## Escalation Triggers (ADR 0002 §5)
 
@@ -64,7 +64,7 @@ Parallel workers run in isolated ephemeral worktrees (`tools/gate/worktree-runne
 
 ## Resume Command
 
-On `resume <task-id>`: read `skills/work/resume.md`, verify git state vs `## Checkpoint`, reconcile, and resume.
+On `resume <task-id>`: read `resume.md`, verify git state vs `## Checkpoint`, reconcile, and resume.
 
 ## Session Close and Merge
 

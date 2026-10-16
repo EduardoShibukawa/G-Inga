@@ -173,7 +173,7 @@ To prevent infinite loops and runaway token expenditure:
 - Maintain an attempt counter per ticket: `attempts: N`.
 - **First Failure ($N = 1$):**
   - Extract the exact compiler, linter, or test failure output.
-  - Dispatch a new `Agent` with `model: "opus"` (per `skills/work/references/model-policy.md`) carrying the factual failure report and the same contract. Continuing the existing Sonnet worker does not change its model, so it is not the retry.
+  - Dispatch a new `Agent` with `model: "opus"` (per `../work/references/model-policy.md`, relative to this skill's directory) carrying the factual failure report and the same contract. Continuing the existing Sonnet worker does not change its model, so it is not the retry.
 - **Second Failure ($N = 2$):**
   - **Circuit Breaker Trips:** Immediately halt subagent execution.
   - Revert dirty changes: `git checkout HEAD -- <file>` for each ticket in-scope file, or discard the ticket's isolated worktree. Never revert the whole tree or run a pathless clean.
