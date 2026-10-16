@@ -1,10 +1,11 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-16-usage-telemetry-pipeline
 spec: 2026-10-16-usage-telemetry-pipeline@1
 depends_on: []
+verified_at: "1c8dbc6"
 ---
 
 # Environment clean-clone fix and multi-host telemetry research
@@ -46,12 +47,12 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation before change | pass | e1b407a | `bun run validate` |
-| AC1 | clean clone mise install succeeds | pass | - | bun test -t "mise install in a fresh clone" (tools/gate/commit-gate.test.ts) |
-| AC2 | research document exists and passes markdown/local-link lint | pass | - | docs/research/2026-10-16-multi-host-telemetry-and-opencode-pipeline.md |
-| AC3 | decision map updated and valid | pass | - | docs/decision-map.md D4/D7 updated and decision-records check pass |
-| AC4 | test and validate green | pass | - | bun run test (288 pass) && bun run validate pass |
-| R1 | regression check on verified_at | not run | - | on verified_at |
-| V1 | diff read against AC1–AC4 | pass | - | diff verified against AC1–AC4 |
+| AC1 | clean clone mise install succeeds | pass | 1c8dbc6 | bun test -t "mise install in a fresh clone" (tools/gate/commit-gate.test.ts) |
+| AC2 | research document exists and passes markdown/local-link lint | pass | 1c8dbc6 | docs/research/2026-10-16-multi-host-telemetry-and-opencode-pipeline.md |
+| AC3 | decision map updated and valid | pass | 1c8dbc6 | docs/decision-map.md D4/D7 updated and decision-records check pass |
+| AC4 | test and validate green | pass | 1c8dbc6 | bun run test (288 pass) && bun run validate pass |
+| R1 | regression check on verified_at | pass | 1c8dbc6 | full test suite and validate pass |
+| V1 | diff read against AC1–AC4 | pass | 1c8dbc6 | diff verified against AC1–AC4 |
 
 ## Plan
 

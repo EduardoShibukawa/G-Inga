@@ -68,8 +68,8 @@ SC1–SC10 from spec `2026-10-16-usage-telemetry-pipeline` once approved. Parent
 | SC4 | ab_runner executes N=3 runs with worktree isolation and zero skill contamination | not run | - | pending child 04 |
 | SC5 | deterministic quality_score and ledger updates | not run | - | pending child 04 |
 | SC6 | raw jsonl traces git-ignored and ledger/summary tracked | not run | - | pending child 03 |
-| SC7 | research documentation and decision-map updates | not run | - | pending child 01 |
-| SC8 | mise.toml allows clean-clone installation | not run | - | pending child 01 |
+| SC7 | research documentation and decision-map updates | pass | 1c8dbc6 | child 01 verified |
+| SC8 | mise.toml allows clean-clone installation | pass | 1c8dbc6 | child 01 verified |
 | SC9 | mise tasks eval:usage and eval:ab execute within safety ceiling | not run | - | pending child 04 |
 | SC10 | evaluation tests and repository validation pass cleanly | not run | - | pending child 05 |
 | R1 | integrated regression run | not run | - | on verified_at |
