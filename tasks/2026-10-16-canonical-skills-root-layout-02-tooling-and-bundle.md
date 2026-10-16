@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: completed
 parent: 2026-10-16-canonical-skills-root-layout
 spec: 2026-10-16-canonical-skills-root-layout@1
 ---
@@ -38,16 +38,20 @@ Out of scope:
 
 ## Verification
 
-| Check | Ref | Status | Note |
-|---|---|---|---|
-| B1 `bun test tools/validate/bundle.test.ts` | 3bd870f | pass | Pre-change bundle tests pass |
-| B2 `bun test tools/eval/ab_runner.test.ts` | 3bd870f | pass | Pre-change ab_runner tests pass |
+| ID | Check | Result | Ref | Note |
+|---|---|---|---|---|
+| B1 | check | pass | 3bd870f | Pre-change bundle tests pass |
+| B2 | check | pass | 3bd870f | Pre-change ab_runner tests pass |
+| AC1 | bun tools/validate/contract-copy.mjs --check | pass | 16f364a | Contract copy matches transform |
+| AC2 | bun test tools/validate/bundle.test.ts | pass | 16f364a | Bundle tests pass |
+| AC3 | bun test tools/eval/ab_runner.test.ts | pass | 16f364a | Contamination guard tests pass |
+| AC4 | bun test tools/validate/artifacts/artifacts.test.ts | pass | 16f364a | Artifact contract tests pass |
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch `work/canonical-skills-root-layout`, head 3bd870f, worktree clean
-- done: task authored
+- as of: 2026-10-16, branch `work/canonical-skills-02-tooling`, head 16f364a, worktree clean
+- done: updated contract-copy, bundle.json, manifest.json, ab_runner contamination guards, and validator markdown discovery
 - active: none
 - blocked: none
-- next: dispatch execution
-- revalidate: B1 and B2 pass on 3bd870f
+- next: ready for integration and verification in child 03
+- revalidate: none
