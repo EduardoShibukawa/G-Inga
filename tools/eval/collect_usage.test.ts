@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   parseAntigravityJson,
+  parseOmpSession,
   parseClaudeCodeOtel,
   sanitizeText,
   formatObservationMarkdown,
@@ -140,5 +141,72 @@ describe("Markdown observation formatter", () => {
     expect(md).toContain("| Input tokens | `observed` | 1,000 |");
     expect(md).toContain("| Thinking tokens | `absent` | — |");
     expect(md).toContain("| List price estimate (USD) | `unsupported` |");
+  });
+});
+
+const OMP_FIXTURE = [
+  `{"type":"session","version":3,"id":"01a145f4-758a-7748-b62f-9120a5c936bc","timestamp":"2026-10-16T18:24:31.210Z","cwd":"/tmp/x"}`,
+  `{"type":"model_change","id":"m1","parentId":null,"timestamp":"2026-10-16T18:24:31.269Z","runtime":{"version":"18.11.2"},"model":"anthropic/claude-opus-5-5"}`,
+  `{"type":"message","id":"a1","parentId":"m1","timestamp":"2026-10-16T18:24:31.260Z","message":{"role":"assistant","model":"claude-opus-5-5","usage":{"input":4,"output":288,"cacheRead":0,"cacheWrite":14107,"totalTokens":14399,"cost":{"total":0.118632}}}}`,
+  `{"type":"message","id":"u1","parentId":"a1","timestamp":"2026-10-16T18:24:35.000Z","message":{"role":"user","content":"secret prompt text"}}`,
+  `{"type":"message","id":"a2","parentId":"u1","timestamp":"2026-10-16T18:24:39.445Z","message":{"role":"assistant","model":"claude-opus-5-5","usage":{"input":2,"output":634,"cacheRead":14107,"cacheWrite":5536,"totalTokens":20279,"cost":{"total":0.0597974}}}}`,
+  "not json",
+].join("\n");
+
+describe("OMP session parser", () => {
+  test("sums assistant usage, cost and wall duration from the fixture", () => {
+    const obs = parseOmpSession(OMP_FIXTURE);
+
+    expect(obs.host).toBe("omp");
+    expect(obs.cli_version).toBe("18.11.2");
+    expect(obs.scope_id).toBeTruthy();
+    expect(obs.input_tokens).toMatchObject({ value: 6, state: "observed" });
+    expect(obs.output_tokens).toMatchObject({ value: 922, state: "observed" });
+    expect(obs.cache_read_tokens).toMatchObject({ value: 14107, state: "observed" });
+    expect(obs.cache_write_tokens).toMatchObject({ value: 19643, state: "observed" });
+    expect(obs.total_tokens).toMatchObject({ value: 34678, state: "observed" });
+    expect(obs.cost_usd_estimate.state).toBe("estimated");
+    expect(obs.cost_usd_estimate.value).toBeCloseTo(0.1784294, 6);
+    expect(obs.wall_duration_seconds.state).toBe("derived");
+    expect(obs.wall_duration_seconds.value).toBeCloseTo(8.235, 6);
+    expect(obs.thinking_tokens.state).toBe("unsupported");
+  });
+
+  test("adds model_usage entries to the sums", () => {
+    const extra = `{"type":"model_usage","timestamp":"2026-10-16T18:24:40.000Z","usage":{"input":10,"output":5,"cacheRead":0,"cacheWrite":0,"totalTokens":15,"cost":{"total":0.001}}}`;
+    const obs = parseOmpSession(`${OMP_FIXTURE}\n${extra}`);
+
+    expect(obs.input_tokens.value).toBe(16);
+    expect(obs.output_tokens.value).toBe(927);
+    expect(obs.total_tokens.value).toBe(34693);
+    expect(obs.cost_usd_estimate.value).toBeCloseTo(0.1794294, 6);
+  });
+
+  test("returns absent token and cost states without usage entries and never throws", () => {
+    const noUsage = [
+      `{"type":"session","id":"01a145f4-758a-7748-b62f-9120a5c936bc","timestamp":"2026-10-16T18:24:31.210Z"}`,
+      `{"type":"model_change","timestamp":"2026-10-16T18:24:31.269Z","runtime":{"version":"18.11.2"}}`,
+      "null",
+      "",
+    ].join("\n");
+    const obs = parseOmpSession(noUsage);
+
+    for (const field of [
+      obs.input_tokens,
+      obs.output_tokens,
+      obs.cache_read_tokens,
+      obs.cache_write_tokens,
+      obs.total_tokens,
+      obs.cost_usd_estimate,
+    ]) {
+      expect(field.state).toBe("absent");
+      expect(field.value).toBeUndefined();
+    }
+    expect(obs.cli_version).toBe("18.11.2");
+  });
+
+  test("never copies prompt text into the observation", () => {
+    const obs = parseOmpSession(OMP_FIXTURE);
+    expect(JSON.stringify(obs)).not.toContain("secret prompt text");
   });
 });

@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: active
 ---
 
 # Ingest OMP session usage into the local telemetry pipeline
@@ -53,15 +53,15 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | not run | - | record the commit SHA you ran on |
-| AC1 | `bun test tools/eval/collect_usage.test.ts` (fixture sums) | not run | - | |
-| AC2 | `bun test tools/eval/collect_usage.test.ts` (model_usage) | not run | - | |
-| AC3 | `bun test tools/eval/collect_usage.test.ts` (no usage) | not run | - | |
-| AC4 | `bun test tools/eval/collect_usage.test.ts` (no prompt text) | not run | - | |
-| AC5 | `bun test tools/eval/run_usage.test.ts` | not run | - | |
-| AC6 | real-session smoke command | not run | - | do not commit `/tmp/omp-usage-smoke.jsonl` |
-| AC7 | `mise run validate` and `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC7 and the out-of-scope list | not run | - | |
+| B1 | `mise run validate` and `mise run test` before the first edit | fail | f678867 | validate pass; test fail: in the full `mise run test` run, `tools/validate/validate.test.ts` "this repository" failed under CPU contention with sibling workers (run 1: timed out at 120 s limit, earlier run: failed at 120 s). Rerun alone (`bun test tools/validate/validate.test.ts -t "this repository"`): pass, 1 pass / 0 fail. Pre-existing, outside scope. |
+| AC1 | `bun test tools/eval/collect_usage.test.ts` (fixture sums) | pass | - | collect_usage.test.ts: 8 pass / 0 fail (74 expects), fixture sums and states as AC1 |
+| AC2 | `bun test tools/eval/collect_usage.test.ts` (model_usage) | pass | - | same run: model_usage adds 10/5/0/0/15/0.001 |
+| AC3 | `bun test tools/eval/collect_usage.test.ts` (no usage) | pass | - | same run: absent states, no throw |
+| AC4 | `bun test tools/eval/collect_usage.test.ts` (no prompt text) | pass | - | same run: JSON.stringify does not contain prompt text |
+| AC5 | `bun test tools/eval/run_usage.test.ts` | pass | - | run_usage.test.ts: 16 pass / 0 fail (includes omp parseCliArgs, runUsage total 34678, --help lists omp) |
+| AC6 | real-session smoke command | pass | - | session 2026-10-16T19-04-15-265Z_01a14619…; exit 0; input_tokens observed; /tmp output deleted |
+| AC7 | `mise run validate` and `mise run test` | pass | - | validate exit 0; test exit 0, 339 pass / 0 fail (worktree, after B1 vocabulary fix) |
+| V1 | diff read against AC1–AC7 and the out-of-scope list | pass | - | 5 files in scope only; no `any` or `isRecord` in new code; no ab_runner/token_budget_guard/ADR/ledger changes |
 
 ## Constraints and budget
 
