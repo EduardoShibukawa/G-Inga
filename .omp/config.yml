@@ -5,3 +5,10 @@ skills:
   enableAgentsProject: false
 disabledProviders:
   - opencode
+
+# G-Ingá subagent model policy for OMP (skills/work/references/model-policy.md, "Host dispatch mapping").
+task:
+  agentModelOverrides:
+    scout: anthropic/claude-haiku-5-5
+    task: anthropic/claude-sonnet-5-5
+    reviewer: anthropic/claude-opus-5-5
