@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
+verified_at: "94b4fe9"
 ---
 
 # Ship an OMP plugin hook for the G-Ingá startup warning
@@ -95,6 +96,13 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-03-session-start-warnings, baseline HEAD f678867
-- done: B1 run before any edit; `mise run test` fails at baseline (pre-existing 120 s timeout in `tools/validate/validate.test.ts`). No implementation edits made. Status set to `blocked`.
-- next: owner decision on the Blockers above, then re-run B1 and continue Plan step 2.
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-03-session-start-warnings, HEAD f148ed6 (implementation 94b4fe9)
+- done: B1 re-run on a quiet machine (4c7021b, `flock` serialized) passes; implementation in `hooks/pre/g-inga-session-start.ts` and `tools/gate/omp-session-start.test.ts` (94b4fe9); AC1–AC5 and V1 pass at 94b4fe9; record verified.
+- next: none; owner review and PR merge.
+
+## Outcome
+
+- Delivered: OMP plugin factory `hooks/pre/g-inga-session-start.ts` reusing `runSessionStartCheck`; `ompStartupCheck` skips the Claude plugin check and the network (`networkReached: false`); `session_start` notifies the missing pre-commit hook warning once, `before_agent_start` returns it once as `g-inga.session-start` model context. Five tests in `tools/gate/omp-session-start.test.ts`.
+- Deviation: the record's Constraints say to type the OMP API as `any`. A project rule (`ts-no-any`) forbids `any`, so the factory declares a minimal local `OmpExtensionApi` shape instead. No OMP package import, no new dependency.
+- Not delivered: none. `hooks/session-start.mjs`, `hooks/hooks.json`, and the stale-plugin check are untouched, as the record requires.
+- Follow-up (not in this task): the B1 timeout in `tools/validate/validate.test.ts` under parallel load (Run 1). Run 2 passed on a quiet machine.
