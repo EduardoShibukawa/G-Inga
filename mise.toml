@@ -11,8 +11,8 @@ pkl = "0.32.1"
 
 [settings]
 lockfile = true
-# Install only what mise.lock pins (URL and checksum).
-locked = true
+# Allow global/external tools not in repository mise.lock while respecting lockfile
+locked = false
 # `[hooks]` is experimental before mise 2026.10; CI pins 2026.10.7, where it's stable.
 experimental = true
 
@@ -101,4 +101,17 @@ else
 fi
 echo "eval:skills: raw results and verdict.json files in $out (git-ignored)"
 exit $(( t > c ? t : c ))
+'''
+
+[tasks."eval:usage"]
+description = "Run usage telemetry aggregation and summary generation"
+run = "mkdir -p records/usage && bun tools/eval/aggregate_usage.ts --in records/usage/ --out records/usage-summary.md --ledger records/usage-ledger.tsv"
+
+[tasks."eval:ab"]
+description = "Run A/B benchmark comparisons with contamination guard bounded by SHE_BUDGET_USD (default 5.00)"
+run = '''
+#!/usr/bin/env bash
+set -uo pipefail
+budget="${SHE_BUDGET_USD:-5.00}"
+bun tools/eval/ab_runner.ts --max-cost-usd "$budget" "$@"
 '''

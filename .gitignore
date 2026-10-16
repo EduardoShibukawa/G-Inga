@@ -2,3 +2,9 @@ node_modules/
 
 # Raw `claude plugin eval` output (prompts, transcripts, per-run JSON). ADR 0006: never committed.
 evals/results/
+
+# Raw usage telemetry traces (JSONL). ADR 0006: never committed.
+records/usage/*.jsonl
+records/usage/**/*.jsonl
+!records/usage-summary.md
+!records/usage-ledger.tsv
