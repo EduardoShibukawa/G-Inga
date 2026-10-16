@@ -6,6 +6,8 @@ export interface Context {
   root: string;
   /** Every Markdown file under `root`. No file is assumed to have frontmatter. */
   files: MdFile[];
+  /** Validation mode: "authoring" checks current tree only; "full" (default) includes Git history and ancestry. */
+  mode?: "authoring" | "full";
 }
 
 export type Layer = "universal" | "decision records" | "task/spec artifacts";

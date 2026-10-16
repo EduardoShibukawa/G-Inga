@@ -8,6 +8,7 @@
   },
   "scripts": {
     "validate": "bun tools/validate/preflight.ts && bun tools/validate/main.ts",
+    "validate:authoring": "bun tools/validate/preflight.ts && bun tools/validate/main.ts --authoring",
     "validate:external": "bun tools/validate/preflight.ts && bun tools/validate/main.ts --external-only",
     "test": "bun tools/validate/preflight.ts && bun test tools/validate tools/gate tools/eval packages/opencode-plugin",
     "typecheck": "bun tools/validate/preflight.ts && tsc --noEmit -p tools/validate",

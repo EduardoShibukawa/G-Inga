@@ -47,8 +47,8 @@ export function cleanupFixtures() {
 }
 
 /** Runs the entry point on `root`; returns the exit code and output. */
-export function validate(root: string, env: Record<string, string> = {}) {
-  const p = Bun.spawnSync(["bun", MAIN, "--root", root], { env: { ...process.env, ...env }, stdout: "pipe", stderr: "pipe" });
+export function validate(root: string, env: Record<string, string> = {}, extraArgs: string[] = []) {
+  const p = Bun.spawnSync(["bun", MAIN, "--root", root, ...extraArgs], { env: { ...process.env, ...env }, stdout: "pipe", stderr: "pipe" });
   return { code: p.exitCode, out: p.stdout.toString() + p.stderr.toString() };
 }
 

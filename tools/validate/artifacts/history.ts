@@ -7,7 +7,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import contract from "./contract.json" with { type: "json" };
 import { bodyHash, parseRecord, specRef, str, type Artifact } from "./records.ts";
-import { checkSnapshot, loadSnapshot, schemaStanding, type Ancestry, type Finding, type Options } from "./rules.ts";
+import { checkSnapshot, loadSnapshot, schemaStanding, type Ancestry, type Finding, type Options, type ShaResolver } from "./rules.ts";
 
 export interface HistoryResult {
   findings: Finding[];
@@ -66,6 +66,16 @@ export function recordHistory(root: string): RecordHistory {
   return hit ? { kind: "some", commit: hit } : { kind: "none" };
 }
 
+export function gitResolveSha(root: string): ShaResolver {
+  if (!isGitRepo(root)) return () => "shallow";
+  const shallow = git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true";
+  return (sha: string) => {
+    const r = git(root, ["rev-parse", "--verify", "--quiet", `${sha}^{commit}`]);
+    if (r.ok) return r.out.trim();
+    return shallow ? "shallow" : undefined;
+  };
+}
+
 export function gitAncestry(root: string): Ancestry {
   return (a, b) => {
     const ra = git(root, ["rev-parse", "--verify", "--quiet", `${a}^{commit}`]);
@@ -110,6 +120,20 @@ export function reachable(from: string, to: string): boolean {
   return false;
 }
 
+/**
+ * Authoring mode: checks only the current working tree snapshot, skipping Git history walk and commit-order ancestry.
+ * Shares the exact same current-tree finding format (`working tree: <msg>`) as `checkHistory`.
+ */
+export function checkAuthoring(root: string, opts: Options = {}): HistoryResult {
+  const cur = loadSnapshot(filesAt(root, WT));
+  const resolveSha = opts.resolveSha ?? (isGitRepo(root) ? gitResolveSha(root) : undefined);
+  const findings = checkSnapshot(cur, { ...opts, mode: "authoring", ancestry: undefined, resolveSha }).map((fd) => ({
+    ...fd,
+    msg: `${WT}: ${fd.msg}`,
+  }));
+  return { findings, frozen: [] };
+}
+
 export function checkHistory(root: string, opts: Options = {}): HistoryResult | { blocked: string } {
   if (!isGitRepo(root)) return { blocked: "not a Git repository" };
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true") return { blocked: "shallow clone: the history walk and deleted-record detection need full history (§7.1)" };
@@ -130,6 +154,7 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
     return parent ? snap(parent) : new Map<string, Artifact>();
   };
   const ancestry = opts.ancestry ?? gitAncestry(root);
+  const resolveSha = opts.resolveSha ?? gitResolveSha(root);
   const at = (rev: string) => (rev === WT ? WT : rev.slice(0, 7));
 
   // A record is only deleted when a commit actually removes it relative to its parent(s). The linear
@@ -190,7 +215,7 @@ export function checkHistory(root: string, opts: Options = {}): HistoryResult | 
     }
     // Guards of the new status hold at this revision; the spec gate holds at every revision that touched records.
     if (touched.size || rev === WT)
-      for (const fd of checkSnapshot(cur, { ...opts, ancestry })) {
+      for (const fd of checkSnapshot(cur, { ...opts, ancestry, resolveSha })) {
         const key = [...cur.entries()].find(([, r]) => r.path === fd.file)?.[0];
         const dedupe = `${fd.file}|${fd.rule}|${fd.msg}`;
         if ((rev === WT || fd.specGate || (key && changedStatus.has(key))) && !reported.has(dedupe)) {

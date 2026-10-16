@@ -107,7 +107,7 @@ Used by `standard` tasks, by the `heavy` parent and by the `heavy` children.
 | `## Plan` | S2 fails or step order matters (ADR 0002 §4); always for a `heavy` parent | ordered steps. A `heavy` parent lists its children here. Otherwise `skip: <reason>` or absent |
 | `## Blockers` | `blocked`, `partial` | what blocks, what's needed, from whom. Options with trade-offs when it's a decision |
 | `## Checkpoint` | the work stops or crosses sessions | §3.6 |
-| `## Review` | `heavy` parent; `standard` after a review trigger (ADR 0002 §4) | each finding with its resolution: `fixed in <sha>`, `rejected: <reason>` or `open` |
+| `## Review` | `heavy` parent; `standard` after a review trigger (ADR 0002 §4) | each finding with its resolution: `fixed in <sha>`, `rejected: <reason>` or `open`. On a `heavy` parent, may be `skip: <reason>` until the review runs; must have resolved findings before `verified` |
 | `## Outcome` | `verified`, `accepted`, `partial`, `cancelled` | what was delivered, what wasn't, follow-ups |
 
 ### 3.3 States
@@ -176,7 +176,7 @@ Guards. "det" marks what a script can check; the rest is agent judgment.
 - `completed → verified`: the verification rule in §3.4 holds (det, except attribution). For a `heavy` parent, also:
   - every child that isn't `cancelled` is `verified` or `accepted` with `@V`, where `V` is the spec's current approved version;
   - the spec is `approved` and passes the history check (§7.1);
-  - no `## Review` finding is `open`;
+  - `## Review` is not `skip:` or empty, and no `## Review` finding is `open`;
   - every `divergence:` entry has a later `approved:` entry resolving it.
 - `verified → accepted`: an `accepted:` entry exists (det for presence; only the owner makes it true).
 - `blocked` and `partial`: `## Blockers` is non-empty (det). `partial` also needs `## Outcome` naming the criteria not delivered (det for presence).
@@ -211,7 +211,7 @@ One table plans the checks before editing and records the results afterward, so 
 
 **Flaky.** A flaky check is a `fail` with `Note: flaky: <evidence>`. It never counts as `pass`, and it can be attributed only if a `B` row shows the same failure.
 
-`Ref` is the short commit SHA the row ran on, plus a log path when a log was kept. Logs aren't stored by default: the command and the commit make the row reproducible. A repro's first failure can go in `Note` (`failed first on <sha>`).
+`Ref` is the short commit SHA the row ran on, plus a log path when a log was kept. The validator extracts the leading commit SHA token from `Ref` and canonicalizes both `Ref` and `verified_at` via `git rev-parse` when Git history is available, degrading to `blocked` (never silently to `pass`) when an abbreviated prefix cannot be resolved in a shallow or detached context. Logs aren't stored by default: the command and the commit make the row reproducible. A repro's first failure can go in `Note` (`failed first on <sha>`).
 
 ### 3.5 Budget defaults
 
@@ -319,6 +319,18 @@ What the validator does (det), using only the current files. It reads no old spe
 
 Old spec text is still in Git for people who want to read it. The validator never needs it to resolve a version. The only history it reads is the transition walk in §7.1.
 
+### 4.5 Intent artifact (`schema: intent/1`, `heavy` only)
+
+A `heavy` task starts from an origin intent artifact under `intents/<id>.md` ([ADR 0013](decisions/0013-intent-artifact-and-phased-subagents.md)) that captures the problem, desired outcome, affected users/systems, constraints, open questions, and preserves the originator's request verbatim before specification drafting.
+
+| Key / Section | Required | Values / Content |
+|---|---|---|
+| `schema` | always | `intent/1` (§8 registry) |
+| `status` | always | `draft`, `approved`, `superseded` (terminal: `approved`, `superseded`) |
+| `## Original prompt` | always | non-empty verbatim preservation of the original prompt |
+
+Intent records under `intents/` participate in record discovery, deletion detection, and the §8 schema registry alongside `tasks/` and `specs/`.
+
 ## 5. Heavy evidence
 
 ADR 0002 requires an evidence record for `heavy`. Here it's the parent task record, not a separate file:
@@ -366,6 +378,12 @@ A `light` task has no resume contract. It fits one session by definition (S8). I
 ## 7. Validation
 
 The deterministic column is implemented by the validator in `tools/validate/`, except the secrets pattern scan, which is not implemented.
+
+The validator supports two modes ([ADR 0012](decisions/0012-authoring-vs-full-validation-modes.md)):
+
+- **Full mode (default, `mise run validate`, `node tools/validate/validate.js`):** runs every current-tree check plus commit-order ancestry (`§3.4`) and the Git history walk (`§7.1`). Required before merge/acceptance and in CI and `pre-commit`.
+- **Authoring mode (`bun run validate:authoring`, `bun tools/validate/main.ts --authoring`, `node tools/validate/validate.js --authoring`):** runs locally during iteration, checks current-tree structure and records using the same rule and finding vocabulary (`observed`, `expected`, `next`), and skips the Git history walk and commit-order ancestry checks. Not accepted as merge/CI evidence.
+- **Explain mode (`--explain <rule>` or `--explain list`):** prints the rationale and repair step for any contract rule (`§2.2`–`§8`).
 
 | Check | Deterministic script | Agent judgment | Owner |
 |---|---|---|---|

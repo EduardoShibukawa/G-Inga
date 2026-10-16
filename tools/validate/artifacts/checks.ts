@@ -10,7 +10,7 @@ import { result, type CheckResult } from "../lib/report.ts";
 import { checkContractCopy, CONTRACT_COPY } from "../contract-copy.mjs";
 import contract from "./contract.json" with { type: "json" };
 import { allCases } from "./fixtures.ts";
-import { checkHistory, isGitRepo, recordHistory } from "./history.ts";
+import { checkAuthoring, checkHistory, isGitRepo, recordHistory } from "./history.ts";
 import { parseRecord } from "./records.ts";
 import { checkSnapshot, loadSnapshot } from "./rules.ts";
 
@@ -25,11 +25,11 @@ function contractPresent(ctx: Context): true | string {
 
 /**
  * Records apply when any of these holds:
- * - `tasks/` or `specs/` holds a file that declares a `task/N` or `spec/N` schema. Then every `.md` file
+ * - `tasks/`, `specs/` or `intents/` holds a file that declares a `task/N`, `spec/N` or `intent/N` schema. Then every `.md` file
  *   there is a record, and one without a known schema is `blocked` (contract §8);
- * - Git history shows such a record was ever committed, so deleting them all still runs the walk, which fails
+ * - in full mode, Git history shows such a record was ever committed, so deleting them all still runs the walk, which fails
  *   the deletions (§6.1, §7.1);
- * - the clone is shallow, so history can't rule that out: the walk then reports `blocked` (§7.1).
+ * - in full mode, the clone is shallow, so history can't rule that out: the walk then reports `blocked` (§7.1).
  * A plain `tasks/` folder of notes, never holding a schema, is left alone.
  */
 export function recordsPresent(ctx: Context): true | string {
@@ -41,6 +41,7 @@ export function recordsPresent(ctx: Context): true | string {
       if (/^(task|spec|intent)\/\d+$/.test(String(rec.fm.schema ?? ""))) return true;
     }
   }
+  if (ctx.mode === "authoring") return "no task, spec or intent records in working tree (authoring mode skips history)";
   const history = recordHistory(ctx.root);
   if (history.kind === "some" || (history.kind === "unknown" && history.reason === "shallow")) return true;
   if (history.kind === "unknown") return "no task or spec records, and not a Git repository (nothing was ever tracked)";
@@ -99,7 +100,7 @@ export function contractExamples(files: MdFile[]): CheckResult {
   const records = new Map<string, string>();
   for (const b of fences(doc.lines).filter((b) => b.lang === "markdown" && /^---\nschema:/.test(b.body))) {
     let path: string | undefined;
-    for (let i = b.line - 2; i >= 0 && !path; i--) path = /`((?:tasks|specs)\/[^`]+\.md)`/.exec(doc.lines[i])?.[1];
+    for (let i = b.line - 2; i >= 0 && !path; i--) path = /`((?:tasks|specs|intents)\/[^`]+\.md)`/.exec(doc.lines[i])?.[1];
     if (path) records.set(path, b.body + "\n");
   }
   const snapshot = loadSnapshot(records);
@@ -124,9 +125,18 @@ export function ruleFixtures(): CheckResult {
   return result("artifact-rule-fixtures", findings, `${allCases.length} fixtures, ${allCases.length - findings.length} as expected`);
 }
 
-/** Real records under `tasks/` and `specs/`: current state rules plus the Git history walk. */
-export function records(root: string): CheckResult {
+/** Real records under `tasks/`, `specs/` and `intents/`: current state rules plus (in full mode) the Git history walk. */
+export function records(root: string, mode: "authoring" | "full" = "full"): CheckResult {
   const name = "artifact-records";
+  if (mode === "authoring") {
+    const res = checkAuthoring(root);
+    const fail = res.findings.filter((f) => f.level === "fail").map((f) => `${f.file} ${f.rule} ${f.msg}`);
+    const blocked = res.findings.filter((f) => f.level !== "fail").map((f) => `${f.file} ${f.rule} [${f.level}] ${f.msg}`);
+    return result(name, fail, "authoring snapshot check done (history walk skipped)", {
+      blocked,
+      notRun: ["history walk and commit-order ancestry skipped in --authoring mode"],
+    });
+  }
   if (!isGitRepo(root)) return result(name, [], "not checked", { blocked: ["record checks need a Git repository (contract §7.1)"] });
   const res = checkHistory(root);
   if ("blocked" in res) return result(name, [], "history walk not run", { blocked: [res.blocked] });
@@ -140,5 +150,5 @@ export const artifactChecks: Check[] = [
   { name: "artifact-contract-copy", layer: "task/spec artifacts", applies: contractCopyApplies, run: (ctx) => contractCopy(ctx.root) },
   { name: "artifact-contract-examples", layer: "task/spec artifacts", applies: contractPresent, run: (ctx) => contractExamples(ctx.files) },
   { name: "artifact-rule-fixtures", layer: "task/spec artifacts", applies: contractPresent, run: () => ruleFixtures() },
-  { name: "artifact-records", layer: "task/spec artifacts", applies: recordsPresent, run: (ctx) => records(ctx.root) },
+  { name: "artifact-records", layer: "task/spec artifacts", applies: recordsPresent, run: (ctx) => records(ctx.root, ctx.mode) },
 ];

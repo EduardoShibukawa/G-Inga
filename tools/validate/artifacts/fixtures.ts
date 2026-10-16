@@ -37,6 +37,7 @@ export interface TaskSpec {
   log?: string[];
   ac?: string[];
   rows?: RowSpec[];
+  review?: string;
   extra?: string;
 }
 
@@ -78,7 +79,7 @@ export function task(t: TaskSpec): string {
     ...rows,
     "",
   ];
-  if (isParent) s.push("## Plan", "", "1. children", "", "## Review", "", "- no findings: fixed in a000001", "");
+  if (isParent) s.push("## Plan", "", "1. children", "", "## Review", "", t.review ?? "- no findings: fixed in a000001", "");
   if (["blocked", "partial"].includes(t.status)) s.push("## Blockers", "", "- spec v2 awaiting approval", "");
   if (["verified", "accepted", "partial", "cancelled"].includes(t.status)) s.push("## Outcome", "", "Fixture outcome.", "");
   if (t.extra) s.push(t.extra);
@@ -329,6 +330,68 @@ export const stateCases: Case[] = [
   stateCase("X9", "unknown schema is blocked, not guessed", "blocked", {
     [t("2026-10-12-x")]: task({ status: "active", schema: "task/9" }),
   }),
+  stateCase("X10", "heavy parent active with ## Review: skip: reason passes", "pass", {
+    [t(P)]: parent("active", 1, { review: "skip: runs after children are verified" }),
+    [sp]: spec({ status: "draft", version: 1 }),
+  }),
+  stateCase("X11", "heavy parent verified while ## Review is still skip: fails", "fail", {
+    [t(P)]: parent("verified", 1, { verifiedAt: "2222222", rows: parentVerifiedRows("2222222"), review: "skip: runs after children are verified" }),
+    [sp]: spec({ status: "approved", version: 1, approvedVersion: 1 }),
+    [t(C1)]: verifiedChild(1),
+  }),
+  stateCase("X12", "heavy parent verified with an open finding in ## Review fails", "fail", {
+    [t(P)]: parent("verified", 1, { verifiedAt: "2222222", rows: parentVerifiedRows("2222222"), review: "- F1 edge case: open" }),
+    [sp]: spec({ status: "approved", version: 1, approvedVersion: 1 }),
+    [t(C1)]: verifiedChild(1),
+  }),
+  stateCase(
+    "X13",
+    "verified with abbreviated SHA + log path in Ref canonicalized to verified_at",
+    "pass",
+    {
+      [t("2026-10-12-x")]: task({
+        status: "verified",
+        verifiedAt: "2222222abcdef0",
+        rows: [
+          ["B1", "pass", "1111111 (logs/b1.log)"],
+          ["AC1", "pass", "2222222 logs/ac1.log"],
+          ["R1", "pass", "2222222:logs/r1.log"],
+          ["V1", "pass", "`2222222`"],
+        ],
+      }),
+    },
+    {
+      ancestry: (a, b) => a.startsWith("1111111") && b.startsWith("2222222"),
+      resolveSha: (s) => (s.startsWith("1111111") ? "1".repeat(40) : s.startsWith("2222222") ? "2".repeat(40) : undefined),
+    },
+  ),
+  stateCase(
+    "X14",
+    "abbreviated SHA prefix mismatch degrades to blocked when history is shallow/unavailable",
+    "blocked",
+    {
+      [t("2026-10-12-x")]: task({
+        status: "verified",
+        verifiedAt: "2222222abcdef0",
+        rows: verifiedRows("2222222"),
+      }),
+    },
+    {
+      resolveSha: () => "shallow",
+    },
+  ),
+  stateCase(
+    "X15",
+    "authoring mode skips commit-order ancestry check when ancestry is unavailable",
+    "pass",
+    {
+      [t("2026-10-12-x")]: task({ status: "verified", verifiedAt: "2222222", rows: verifiedRows("2222222", "abcdef0") }),
+    },
+    {
+      mode: "authoring",
+      ancestry: undefined,
+    },
+  ),
 ];
 
 export const draftV1: Step = () => ({ [t(P)]: parent("active", 1), [sp]: spec({ status: "draft", version: 1 }) });
