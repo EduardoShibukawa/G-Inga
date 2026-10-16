@@ -2,7 +2,7 @@
 name: validator-guide
 description: Diagnoses repository validator findings, explains validation rules, and suggests precise repair steps. Use when a gate fails or during pre-validation checks.
 tools:
-  - ReadFile
+  - Read
   - Glob
   - Grep
   - Bash
