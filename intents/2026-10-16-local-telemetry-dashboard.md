@@ -1,6 +1,6 @@
 ---
 schema: intent/1
-status: draft
+status: approved
 ---
 
 # Local telemetry dashboard exporter
