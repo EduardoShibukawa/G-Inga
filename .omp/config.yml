@@ -1,0 +1,7 @@
+# G-Ingá loads in OMP only through the g-inga@g-inga plugin; project skill folders are not read.
+# disabledProviders replaces the user-level list in this repository (arrays are not merged).
+skills:
+  enableClaudeProject: false
+  enableAgentsProject: false
+disabledProviders:
+  - opencode
