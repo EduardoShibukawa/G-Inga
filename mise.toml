@@ -11,8 +11,8 @@ pkl = "0.32.1"
 
 [settings]
 lockfile = true
-# Install only what mise.lock pins (URL and checksum).
-locked = true
+# Allow global/external tools not in repository mise.lock while respecting lockfile
+locked = false
 # `[hooks]` is experimental before mise 2026.10; CI pins 2026.10.7, where it's stable.
 experimental = true
 
