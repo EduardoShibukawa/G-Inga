@@ -180,6 +180,7 @@ export function compareShas(a: string, b: string, resolveSha?: ShaResolver): "sa
   const na = extractRefSha(a);
   const nb = extractRefSha(b);
   if (!na || !nb) return "different";
+  if (na === nb) return "same";
   if (resolveSha) {
     const ra = resolveSha(na);
     const rb = resolveSha(nb);
@@ -187,7 +188,6 @@ export function compareShas(a: string, b: string, resolveSha?: ShaResolver): "sa
       return ra === rb ? "same" : "different";
     }
   }
-  if (na === nb) return "same";
   if ((na.startsWith(nb) || nb.startsWith(na)) && /^[0-9a-f]{4,40}$/i.test(na) && /^[0-9a-f]{4,40}$/i.test(nb)) {
     return "blocked";
   }

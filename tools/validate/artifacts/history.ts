@@ -69,25 +69,42 @@ export function recordHistory(root: string): RecordHistory {
 export function gitResolveSha(root: string): ShaResolver {
   if (!isGitRepo(root)) return () => "shallow";
   const shallow = git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true";
+  const cache = new Map<string, string | "shallow" | undefined>();
   return (sha: string) => {
+    if (cache.has(sha)) return cache.get(sha);
     const r = git(root, ["rev-parse", "--verify", "--quiet", `${sha}^{commit}`]);
-    if (r.ok) return r.out.trim();
-    return shallow ? "shallow" : undefined;
+    const val = r.ok ? r.out.trim() : shallow ? "shallow" : undefined;
+    cache.set(sha, val);
+    return val;
   };
 }
 
 export function gitAncestry(root: string): Ancestry {
+  const resolve = gitResolveSha(root);
+  const cache = new Map<string, boolean | undefined>();
   return (a, b) => {
-    const ra = git(root, ["rev-parse", "--verify", "--quiet", `${a}^{commit}`]);
-    const rb = git(root, ["rev-parse", "--verify", "--quiet", `${b}^{commit}`]);
-    if (!ra.ok || !rb.ok) return undefined;
-    if (ra.out.trim() === rb.out.trim()) return false;
-    if (typeof Bun !== "undefined" && Bun.spawnSync) {
-      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
-      return p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
+    const key = `${a}|${b}`;
+    if (cache.has(key)) return cache.get(key);
+    const ra = resolve(a);
+    const rb = resolve(b);
+    if (!ra || ra === "shallow" || !rb || rb === "shallow") {
+      cache.set(key, undefined);
+      return undefined;
     }
-    const p = spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd: root, env: gitEnv() });
-    return p.status === 0 ? true : p.status === 1 ? false : undefined;
+    if (ra === rb) {
+      cache.set(key, false);
+      return false;
+    }
+    let res: boolean | undefined;
+    if (typeof Bun !== "undefined" && Bun.spawnSync) {
+      const p = Bun.spawnSync(["git", "merge-base", "--is-ancestor", ra, rb], { cwd: root, env: gitEnv() });
+      res = p.exitCode === 0 ? true : p.exitCode === 1 ? false : undefined;
+    } else {
+      const p = spawnSync("git", ["merge-base", "--is-ancestor", ra, rb], { cwd: root, env: gitEnv() });
+      res = p.status === 0 ? true : p.status === 1 ? false : undefined;
+    }
+    cache.set(key, res);
+    return res;
   };
 }
 
