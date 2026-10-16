@@ -47,7 +47,7 @@ const hasMise = sh("command -v mise", tmpdir()).code === 0;
 const requireRuntimes = process.env.G_INGA_REQUIRE_RUNTIMES === "1";
 
 /** Swaps `validate` for the standalone validator and stubs its `setup` dependency; mise local config, not committed. */
-const LOCAL_VALIDATE = '[tasks.setup]\nrun = "true"\n\n[tasks.validate]\nrun = "bun tools/validate/validate.js"\n';
+const LOCAL_VALIDATE = '[tasks.setup]\nrun = "true"\n\n[tasks.validate]\nrun = "bun tools/validate/validate.js"\n\n[tasks."validate:authoring"]\nrun = "bun tools/validate/validate.js --authoring"\n';
 const INVALID = "tasks/2026-10-14-invalid.md";
 const VALID = "tasks/2026-10-14-valid.md";
 const FINDING = `${INVALID} §3.3 working tree: status "nonsense" is not a task state`;
