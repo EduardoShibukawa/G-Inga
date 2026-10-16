@@ -62,8 +62,8 @@ SC1–SC10 from spec `2026-10-16-usage-telemetry-pipeline` once approved. Parent
 |---|---|---|---|---|
 | B1 | full repository validation before change | pass | e1b407a | `bun run validate` |
 | B2 | evaluation test suite before change | pass | e1b407a | `bun test tools/eval` (60 pass, 0 fail) |
-| SC1 | multi-host ingestion parses Claude Code, Antigravity, OpenCode | not run | - | pending child 02 |
-| SC2 | honest absent/unsupported recording without fabrication | not run | - | pending child 02 |
+| SC1 | multi-host ingestion parses Claude Code, Antigravity, OpenCode | pass | c76f884 | child 02 verified |
+| SC2 | honest absent/unsupported recording without fabrication | pass | c76f884 | child 02 verified |
 | SC3 | aggregate_usage produces Markdown summary tables and JSON | not run | - | pending child 03 |
 | SC4 | ab_runner executes N=3 runs with worktree isolation and zero skill contamination | not run | - | pending child 04 |
 | SC5 | deterministic quality_score and ledger updates | not run | - | pending child 04 |

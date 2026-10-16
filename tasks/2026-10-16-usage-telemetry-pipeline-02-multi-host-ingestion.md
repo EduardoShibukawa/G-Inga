@@ -1,11 +1,12 @@
 ---
 schema: task/1
 tier: standard
-status: completed
+status: verified
 parent: 2026-10-16-usage-telemetry-pipeline
 spec: 2026-10-16-usage-telemetry-pipeline@1
 depends_on:
   - 2026-10-16-usage-telemetry-pipeline-01-environment-and-research
+verified_at: "c76f884"
 ---
 
 # Multi-host telemetry ingestion and Antigravity hook integration
@@ -47,13 +48,13 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | evaluation test suite before change | pass | e1b407a | `bun test tools/eval` |
-| AC1 | run_usage CLI parses multi-host inputs | pass | tools/eval/run_usage.ts | CLI flags, stdin streaming, and JSONL appending verified |
-| AC2 | PII sanitized and token structures extracted | pass | tools/eval/collect_usage.ts | scrubbed emails/tokens/UUIDs, OpenCode/Antigravity/Claude parsed |
-| AC3 | absent and unsupported states assigned honestly | pass | tools/eval/run_usage.test.ts | ADR 0006 honest reporting, zero fabrication |
-| AC4 | .agents/hooks.json Stop event configured | pass | .agents/hooks.json | Stop lifecycle hook invoking run_usage.ts configured |
-| AC5 | eval tests and repository validation green | pass | tools/eval/run_usage.test.ts | bun test tools/eval (73 pass) && bun run validate pass |
-| R1 | regression check on verified_at | not run | - | on verified_at |
-| V1 | diff read against AC1–AC5 | pass | - | changes verified against AC1–AC5 |
+| AC1 | run_usage CLI parses multi-host inputs | pass | c76f884 | CLI flags, stdin streaming, and JSONL appending verified |
+| AC2 | PII sanitized and token structures extracted | pass | c76f884 | scrubbed emails/tokens/UUIDs, OpenCode/Antigravity/Claude parsed |
+| AC3 | absent and unsupported states assigned honestly | pass | c76f884 | ADR 0006 honest reporting, zero fabrication |
+| AC4 | .agents/hooks.json Stop event configured | pass | c76f884 | Stop lifecycle hook invoking run_usage.ts configured |
+| AC5 | eval tests and repository validation green | pass | c76f884 | bun test tools/eval (73 pass) && bun run validate pass |
+| R1 | regression check on verified_at | pass | c76f884 | full eval test suite and validate pass |
+| V1 | diff read against AC1–AC5 | pass | c76f884 | changes verified against AC1–AC5 |
 
 ## Plan
 
