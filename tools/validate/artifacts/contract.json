@@ -41,9 +41,10 @@
   },
   "schema_registry": [
     { "schema": "task/1", "terminal": ["verified", "accepted", "partial", "cancelled"] },
-    { "schema": "spec/1", "terminal": ["superseded"] }
+    { "schema": "spec/1", "terminal": ["superseded"] },
+    { "schema": "intent/1", "terminal": ["approved", "superseded"] }
   ],
-  "current_major": { "task": 1, "spec": 1 },
+  "current_major": { "task": 1, "spec": 1, "intent": 1 },
   "results": ["pass", "fail", "blocked", "not run"],
   "verification_row_kinds": {
     "B": { "runs_on": "strict ancestor of verified_at", "result_for_verified": "any" },

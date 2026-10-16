@@ -16,7 +16,7 @@ import { checkSnapshot, loadSnapshot } from "./rules.ts";
 
 const CONTRACT = contract.source;
 const DEFINED_BY = contract.defined_by;
-const RECORD_DIRS = ["tasks", "specs"];
+const RECORD_DIRS = ["tasks", "specs", "intents"];
 
 /** The contract checks apply where the contract document itself is present. */
 function contractPresent(ctx: Context): true | string {
@@ -38,7 +38,7 @@ export function recordsPresent(ctx: Context): true | string {
     if (!existsSync(abs)) continue;
     for (const name of readdirSync(abs).filter((n) => n.endsWith(".md"))) {
       const rec = parseRecord(`${dir}/${name}`, readFileSync(join(abs, name), "utf8"));
-      if (/^(task|spec)\/\d+$/.test(String(rec.fm.schema ?? ""))) return true;
+      if (/^(task|spec|intent)\/\d+$/.test(String(rec.fm.schema ?? ""))) return true;
     }
   }
   const history = recordHistory(ctx.root);

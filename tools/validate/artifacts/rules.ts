@@ -32,11 +32,13 @@ const SPEC_STATES = new Set(contract.spec.states);
 const NOT_CURRENT = new Set(contract.task.not_current_spec_states);
 const ALWAYS_TASK = ["Routing and approvals", "Objective", "Acceptance criteria", "Verification"];
 const ALWAYS_SPEC = ["Problem", "Expected behavior", "Scope", "Acceptance criteria", "Interfaces and dependencies", "Decisions", "Risks and constraints", "Verification", "Rollback", "Open questions", "Revisions"];
+const INTENT_STATES = new Set(["draft", "approved", "superseded"]);
+const ALWAYS_INTENT = ["Original prompt"];
 
 export function loadSnapshot(files: Map<string, string>): Map<string, Artifact> {
   const out = new Map<string, Artifact>();
   for (const [path, text] of files) {
-    if (!/^(tasks|specs)\/[^/]+\.md$/.test(path)) continue;
+    if (!/^(tasks|specs|intents)\/[^/]+\.md$/.test(path)) continue;
     const r = parseRecord(path, text);
     out.set(`${r.kind}:${r.id}`, r);
   }
@@ -44,7 +46,7 @@ export function loadSnapshot(files: Map<string, string>): Map<string, Artifact> 
 }
 
 export function schemaMajor(rec: Artifact): { family: string; major: number } | undefined {
-  const m = /^(task|spec)\/(\d+)$/.exec(str(rec.fm.schema) ?? "");
+  const m = /^(task|spec|intent)\/(\d+)$/.exec(str(rec.fm.schema) ?? "");
   return m ? { family: m[1], major: Number(m[2]) } : undefined;
 }
 
@@ -75,6 +77,7 @@ export function checkSnapshot(records: Map<string, Artifact>, opts: Options = {}
     if (standing === "unknown") add("blocked", "§8", rec, `unknown or missing schema "${str(rec.fm.schema) ?? ""}"; treated as unstructured prose`);
     if (standing === "unknown" || standing === "retired") continue;
     if (rec.kind === "spec") checkSpec(rec, records, add);
+    if (rec.kind === "intent") checkIntent(rec, add);
   }
 
   for (const rec of tasks) {
@@ -243,6 +246,13 @@ function checkVerified(rec: Artifact, needsBaselineAndReview: boolean, ancestry:
 
 function checkSkips(rec: Artifact, add: (l: Level, rule: string, r: Artifact, m: string) => void) {
   for (const [name, body] of rec.sections) if (/^\s*skip:\s*$/m.test(body)) add("fail", "§2.2", rec, `## ${name} has skip: without a reason`);
+}
+
+function checkIntent(rec: Artifact, add: (l: Level, rule: string, r: Artifact, m: string) => void) {
+  const status = str(rec.fm.status) ?? "";
+  if (!INTENT_STATES.has(status)) add("fail", "§4.5", rec, `status "${status}" is not draft, approved or superseded`);
+  for (const s of ALWAYS_INTENT) if (!rec.sections.has(s)) add("fail", "§4.5", rec, `missing section "## ${s}"`);
+  checkSkips(rec, add);
 }
 
 function section(rec: Artifact, name: string): string {

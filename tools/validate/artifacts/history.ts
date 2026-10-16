@@ -62,7 +62,7 @@ export function recordHistory(root: string): RecordHistory {
   if (!isGitRepo(root)) return { kind: "unknown", reason: "not-git" };
   if (!git(root, ["rev-parse", "--verify", "--quiet", "HEAD"]).ok) return { kind: "none" };
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true") return { kind: "unknown", reason: "shallow" };
-  const hit = git(root, ["log", "-E", "-G", "^schema:[[:space:]]*[\"']?(task|spec)/[0-9]+", "--format=%h", "-1", "HEAD", "--", "tasks", "specs"]).out.trim();
+  const hit = git(root, ["log", "-E", "-G", "^schema:[[:space:]]*[\"']?(task|spec|intent)/[0-9]+", "--format=%h", "-1", "HEAD", "--", "tasks", "specs", "intents"]).out.trim();
   return hit ? { kind: "some", commit: hit } : { kind: "none" };
 }
 
@@ -86,14 +86,14 @@ export function gitAncestry(root: string): Ancestry {
 function filesAt(root: string, rev: string): Map<string, string> {
   const files = new Map<string, string>();
   if (rev === WT) {
-    for (const dir of ["tasks", "specs"]) {
+    for (const dir of ["tasks", "specs", "intents"]) {
       const abs = join(root, dir);
       if (!existsSync(abs)) continue;
       for (const name of readdirSync(abs)) if (name.endsWith(".md")) files.set(`${dir}/${name}`, readFileSync(join(abs, name), "utf8"));
     }
     return files;
   }
-  const list = git(root, ["ls-tree", "-r", "--name-only", rev, "--", "tasks", "specs"]).out.split("\n").filter((p) => /^(tasks|specs)\/[^/]+\.md$/.test(p));
+  const list = git(root, ["ls-tree", "-r", "--name-only", rev, "--", "tasks", "specs", "intents"]).out.split("\n").filter((p) => /^(tasks|specs|intents)\/[^/]+\.md$/.test(p));
   for (const p of list) files.set(p, git(root, ["show", `${rev}:${p}`]).out);
   return files;
 }

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { parse as parseYaml } from "yaml";
 import contract from "./contract.json" with { type: "json" };
 
-export type Kind = "task" | "spec";
+export type Kind = "task" | "spec" | "intent";
 
 export interface Row {
   id: string;
@@ -35,7 +35,7 @@ export const RESULTS = new Set(contract.results);
 
 /** `tasks/<id>.md` or `specs/<id>.md` → parsed record. */
 export function parseRecord(path: string, text: string): Artifact {
-  const kind: Kind = path.startsWith("specs/") ? "spec" : "task";
+  const kind: Kind = path.startsWith("specs/") ? "spec" : path.startsWith("intents/") ? "intent" : "task";
   const id = path.replace(/^.*\//, "").replace(/\.md$/, "");
   const norm = text.replace(/\r\n/g, "\n");
   const m = /^---\n([\s\S]*?)\n---\n?/.exec(norm);

@@ -6998,9 +6998,10 @@ var contract_default = {
   },
   schema_registry: [
     { schema: "task/1", terminal: ["verified", "accepted", "partial", "cancelled"] },
-    { schema: "spec/1", terminal: ["superseded"] }
+    { schema: "spec/1", terminal: ["superseded"] },
+    { schema: "intent/1", terminal: ["approved", "superseded"] }
   ],
-  current_major: { task: 1, spec: 1 },
+  current_major: { task: 1, spec: 1, intent: 1 },
   results: ["pass", "fail", "blocked", "not run"],
   verification_row_kinds: {
     B: { runs_on: "strict ancestor of verified_at", result_for_verified: "any" },
@@ -7063,7 +7064,7 @@ var $visitAsync = visit.visitAsync;
 // tools/validate/artifacts/records.ts
 var RESULTS = new Set(contract_default.results);
 function parseRecord(path, text) {
-  const kind = path.startsWith("specs/") ? "spec" : "task";
+  const kind = path.startsWith("specs/") ? "spec" : path.startsWith("intents/") ? "intent" : "task";
   const id = path.replace(/^.*\//, "").replace(/\.md$/, "");
   const norm = text.replace(/\r\n/g, `
 `);
@@ -7150,10 +7151,12 @@ var SPEC_STATES = new Set(contract_default.spec.states);
 var NOT_CURRENT = new Set(contract_default.task.not_current_spec_states);
 var ALWAYS_TASK = ["Routing and approvals", "Objective", "Acceptance criteria", "Verification"];
 var ALWAYS_SPEC = ["Problem", "Expected behavior", "Scope", "Acceptance criteria", "Interfaces and dependencies", "Decisions", "Risks and constraints", "Verification", "Rollback", "Open questions", "Revisions"];
+var INTENT_STATES = new Set(["draft", "approved", "superseded"]);
+var ALWAYS_INTENT = ["Original prompt"];
 function loadSnapshot(files) {
   const out = new Map;
   for (const [path, text] of files) {
-    if (!/^(tasks|specs)\/[^/]+\.md$/.test(path))
+    if (!/^(tasks|specs|intents)\/[^/]+\.md$/.test(path))
       continue;
     const r = parseRecord(path, text);
     out.set(`${r.kind}:${r.id}`, r);
@@ -7161,7 +7164,7 @@ function loadSnapshot(files) {
   return out;
 }
 function schemaMajor(rec) {
-  const m = /^(task|spec)\/(\d+)$/.exec(str(rec.fm.schema) ?? "");
+  const m = /^(task|spec|intent)\/(\d+)$/.exec(str(rec.fm.schema) ?? "");
   return m ? { family: m[1], major: Number(m[2]) } : undefined;
 }
 function schemaStanding(rec, opts) {
@@ -7195,6 +7198,8 @@ function checkSnapshot(records, opts = {}) {
       continue;
     if (rec.kind === "spec")
       checkSpec(rec, records, add);
+    if (rec.kind === "intent")
+      checkIntent(rec, add);
   }
   for (const rec of tasks) {
     if (rec.unreadable || !["current", "previous"].includes(schemaStanding(rec, opts)))
@@ -7423,6 +7428,15 @@ function checkSkips(rec, add) {
     if (/^\s*skip:\s*$/m.test(body))
       add("fail", "§2.2", rec, `## ${name} has skip: without a reason`);
 }
+function checkIntent(rec, add) {
+  const status = str(rec.fm.status) ?? "";
+  if (!INTENT_STATES.has(status))
+    add("fail", "§4.5", rec, `status "${status}" is not draft, approved or superseded`);
+  for (const s of ALWAYS_INTENT)
+    if (!rec.sections.has(s))
+      add("fail", "§4.5", rec, `missing section "## ${s}"`);
+  checkSkips(rec, add);
+}
 function section(rec, name) {
   return (rec.sections.get(name) ?? "").trim();
 }
@@ -7478,7 +7492,7 @@ function recordHistory(root) {
     return { kind: "none" };
   if (git(root, ["rev-parse", "--is-shallow-repository"]).out.trim() === "true")
     return { kind: "unknown", reason: "shallow" };
-  const hit = git(root, ["log", "-E", "-G", `^schema:[[:space:]]*["']?(task|spec)/[0-9]+`, "--format=%h", "-1", "HEAD", "--", "tasks", "specs"]).out.trim();
+  const hit = git(root, ["log", "-E", "-G", `^schema:[[:space:]]*["']?(task|spec|intent)/[0-9]+`, "--format=%h", "-1", "HEAD", "--", "tasks", "specs", "intents"]).out.trim();
   return hit ? { kind: "some", commit: hit } : { kind: "none" };
 }
 function gitAncestry(root) {
@@ -7500,7 +7514,7 @@ function gitAncestry(root) {
 function filesAt(root, rev) {
   const files = new Map;
   if (rev === WT) {
-    for (const dir of ["tasks", "specs"]) {
+    for (const dir of ["tasks", "specs", "intents"]) {
       const abs = join(root, dir);
       if (!existsSync(abs))
         continue;
@@ -7510,8 +7524,8 @@ function filesAt(root, rev) {
     }
     return files;
   }
-  const list = git(root, ["ls-tree", "-r", "--name-only", rev, "--", "tasks", "specs"]).out.split(`
-`).filter((p) => /^(tasks|specs)\/[^/]+\.md$/.test(p));
+  const list = git(root, ["ls-tree", "-r", "--name-only", rev, "--", "tasks", "specs", "intents"]).out.split(`
+`).filter((p) => /^(tasks|specs|intents)\/[^/]+\.md$/.test(p));
   for (const p of list)
     files.set(p, git(root, ["show", `${rev}:${p}`]).out);
   return files;
