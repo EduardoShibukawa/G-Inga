@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: completed
 ---
 
 # Ship an OMP plugin hook for the G-Ingá startup warning
@@ -39,12 +39,12 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | `mise run validate` and `mise run test` before the first edit | pass | 4c7021b | Run 2 (quiet machine, serialized with `flock /tmp/g-inga-test.lock`): `mise run test` at 4c7021b: 332 pass, 0 fail, 1982 expect() calls, exit 0 (103.7 s). `mise run validate` at 4c7021b: Overall pass, exit 0 (77.8 s). History, Run 1 (commit f678867, 5 sibling workers contending for CPU): `mise run test` 331 pass, 1 fail; `tools/validate/validate.test.ts` > "this repository > every layer applies…" timed out at 120000 ms; `bun test` of that file alone timed out again (124.9 s). Run 1 was load-caused, not reproduced on Run 2. |
-| AC1 | `bun test tools/gate/omp-session-start.test.ts` (warning case, notify) | not run | - | pending implementation |
-| AC2 | `bun test tools/gate/omp-session-start.test.ts` (warning case, model context once) | not run | - | pending implementation |
-| AC3 | `bun test tools/gate/omp-session-start.test.ts` (no-warning cases) | not run | - | pending implementation |
-| AC4 | `bun test tools/gate/omp-session-start.test.ts` (networkReached false) | not run | - | pending implementation |
-| AC5 | `mise run validate` and `mise run test` | not run | - | pending implementation |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | pending implementation |
+| AC1 | `bun test tools/gate/omp-session-start.test.ts` (warning case, notify) | pass | 94b4fe9 | "AC1" test: `session_start` calls `notify` once with level `warning` and text containing `no Git pre-commit hook is installed`. 5 pass, 0 fail (34 ms). |
+| AC2 | `bun test tools/gate/omp-session-start.test.ts` (warning case, model context once) | pass | 94b4fe9 | "AC2" test: first `before_agent_start` returns `{ message: { customType: "g-inga.session-start", content, display: true } }` with the warning in `content`; second returns `undefined`. 5 pass, 0 fail. |
+| AC3 | `bun test tools/gate/omp-session-start.test.ts` (no-warning cases) | pass | 94b4fe9 | Two "AC3" tests: hook present, and no pre-commit mise task. `notify` never called; `before_agent_start` returns `undefined`. 5 pass, 0 fail. |
+| AC4 | `bun test tools/gate/omp-session-start.test.ts` (networkReached false) | pass | 94b4fe9 | "AC4" test: `ompStartupCheck(cwd).networkReached === false` with a missing `installedPluginsFile` and `pluginRoot: ""` (no installed SHA, so `resolveMarketplaceMain` is never called). 5 pass, 0 fail. |
+| AC5 | `mise run validate` and `mise run test` | pass | 94b4fe9 | Under `flock /tmp/g-inga-test.lock` on the same tree as 94b4fe9 (pre-commit then ran `mise run pre-commit` on the commit, Overall pass): `mise run validate` exit 0; `mise run test` exit 0, 337 pass, 0 fail, 1995 expect() calls (83.6 s). |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | pass | 94b4fe9 | `git show --stat HEAD`: 3 files (`hooks/pre/g-inga-session-start.ts` new, `tools/gate/omp-session-start.test.ts` new, this record). `hooks/session-start.mjs` and `hooks/hooks.json` untouched; no `any` in the new files; the factory matches AC1–AC4 (warning once via notify, model context once, cleared after use, no-warning paths return `undefined`). |
 
 ## Constraints and budget
 
