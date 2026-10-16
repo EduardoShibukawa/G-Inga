@@ -52,9 +52,9 @@ stateDiagram-v2
 
 ### Phase 4: ACT
 
-- Invoke subagents concurrently by issuing multiple `Agent` tool calls in a single message (`subagent_type: "general-purpose"`, or `"Explore"` for read-only spikes), each with `model` set by role from `../work/references/model-policy.md` (relative to the `orchestrate` skill's directory): `sonnet` for implementation workers, `haiku` for read-only `Explore` spikes, `opus` for the retry after a first verification failure.
-- Use the default shared working tree only when the pre-dispatch collision check passes; otherwise set `isolation: "worktree"` (or use `tools/gate/worktree-runner.ts`) and merge worktree results back into the orchestrator branch before Gate Layer 1.
-- Cease tool execution and wait for the harness completion notification. Never poll or sleep.
+- Dispatch the workers in parallel with the host's subagent tool (see "Host dispatch mapping" in `../work/references/model-policy.md`, relative to the `orchestrate` skill's directory): an implementation worker (Sonnet class), a read-only spike (Haiku class), or a retry once per the "Retry after one failed verification" row of the host dispatch mapping.
+- Use the default shared working tree only when the pre-dispatch collision check passes; otherwise isolate the worker per the "Worktree isolation" row (or use `tools/gate/worktree-runner.ts`) and merge worktree results back into the orchestrator branch before Gate Layer 1.
+- Cease tool execution; results arrive per the "Completion" row; do not poll or sleep.
 
 ### Phase 5: GATE
 

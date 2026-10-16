@@ -12,7 +12,7 @@ Macro-governor for autonomous multi-task execution over dependency graphs and ta
 
 1. **Tokens Per Verified Task:** Never trust verbal self-attestation from subagents or models. Accept deliverables only when all 5 layers of the Verification Gate evaluate to `pass`.
 2. **Strict 4-Value Vocabulary:** Report checks strictly using `pass`, `fail`, `blocked`, or `not run`. Exit code 0 is strictly forbidden if any mandatory check is skipped or unrun.
-3. **Context Isolation:** Keep the orchestrator root context lean. Exploration, iterative editing, and tool output belong strictly inside ephemeral subagents (`Agent` tool).
+3. **Context Isolation:** Keep the orchestrator root context lean. Exploration, iterative editing, and tool output belong strictly inside ephemeral subagents (dispatched per the host's subagent tool; see `../work/references/model-policy.md`).
 4. **Anti-Thrashing Circuit Breaker (ADR 0002 §5, Trigger E3):** Maximum 2 verification attempts per ticket without new information. On the second consecutive failure, halt the ticket, mark it `blocked`, and escalate to the repository owner.
 5. **Macro vs Micro Division:** `/orchestrate` governs the task backlog (`tasks/`), dependency resolution, parallel concurrency, and the verification gate. Micro-delivery within scoped boundaries is delegated to subagents that read and follow the work procedure (`../work/references/procedure.md`, relative to this skill's directory). They never invoke the `work` skill, which is user-invoked (ADR 0010).
 
@@ -24,7 +24,7 @@ flowchart TD
     ORI --> DEC["3. DECIDE: Batch size N, pre-dispatch scope collision check"]
     DEC -->|"Collisions detected"| SER["Serialize into conflict-free waves"]
     SER --> ACT
-    DEC -->|"Disjoint scopes"| ACT["4. ACT: parallel Agent tool calls"]
+    DEC -->|"Disjoint scopes"| ACT["4. ACT: parallel subagent dispatch"]
     ACT --> GATE{"5. GATE: 5-Layer Autonomous Verification"}
     GATE -->|"Pass (All 5 Layers)"| SEAL["6. SEAL: Commit batch, update graph, advance frontier"]
     GATE -->|"Fail (Attempts < 2)"| RETRY["Retry with deterministic failure diff"]
@@ -54,7 +54,7 @@ flowchart TD
 - Determine batch size $N$ based on independent unblocked branches (typically 1 to 4 concurrent tickets).
 - Prepare structured dispatch prompts using [subagent-prompt.md](subagent-prompt.md).
 - **Mandatory Pre-Dispatch Concurrency Collision Check:**
-  - Before any `Agent` tool dispatch, execute the deterministic collision guardrail across all declared worker scopes:
+  - Before any subagent dispatch, execute the deterministic collision guardrail across all declared worker scopes:
 
     ```bash
     bun tools/gate/verify-gate.ts --pre-dispatch --declared-scopes '{"worker-1": ["scope1/"], "worker-2": ["scope2/"]}'
@@ -80,20 +80,19 @@ flowchart TD
 
 ### 4. ACT (Concurrent Dispatch & Asynchronous Wait)
 
-- Dispatch worker subagents in parallel by issuing multiple `Agent` tool calls in a single message, each with role and scoped prompt:
-  - Set `subagent_type: "general-purpose"` for implementation workers (or `subagent_type: "Explore"` for read-only spikes).
-  - Set the model by role from the shared table in `../work/references/model-policy.md`: `model: "sonnet"` for implementation workers, `model: "haiku"` for read-only `Explore` spikes.
+- Dispatch the workers in parallel with the host's subagent tool (see "Host dispatch mapping" in `../work/references/model-policy.md`), each with role and scoped prompt:
+  - Dispatch an implementation worker (Sonnet class) or a read-only spike (Haiku class) per the host dispatch mapping.
   - Include the verification contract directly in the prompt.
   - Name the work procedure as the procedure to follow, never the `work` skill (ADR 0010): resolve `../work/references/procedure.md` against this skill's directory and give the worker the absolute path.
 - **Working Tree Selection:**
   - Default shared working tree: allowed only when the pre-dispatch collision check passes (mutually disjoint scopes).
-  - Isolated worktrees: set `isolation: "worktree"` on the `Agent` call (or use `tools/gate/worktree-runner.ts`). Worktree results MUST be merged back into the orchestrator branch before Gate Layer 1.
+  - Isolated worktrees: isolate the worker per the "Worktree isolation" row (or use `tools/gate/worktree-runner.ts`). Worktree results MUST be merged back into the orchestrator branch before Gate Layer 1.
 - **Dynamic Git Worktree Isolation (EXP-05):**
   - When running concurrent workers locally or through the auto-runner, workers execute inside isolated ephemeral git worktrees (`tools/gate/worktree-runner.ts`), eliminating `.git/index.lock` contention and ensuring setup overhead < 500ms.
 - **Token Budget Guardrail (EXP-06):**
   - Telemetry across workers is monitored via `tools/eval/token_budget_guard.ts`. Standard ceremony tickets enforce hard ceilings (< 25,000 tokens) with warning alerts at $\ge 80\%$ consumption.
-- Agents run in the background (the default); the harness notifies the orchestrator when each agent completes. Do NOT poll in a loop or sleep.
-- Each worker's final report is its `Agent` result.
+- Results arrive per the "Completion" row; do not poll or sleep.
+- Each worker's final report is its subagent result.
 
 ### 5. GATE (Deterministic Autonomous Verification)
 
@@ -114,12 +113,12 @@ Upon receiving subagent reports, execute the **Autonomous Verification Gate** ([
    - Verify objective thresholds (e.g. 0 lint warnings, schema validation, performance latency).
 5. **Layer 5 (Anti-Thrashing Circuit Breaker):**
    - Track verification failure count per ticket.
-   - First failure: dispatch a NEW `Agent` with `model: "opus"` (per `../work/references/model-policy.md`) carrying the deterministic failure log and the same contract (scope, acceptance criteria). Continuing the existing Sonnet worker does not change its model, so it is not the retry.
+   - First failure: retry once per the "Retry after one failed verification" row of the host dispatch mapping in `../work/references/model-policy.md` (Opus class where supported), carrying the deterministic failure log and the same contract (scope, acceptance criteria).
    - Second failure (count $\ge 2$, no new information): stop worker, mark ticket `blocked`, record escalation, and alert owner.
 
 ### 6. SEAL & ADVANCE (Atomic Integration)
 
-- Record each child's verification note with the model that ran it and its token totals, taken from the host's `Agent` result (never from the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — no prompt content (per `../work/references/model-policy.md`).
+- Record each child's verification note with the model that ran it and its token totals, taken from the host's subagent result (see the "Token totals for the cost note" row in `../work/references/model-policy.md`; never from the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — no prompt content.
 - Update ticket status in roadmap (`tasks/`) to `verified`.
 - Create an atomic descriptive Git commit referencing the verified ticket IDs:
   `git commit -m "<type>(<scope>): <summary> [resolves #ID]"`

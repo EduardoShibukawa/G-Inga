@@ -19,7 +19,7 @@ When both H1 and H5 hold and the destination cannot yet be captured in a single 
 2. **Question Rounds & Spec Authoring:**
    - Execute the procedure in `references/question-rounds.md` (relative to this skill's directory) (heavy mode).
    - Every owner answer is recorded as a `decided:` line in the parent task record.
-   - Author specification in `specs/<id>.md` (`schema: spec/1`, `status: draft`, `version: 1`). Spec authoring runs on **Opus** (per `references/model-policy.md`); when it is delegated to a subagent, set `model` to `opus`.
+   - Author specification in `specs/<id>.md` (`schema: spec/1`, `status: draft`, `version: 1`). Spec authoring runs on Opus class per `references/model-policy.md` (relative to this skill's directory); delegate to a subagent only where the host dispatch mapping allows it.
    - Run validator preflight before approval.
    - Owner formally approves spec:
      - Set `status: approved`, `approved_version: 1`, `approved_hash: sha256:<hash>`.
@@ -39,7 +39,7 @@ When both H1 and H5 hold and the destination cannot yet be captured in a single 
 5. **Integrated Verification & Adversarial Review:**
    - Integrate all children results into parent record.
    - Run end-to-end spec criteria (`SC` rows) and regression test (`R` rows).
-   - Run fresh-context adversarial review on **Opus** (`model` set to `opus`, per `references/model-policy.md`) using the prompt template in `review.md`.
+   - Run fresh-context adversarial review with an adversarial reviewer (Opus class) per the host dispatch mapping in `references/model-policy.md` (relative to this skill's directory), using the prompt template in `review.md`.
    - Resolve all review findings in `## Review` section.
 
 6. **Owner Acceptance:**

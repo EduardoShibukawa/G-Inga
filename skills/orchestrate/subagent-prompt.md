@@ -1,14 +1,14 @@
-# Canonical Subagent Prompt Template (`Agent` tool)
+# Canonical Subagent Prompt Template
 
-When dispatching concurrent workers via parallel `Agent` tool calls, the orchestrator MUST format the prompt using this canonical structure to ensure strict scope confinement, deterministic deliverables, and minimal context return overhead.
+When dispatching concurrent workers with the host's subagent tool, the orchestrator MUST format the prompt using this canonical structure to ensure strict scope confinement, deterministic deliverables, and minimal context return overhead.
 
 ---
 
 ## 1. Template Structure
 
-Before each dispatch, set the `model` parameter on the `Agent` call by role from the shared table in `../work/references/model-policy.md` (relative to this skill's directory): `sonnet` for implementation workers, `haiku` for read-only `Explore` spikes, and `opus` for the retry after a Sonnet worker's first verification failure. Resolve `../work/references/procedure.md` against this skill's directory and give the worker the absolute path in the Procedure line below.
+Before each dispatch, select the model and subagent primitive by role per the host dispatch mapping in `../work/references/model-policy.md` (relative to this skill's directory): an implementation worker (Sonnet class), a read-only spike (Haiku class), or a retry once per the "Retry after one failed verification" row of the host dispatch mapping (Opus class where supported). Resolve `../work/references/procedure.md` against this skill's directory and give the worker the absolute path in the Procedure line below.
 
-When constructing the `prompt` for each `Agent` call, include the following structured sections:
+When constructing the prompt for each subagent dispatch, include the following structured sections:
 
 ````markdown
 # TASK DISPATCH: Ticket #<ID> — <TITLE>
@@ -41,7 +41,7 @@ The Orchestrator will deterministically run the following gates before accepting
   - `<Additional quantitative criterion, if any>`.
 
 ## 5. Return Report Format
-Upon completing the work and verifying your changes locally, deliver to the orchestrator, as the final Agent report, a concise message in the exact format:
+Upon completing the work and verifying your changes locally, deliver to the orchestrator, as the final subagent report, a concise message in the exact format:
 
 ```text
 status: ready_for_gate
@@ -54,7 +54,7 @@ checks_run:
   - <check_name>: pass / fail / blocked (<summarized evidence>)
 ```
 
-The worker does NOT report token usage: it cannot observe its own. The orchestrator records the model and the ADR 0006 token totals from the host's `Agent` result (fields the host doesn't provide are `not run`), never from the worker's report, and never with prompt content.
+The worker does NOT report token usage: it cannot observe its own. The orchestrator records the model and the ADR 0006 token totals from the host's subagent result (see the "Token totals for the cost note" row in `../work/references/model-policy.md`; fields the host doesn't provide are `not run`), never from the worker's report, and never with prompt content.
 ````
 
 ---

@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "7eed4c6"
 depends_on:
   - 2026-10-16-omp-host-compat-05-skill-relative-paths
   - 2026-10-16-omp-host-compat-06-model-policy-host-mapping
@@ -44,14 +45,14 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | not run | - | record the commit SHA you ran on |
-| B2 | AC1 and AC2 greps before the first edit | not run | - | match count per file; this is the work list |
-| AC1 | AC1 grep | not run | - | |
-| AC2 | AC2 grep | not run | - | |
-| AC3 | read each rewritten call site against AC3 | not run | - | |
-| AC4 | task 05 path grep | not run | - | |
-| AC5 | `bun run manifest`, `mise run validate`, `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | |
+| B1 | `mise run validate` and `mise run test` before the first edit | pass | bc76754 | 400 pass, 0 fail; preflight and validation clean |
+| B2 | AC1 and AC2 greps before the first edit | pass | bc76754 | AC1: 12 call sites (drive 2, ooda-cycle 2, orchestrate 4, gate 2, procedure 1, review 1, heavy 1; model-policy 7 out of scope). AC2: 21 matches in orchestrate (17 across 4 files), drive (2), artifact-contracts (2 notes, no tool call), model-policy (5 out of scope) |
+| AC1 | AC1 grep | pass | 7eed4c6 | prints matches only in skills/work/references/model-policy.md (7 matches) |
+| AC2 | AC2 grep | pass | 7eed4c6 | 0 matches instructing a tool call; remaining matches: artifact-contracts.md lines 209, 391 ("Agent judgment", actor vocabulary); model-policy.md lines 18, 24, 27, 31, 35 (host dispatch table and definitions) |
+| AC3 | read each rewritten call site against AC3 | pass | 7eed4c6 | every rewritten call site names role and model class (Sonnet class, Haiku class, Opus class) and points to host dispatch mapping in model-policy.md |
+| AC4 | task 05 path grep | pass | 7eed4c6 | 0 matches across skills/ |
+| AC5 | `bun run manifest`, `mise run validate`, `mise run test` | pass | 7eed4c6 | manifest regenerated at 7eed4c6; validate and test pass cleanly (400 pass, 0 fail) |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | pass | 7eed4c6 | diff strictly confined to skill call sites, manifest.json, and task record |
 
 ## Constraints and budget
 
@@ -78,8 +79,12 @@ Out of scope:
 4. Run AC3–AC5, fill the table, read the diff (V1), set `completed`, then `verified` with `verified_at` once every row passes.
 5. Update `## Checkpoint` and `## Outcome`.
 
+## Outcome
+
+All subagent dispatch call sites across `orchestrate`, `drive`, and `work` skills have been made host-neutral. Each call site now specifies its semantic role and model class (Sonnet class, Haiku class, Opus class) while directing the host orchestrator to `references/model-policy.md` (or `../work/references/model-policy.md`) § Host dispatch mapping. All 5 acceptance criteria (AC1–AC5) and verification checks passed cleanly.
+
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/omp-host-compat-tasks, head 47e8c69, task recorded, no edits
-- done: call sites mapped before the layout move (under `.claude/skills/`): `orchestrate/SKILL.md` 83–96, 117, 122; `orchestrate/subagent-prompt.md` 1, 3, 9, 11, 44, 49, 57, 95; `orchestrate/gate.md` 16, 136, 176; `orchestrate/references/ooda-cycle.md` 55–57; `drive/SKILL.md` 129, 145, 151; `work/heavy.md` 22, 42; `work/review.md` 7; `work/references/procedure.md` 58. Line numbers will shift; trust B2, not these numbers
-- next: check the start guard
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-07-skill-dispatch-host-neutral, head 7eed4c6, status verified
+- done: start guard verified; baselines B1 and B2 recorded; all 8 in-scope skill files rewritten to host-neutral dispatch; AC1-AC4 verified; skill edits committed in 73f8b31; manifest.json regenerated and committed in 7eed4c6; AC5 verified with 400 tests passing; task record updated to verified
+- next: push branch and open pull request
