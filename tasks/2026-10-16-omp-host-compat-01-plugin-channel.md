@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: blocked
+status: active
 ---
 
 # Load G-Ingá in OMP only through the plugin channel
@@ -38,7 +38,7 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | fail | f678867 | validate: pass (exit 0, 144s). test: full run failed twice (161s, 150s; 331 pass, 1 fail): "this repository > every layer applies, no check is named after a decision ID, and git status is unchanged" timed out at 120000ms. Solo rerun (`bun test tools/validate/validate.test.ts -t "every layer applies"`): pass (1 pass, 0 fail, 112.08s, exit 0). Timeout is 120 s against a ~112–144 s run; cause attributed to CPU contention with sibling workers per orchestrator, and the 120 s limit is tight either way |
+| B1 | `mise run validate` and `mise run test` before the first edit | pass | f678867 | re-run on a quiet machine: validate exit 0 (79.6 s, Overall pass); test `flock /tmp/g-inga-test.lock mise run test`: 332 pass, 0 fail, exit 0 (100.4 s). Earlier contention failure (fail, 120 s timeout, 2 runs) kept in Checkpoint history |
 | B2 | `omp plugin marketplace list` (default profile) before the task | pass | f678867 | `No marketplaces configured` / `Add one with: omp plugin marketplace add <source>` (exit 0; taken under /tmp/g-inga-omp-probe.lock, released) |
 | AC1 | `omp config get` for both keys | not run | - | |
 | AC2 | `omp --profile g-inga-check read skill://work` without the plugin | not run | - | |
@@ -76,10 +76,7 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-01-plugin-channel, head f678867, no edits to `.omp/config.yml`
-- done: B1 and B2 recorded. B1 `mise run test` fails at baseline (same test failed on two runs; see Blockers). AC1-AC4 not run (stopped before edits per E3/E4).
-- next: owner decides on the baseline timeout in `tools/validate/validate.test.ts` (out of this task's scope), then the worker resumes at Plan step 2.
-
-## Blockers
-
-- B1 baseline: `mise run test` fails at f678867 before any edit. The failing test `this repository > every layer applies, no check is named after a decision ID, and git status is unchanged` (tools/validate/validate.test.ts:157) has a 120000 ms timeout, but it runs the full `validate` (about 144 s on this machine). Failed on two consecutive runs; deterministic, not flakiness. Fixing it needs a change outside In scope (test timeout or validator speed), so the task stops here as `blocked` (E3/E4). The default OMP profile was not touched; the isolated profile was not created.
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-01-plugin-channel, head de588c3 (code base f678867; only task-record commits since), no edits to `.omp/config.yml`
+- history: B1 failed at f678867 under CPU contention from 5 parallel workers. The full `mise run test` timed out the test "every layer applies" at 120000 ms on two runs (161 s, 150 s); a solo rerun passed (112.08 s). Superseded by the quiet-machine re-run below.
+- done: B2 recorded at f678867. B1 re-run pending; AC1-AC5 and V1 pending.
+- next: re-run B1 with `flock /tmp/g-inga-test.lock`, then Plan step 2.
