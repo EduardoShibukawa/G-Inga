@@ -6,7 +6,7 @@ When dispatching concurrent workers via parallel `Agent` tool calls, the orchest
 
 ## 1. Template Structure
 
-Before each dispatch, set the `model` parameter on the `Agent` call by role from the shared table in `skills/work/references/model-policy.md`: `sonnet` for implementation workers, `haiku` for read-only `Explore` spikes, and `opus` for the retry after a Sonnet worker's first verification failure.
+Before each dispatch, set the `model` parameter on the `Agent` call by role from the shared table in `../work/references/model-policy.md` (relative to this skill's directory): `sonnet` for implementation workers, `haiku` for read-only `Explore` spikes, and `opus` for the retry after a Sonnet worker's first verification failure. Resolve `../work/references/procedure.md` against this skill's directory and give the worker the absolute path in the Procedure line below.
 
 When constructing the `prompt` for each `Agent` call, include the following structured sections:
 
@@ -24,7 +24,7 @@ Attention: you are only authorized to create or modify strictly the files listed
 - `<path/to/file/2>`
 
 ## 3. Inherited Constraints & Mandates
-- Procedure: read and follow `skills/work/references/procedure.md` for this delivery. Do not invoke the `work` skill: it is owner-only (ADR 0010).
+- Procedure: read and follow `<absolute path to work/references/procedure.md>` for this delivery. Do not invoke the `work` skill: it is owner-only (ADR 0010).
 - Repository is the canonical source of truth: consult `docs/artifact-contracts.md` and decisions in `docs/decisions/`.
 - Strict factual vocabulary: report checks using only `pass`, `fail`, `blocked` and `not run`.
 - Communication: Code and commits in English; executive reports in Portuguese.
@@ -74,7 +74,7 @@ Fix the pagination offset calculation in `src/parser/query.ts` to avoid an off-b
 - `tests/unit/parser/query.test.ts`
 
 ## 3. Inherited Constraints & Mandates
-- Procedure: read and follow `skills/work/references/procedure.md` for this delivery. Do not invoke the `work` skill: it is owner-only (ADR 0010).
+- Procedure: read and follow `<absolute path to work/references/procedure.md>` for this delivery. Do not invoke the `work` skill: it is owner-only (ADR 0010).
 - Repository is the canonical source of truth: consult `docs/artifact-contracts.md`.
 - Strict factual vocabulary: use `pass`, `fail`, `blocked` or `not run`.
 - Do not change existing public method signatures.

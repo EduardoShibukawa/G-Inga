@@ -9,7 +9,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
 import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { task } from "./artifacts/fixtures.ts";
 import bundle from "./bundle.json" with { type: "json" };
 import { CONTRACT_COPY } from "./contract-copy.mjs";
@@ -120,7 +120,8 @@ describe("committed bundle in this repository", () => {
     const skill = bundle.assets.filter((p) => p.startsWith("skills/work/") && p !== CONTRACT_COPY);
     expect(skill.length).toBeGreaterThan(0);
     for (const p of skill) expect(`${p}: ${readFileSync(join(REPO, p), "utf8")}`).not.toContain("docs/artifact-contracts.md");
-    const cited = skill.filter((p) => readFileSync(join(REPO, p), "utf8").includes(CONTRACT_COPY));
+    const relContract = relative("skills/work", CONTRACT_COPY);
+    const cited = skill.filter((p) => readFileSync(join(REPO, p), "utf8").includes(relContract));
     expect(cited).toEqual(expect.arrayContaining(["skills/work/references/procedure.md", "skills/work/standard.md", "skills/work/resume.md"]));
   });
 

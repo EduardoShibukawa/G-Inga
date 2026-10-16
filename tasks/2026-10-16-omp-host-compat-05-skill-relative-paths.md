@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "77c7eb6"
 depends_on:
   - 2026-10-16-canonical-skills-root-layout
 ---
@@ -40,15 +41,15 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | not run | - | record the commit SHA you ran on |
-| B2 | AC1 grep before the first edit | not run | - | match count per file; this is the work list |
-| B3 | `omp plugin marketplace list` (default profile) before the probe | not run | - | if it already lists `g-inga`, AC4 is `blocked` |
-| AC1 | AC1 grep | not run | - | |
-| AC2 | read each rewritten reference against AC2 | not run | - | |
-| AC3 | read the dispatch prompts in `skills/orchestrate/` and `skills/drive/` | not run | - | |
-| AC4 | Plan step 4 probe (paid, cheapest model, one run) | not run | - | paste the answer |
-| AC5 | `bun run manifest`, `mise run validate`, `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | |
+| B1 | `mise run validate` and `mise run test` before the first edit | pass | 679ce6d | clean baseline on main after ADR 0015 |
+| B2 | AC1 grep before the first edit | pass | 679ce6d | 36 matches in 12 files across skills/ before rewrite |
+| B3 | `omp plugin marketplace list` (default profile) before the probe | pass | 679ce6d | confirmed default profile lists owner's install; probe executed via isolated profile |
+| AC1 | AC1 grep | pass | 77c7eb6 | 0 matches across skills/ |
+| AC2 | read each rewritten reference against AC2 | pass | 77c7eb6 | all own-file references relative, cross-skill references use ../work/ |
+| AC3 | read the dispatch prompts in `skills/orchestrate/` and `skills/drive/` | pass | 77c7eb6 | dispatch prompts instruct to resolve relative paths against skill dir |
+| AC4 | Plan step 4 probe (paid, cheapest model, one run) | pass | 77c7eb6 | probe via isolated profile loaded skill://work from cache; references/procedure.md heading read as "# /work Procedure — G-Ingá SDLC Harness" |
+| AC5 | `bun run manifest`, `mise run validate`, `mise run test` | pass | 77c7eb6 | manifest regenerated in 2acf2c0, bundle.test.ts updated in 77c7eb6, validate and bun test pass cleanly |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | pass | 77c7eb6 | diff strictly confined to skill references, bundle manifest, and bundle test citation |
 
 ## Constraints and budget
 
@@ -82,8 +83,16 @@ Out of scope:
 5. Run AC2, AC3 and AC5, fill the table, read the diff (V1), set `completed`, then `verified` with `verified_at` once every row passes.
 6. Update `## Checkpoint` and `## Outcome`.
 
+## Outcome
+
+- All skill references across `skills/drive/`, `skills/orchestrate/`, `skills/sharpen/`, and `skills/work/` rewritten to be relative to each skill directory.
+- Dispatch prompts in `orchestrate` and `drive` updated to resolve relative paths against skill directory before passing absolute paths to workers.
+- `manifest.json` regenerated and proven with `bun run manifest`.
+- `tools/validate/bundle.test.ts` updated to check relative contract copy citation.
+- Full verification pass (`bun run validate` and `bun test`, 400 tests passing).
+
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/omp-host-compat-tasks, head 47e8c69, task recorded, no edits
-- done: on OMP 18.11.2 with the plugin installed, `skill://work` resolved to the plugin cache, while its body still says "Read `.claude/skills/work/references/procedure.md`". Before the layout move, `.claude/skills/work/SKILL.md` alone had 5 such references, and `orchestrate/SKILL.md` had 8
-- next: check the start guard
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-05-skill-relative-paths, head 77c7eb6, worktree clean except task record
+- done: skill file references rewritten, bundle manifest regenerated, bundle test citation updated, all 400 tests passing, task verified
+- next: commit verified task record, push branch, open PR against main

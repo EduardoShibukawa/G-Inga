@@ -17,7 +17,7 @@ When both H1 and H5 hold and the destination cannot yet be captured in a single 
      `confirmed: heavy by owner (<date>, "<ref>")`.
 
 2. **Question Rounds & Spec Authoring:**
-   - Execute the procedure in `skills/work/references/question-rounds.md` (heavy mode).
+   - Execute the procedure in `references/question-rounds.md` (relative to this skill's directory) (heavy mode).
    - Every owner answer is recorded as a `decided:` line in the parent task record.
    - Author specification in `specs/<id>.md` (`schema: spec/1`, `status: draft`, `version: 1`). Spec authoring runs on **Opus** (per `references/model-policy.md`); when it is delegated to a subagent, set `model` to `opus`.
    - Run validator preflight before approval.
@@ -31,7 +31,7 @@ When both H1 and H5 hold and the destination cannot yet be captured in a single 
    - Run validator to verify decomposition invariants (spec approved, valid dependency graph, no cycles).
    - Execute each child following `standard.md`.
 
-4. **Specification Reopening (`skills/work/references/artifact-contracts.md` §4.3, §4.4):**
+4. **Specification Reopening (`references/artifact-contracts.md` §4.3, §4.4):**
    - If requirements change: increment `version` to `v<N+1>`, set `status: draft`, append to `## Revisions`.
    - Reopening immediately blocks active children until owner reapproval.
    - Upon reapproval, update children with `spec-version: v<N> → v<N+1>; rerun: ...` or `...; unaffected: <reason>`.
@@ -39,7 +39,7 @@ When both H1 and H5 hold and the destination cannot yet be captured in a single 
 5. **Integrated Verification & Adversarial Review:**
    - Integrate all children results into parent record.
    - Run end-to-end spec criteria (`SC` rows) and regression test (`R` rows).
-   - Run fresh-context adversarial review on **Opus** (`model` set to `opus`, per `references/model-policy.md`) using the prompt template in `skills/work/review.md`.
+   - Run fresh-context adversarial review on **Opus** (`model` set to `opus`, per `references/model-policy.md`) using the prompt template in `review.md`.
    - Resolve all review findings in `## Review` section.
 
 6. **Owner Acceptance:**

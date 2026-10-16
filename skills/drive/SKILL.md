@@ -126,7 +126,7 @@ Hand off candidate tasks to `/orchestrate` via the auto-runner harness:
 
 ### Step 4: Scoped Worker Execution (L3)
 
-Each worker subagent follows the `/work` procedure within its designated worktree, dispatched on **Sonnet** (`model` set to `sonnet`, per the shared role-to-model table in `skills/work/references/model-policy.md`). Its dispatch prompt tells it to read and follow `skills/work/references/procedure.md` (ADR 0010); it never invokes the `work` skill, which is user-invoked:
+Each worker subagent follows the `/work` procedure within its designated worktree, dispatched on **Sonnet** (`model` set to `sonnet`, per the shared role-to-model table in `../work/references/model-policy.md`, relative to this skill's directory). Its dispatch prompt tells it to read and follow the work procedure (ADR 0010): resolve `../work/references/procedure.md` against this skill's directory and give the worker the absolute path. It never invokes the `work` skill, which is user-invoked:
 
 - Follow ceremony tier procedures (typically `standard`).
 - Confine edits strictly to declared `In scope` files.
@@ -142,13 +142,13 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 - **Layer 3:** Task ancestry and Git lineage check (`git merge-base --is-ancestor`).
 - **Layer 4:** Quantitative thresholds (0 lint errors, 100% schema match).
 - **Layer 5:** Anti-thrashing circuit breaker:
-  - If a Sonnet worker fails verification once, retry with a NEW `Agent` dispatch on **Opus** (`model` set to `opus`, carrying the failure log and the same contract; continuing the Sonnet worker doesn't change its model; per `skills/work/references/model-policy.md`).
+  - If a Sonnet worker fails verification once, retry with a NEW `Agent` dispatch on **Opus** (`model` set to `opus`, carrying the failure log and the same contract; continuing the Sonnet worker doesn't change its model; per `../work/references/model-policy.md`).
   - If the task then fails verification a second time without new evidence, trigger immediate **Circuit Breaker Halt** (ADR 0002 §5, Trigger E3).
   - Halt entire drive execution, mark the failing task `blocked`, and escalate to the repository owner.
 
 ### Step 6: Atomic Seal & Continuous Handoff
 
-- Update task records with verification results. Each child's verification note records the model that ran it and its token totals, taken from the host's `Agent` result (never the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — with no prompt content (per `skills/work/references/model-policy.md`).
+- Update task records with verification results. Each child's verification note records the model that ran it and its token totals, taken from the host's `Agent` result (never the worker's own report; fields the host doesn't provide are `not run`), in the ADR 0006 vocabulary — `tokens_input`, `tokens_output`, `cache_read_tokens`, `cache_write_tokens`, `total_tokens`, `cache_read_ratio` — with no prompt content (per `../work/references/model-policy.md`).
 - Seal atomic commit per verified ticket wave.
 - After each verified child, replace the parent's `## Checkpoint` with the done, active and blocked children, the branch and HEAD, and the copy-pasteable resume prompt, using the template in [resume.md](../work/resume.md). The next child to run is the first eligible child after the last one in `done`.
 - Decrement token budget by recorded consumption.
@@ -158,10 +158,10 @@ Evaluate completed worker deliverables through the 5-layer Autonomous Verificati
 ## References
 
 - Ceremony Tiers & Routing: [ADR 0002](../../docs/decisions/0002-ceremony-tiers-and-routing.md)
-- Subagent Model Policy: [skills/work/references/model-policy.md](../work/references/model-policy.md)
+- Subagent Model Policy: [../work/references/model-policy.md](../work/references/model-policy.md)
 - Artifact Schema Contracts: [docs/artifact-contracts.md](../../docs/artifact-contracts.md)
-- OODA Orchestration Harness: [skills/orchestrate/SKILL.md](../orchestrate/SKILL.md)
-- Autonomous Verification Gate: [skills/orchestrate/gate.md](../orchestrate/gate.md)
+- OODA Orchestration Harness: [../orchestrate/SKILL.md](../orchestrate/SKILL.md)
+- Autonomous Verification Gate: [../orchestrate/gate.md](../orchestrate/gate.md)
 - Auto-Wave Runner: [tools/gate/orchestrate-runner.ts](../../tools/gate/orchestrate-runner.ts)
 - Ephemeral Worktrees: [tools/gate/worktree-runner.ts](../../tools/gate/worktree-runner.ts)
 - Token Budget Guardrail: [tools/eval/token_budget_guard.ts](../../tools/eval/token_budget_guard.ts)
