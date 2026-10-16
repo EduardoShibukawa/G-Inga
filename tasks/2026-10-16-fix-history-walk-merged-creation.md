@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "5d0a989"
 ---
 
 # Keep a Record's Last State When a Merge Brings In Its Older Creation
@@ -39,11 +40,11 @@ Out of scope:
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | `bun tools/validate/main.ts` on `main` | fail | f619688 | artifact-records: 5 × `verified → todo is not reachable` at b00459e (Wave 1 records) |
-| AC1 | `bun test tools/validate/artifacts/artifacts.test.ts -t "older creation"` | not run | - | |
-| AC2 | `mise run validate` | not run | - | |
-| AC3 | `bun run build:validator`, `bun run manifest`, bundle checks | not run | - | |
-| AC4 | `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC4 and the out-of-scope list | not run | - | |
+| AC1 | `bun test tools/validate/artifacts/artifacts.test.ts -t "older creation"` | pass | 5d0a989 | failed first on f619688 (`cancelled → todo is not reachable`) |
+| AC2 | `mise run validate` | pass | 5d0a989 | Overall: pass; history includes b00459e |
+| AC3 | `bun run build:validator`, `bun run manifest`, bundle checks | pass | 5d0a989 | validate.js rebuilt in 03d9db9; manifest regenerated alone in 5d0a989; bundle tests pass in AC4 |
+| AC4 | `mise run test` | pass | 5d0a989 | 399 pass, 0 fail |
+| V1 | diff read against AC1–AC4 and the out-of-scope list | pass | 5d0a989 | history.ts guard (+fixture), validate.js, manifest.json, -08 record quote, this record; no other rule touched |
 
 ## Plan
 
@@ -52,8 +53,12 @@ Out of scope:
 3. Rebuild `validate.js`, commit, regenerate `manifest.json`, commit it alone.
 4. Run AC2–AC4 and V1.
 
+## Outcome
+
+The sibling-branch guard in the history walk now compares a record with its state at every parent of a non-descendant commit, not only the first parent. A merge that brings in a record's older creation (PR #83 at b00459e) is no longer read as `verified → todo`, and `main` validates again. The `-08` record's `verified_at` is quoted. Follow-up for the owner: the history walk's linear date order keeps producing this class of false positive; moving it out of pre-commit or onto `--first-parent` is an ADR 0009 decision.
+
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-08-quote-verified-at, head f619688, worktree dirty (this record, the -08 record)
-- done: B1; cause traced to `history.ts` sibling guard using only `${rev}^`
-- next: plan step 1
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-08-quote-verified-at, head 5d0a989, task verified
+- done: AC1–AC4, V1
+- next: push and open PR (owner approval)
