@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "ce66e82"
 depends_on:
   - 2026-10-16-omp-host-compat-01-plugin-channel
   - 2026-10-16-omp-host-compat-05-skill-relative-paths
@@ -42,13 +43,13 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | not run | - | record the commit SHA you ran on |
-| AC1 | read `skills/work/references/model-policy.md` against Plan step 3 | not run | - | |
-| AC2 | `omp config get task.agentModelOverrides` and `skills.enableClaudeProject` | not run | - | |
-| AC3 | `omp models ls anthropic` | not run | - | |
-| AC4 | `bun run manifest` then `mise run validate` | not run | - | |
-| AC5 | `mise run validate` and `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | |
+| B1 | `mise run validate` and `mise run test` before the first edit | pass | 15ddab5 | clean baseline on main (15ddab525eb5523c1446d2ab7d4e1a789d489905) |
+| AC1 | read `skills/work/references/model-policy.md` against Plan step 3 | pass | ce66e82 | read against Plan step 3, table and wording match verbatim |
+| AC2 | `omp config get task.agentModelOverrides` and `skills.enableClaudeProject` | pass | ce66e82 | scout: claude-haiku-5-5, task: claude-sonnet-5-5, reviewer: claude-opus-5-5; enableClaudeProject: false |
+| AC3 | `omp models ls anthropic` | pass | ce66e82 | lists claude-haiku-5-5, claude-sonnet-5-5, and claude-opus-5-5 without substitutions |
+| AC4 | `bun run manifest` then `mise run validate` | pass | ce66e82 | manifest regenerated in ce66e82; bundle.test.ts and validator pass |
+| AC5 | `mise run validate` and `mise run test` | pass | ce66e82 | mise run validate and mise run test pass (400 pass across 25 files) |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | pass | ce66e82 | diff strictly confined to model-policy.md, .omp/config.yml, and manifest.json |
 
 ## Constraints and budget
 
@@ -98,8 +99,17 @@ Out of scope:
 5. Run AC2 and AC3. Commit the two files. Run `bun run manifest`, then commit `manifest.json` alone. Run AC4 and AC5, read the diff (V1), set `completed`, then `verified` with `verified_at` once every row passes.
 6. Update `## Checkpoint` and `## Outcome`.
 
+## Outcome
+
+- Updated `skills/work/references/model-policy.md` introductory sentence and added the `## Host dispatch mapping` section mapping Claude Code, Antigravity, and OMP primitives.
+- Added `task.agentModelOverrides` to `.omp/config.yml` mapping `scout`, `task`, and `reviewer` to their respective Anthropic model classes.
+- Verified configuration with `omp config get task.agentModelOverrides` and `omp config get skills.enableClaudeProject`.
+- Confirmed availability of all three model IDs via `omp models ls anthropic`.
+- Regenerated `manifest.json` via `bun run manifest`.
+- Full verification passed (`mise run validate` and `mise run test`, 400 tests passing).
+
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/omp-host-compat-tasks, head 47e8c69, task recorded, no edits
-- done: on OMP 18.11.2, `omp models ls anthropic` lists `claude-haiku-5-5`, `claude-sonnet-5-5` and `claude-opus-5-5`. The task tool sets only `agent`, never a worker model (`omp://task-agent-discovery.md`). The overrides apply to every OMP subagent started in this repository, the owner's own sessions included
-- next: check the start guard
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-06-model-policy-host-mapping, head ce66e82, worktree clean except task record
+- done: host dispatch mapping added, OMP agentModelOverrides configured, bundle manifest regenerated, all checks passing, task verified
+- next: commit verified task record, push branch, open PR against main
