@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: blocked
+status: active
 ---
 
 # Ship an OMP plugin hook that enforces the commit-gate bypass deny list
@@ -39,20 +39,18 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | fail | f678867 | validate: pass (`mise run validate`, Overall: pass). `mise run test`: 331 pass, 1 fail: `tools/validate/validate.test.ts` "this repository > every layer applies..." hit its 120000 ms timeout (full-repo validation takes ~145 s here). Isolated `bun test tools/validate/validate.test.ts` run 1: same timeout (125 s). Isolated run 2 (alone, as the owner asked): fail at 107.7 s, `validate()` child returned a null exit code (`expect([0,2])` fails), not a timeout. Both isolated runs were made while sibling workers loaded the CPU. Baseline, not caused by this task |
+| B1 | `mise run validate` and `mise run test` before the first edit | pass | f678867 | Re-run on a quiet machine under `flock /tmp/g-inga-test.lock mise run test`: 332 pass, 0 fail (100.8 s); `mise run validate` pass (Overall: pass). History: the earlier run at f678867 under CPU contention from parallel workers gave 331 pass, 1 fail (`tools/validate/validate.test.ts` "this repository > every layer applies..." hit its 120000 ms timeout; isolated runs timed out at 125 s and failed at 107.7 s with a null exit code). That failure was not caused by this task |
 | AC1 | `bun test tools/gate/omp-guard.test.ts` (parse cases) | pass | feeb331 | real settings give 12 rules; non-Bash entries ignored; invalid JSON, missing or non-array deny give `[]` |
 | AC2 | `bun test tools/gate/omp-guard.test.ts` (block cases) | pass | feeb331 | all 8 commands blocked; reason has the matched `Bash(...)` rule and `ADR 0009` |
 | AC3 | `bun test tools/gate/omp-guard.test.ts` (allow cases) | pass | feeb331 | 4 commands return `undefined` |
 | AC4 | `bun test tools/gate/omp-guard.test.ts` (eval cases) | pass | feeb331 | `!git commit --no-verify -m x` blocked; `print("hello")` allowed |
 | AC5 | `bun test tools/gate/omp-guard.test.ts` (temp dir without settings, invalid JSON) | pass | feeb331 | no settings and invalid JSON give no block; handler never throws on malformed input |
-| AC6 | `mise run validate` and `mise run test` | blocked | feeb331 | validate: pass (pre-commit hook ran `bun run validate` on feeb331 and passed). test: blocked by the B1 baseline timeout, see `## Blockers` |
+| AC6 | `mise run validate` and `mise run test` | not run | - | run at the commit that records `active`; see Checkpoint |
 | V1 | diff read against AC1–AC6 and the out-of-scope list | pass | feeb331 | diff is two new in-scope files (+246); `.claude/settings.json`, `hooks/hooks.json`, `.omp/config.yml`, no npm dependency, no OMP import |
 
 ## Blockers
 
-- AC6 cannot reach `pass`. Baseline `tools/validate/validate.test.ts` test "this repository > every layer applies, no check is named after a decision ID, and git status is unchanged" runs the whole repository validation (`validate()` in `tools/validate/testkit.ts`, `Bun.spawnSync`, no timeout) inside a 120000 ms test timeout. Here that validation takes about 145 s. Observed at `f678867`, before any edit of this task: the test times out (full suite and isolated run 1), and in isolated run 2 the child returns a null exit code at 107.7 s. Both isolated runs ran alongside sibling workers' CPU load; the cause is not isolated further.
-- Needed from the owner (decision): (a) raise that test's timeout above the measured run time (one-line change in `tools/validate/`, outside this task's scope); or (b) let the test skip or split the full-repository run (changes what it checks; needs approval).
-- Until resolved, this record cannot be `verified`. Implementation is committed at `feeb331`; AC1–AC5 and V1 pass.
+- Resolved (orchestrator, 2026-10-16): the earlier B1 timeout came from CPU contention by five parallel workers, not from this task. Re-run at f678867 on a quiet machine under `flock /tmp/g-inga-test.lock mise run test`: 332 pass, 0 fail, exit 0. No change to `tools/validate/` is needed.
 
 ## Constraints and budget
 
@@ -112,6 +110,6 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-02-commit-bypass-guard, implementation HEAD feeb331, worktree clean after this record commit
-- done: B1 at f678867 (validate pass; test one baseline timeout). Added `hooks/pre/g-inga-guard.ts` and `tools/gate/omp-guard.test.ts` at feeb331 (pre-commit validate passed). AC1–AC5 and V1 pass. Deviation: the project TypeScript rules forbid `any`, so the OMP API is a typed structural interface (`OmpHookApi`) with `unknown` narrowing instead of `any`; no OMP import.
-- next: owner decision on the AC6 baseline timeout (see `## Blockers`). Then run `mise run validate` and `mise run test` on the resulting commit, record AC6 at that SHA, and set `verified` with `verified_at`.
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-02-commit-bypass-guard, HEAD at the commit that records this state (implementation at feeb331), worktree clean after that commit
+- done: B1 re-run at f678867 on a quiet machine under `flock /tmp/g-inga-test.lock mise run test`: 332 pass, 0 fail. The earlier fail was CPU contention from parallel workers. Implementation at feeb331 (`hooks/pre/g-inga-guard.ts`, `tools/gate/omp-guard.test.ts`). AC1–AC5 and V1 pass. Deviation: the project TypeScript rules forbid `any`, so the OMP API is a typed structural interface (`OmpHookApi`) with `unknown` narrowing instead of `any`; no OMP import.
+- next: run AC6 (`mise run validate`, `mise run test` under flock) on this commit, record it in the table, then set `verified` with `verified_at` set to this commit and add `## Outcome`.
