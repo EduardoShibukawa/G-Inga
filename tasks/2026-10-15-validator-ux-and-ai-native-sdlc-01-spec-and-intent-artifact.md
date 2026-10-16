@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "093692a"
 parent: 2026-10-15-validator-ux-and-ai-native-sdlc
 spec: 2026-10-15-validator-ux-and-ai-native-sdlc@1
 depends_on: []
@@ -32,11 +33,12 @@ Out of scope: authoring/full validation modes (child 02), subagents and skills (
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
 | B1 | repository validation before the change | pass | cebd090 | `bun run validate`, `bun test tools/validate` (prior to this child) |
-| AC1 | intent round-trip in current repository | not run |  |  |
-| AC2 | schema registry lists intent/1 | not run |  |  |
-| AC3 | intents/ records tracked by history applicability | not run |  |  |
-| R1 | repository validation after the change | not run |  |  |
-| V1 | diff read against AC1–AC4 | not run |  |  |
+| AC1 | intent round-trip in current repository | pass | 093692a | `intents/2026-10-15-validator-ux-and-ai-native-sdlc.md` passes `artifact-records` |
+| AC2 | schema registry lists intent/1 | pass | 093692a | `tools/validate/artifacts/contract.json` |
+| AC3 | intents/ records tracked by history applicability | pass | 093692a | `artifact-records` ran on full history |
+| AC4 | contract copy, fixtures and repository validation remain green | pass | 093692a | `bun run validate` |
+| R1 | repository validation after the change | pass | 093692a | `bun run validate` |
+| V1 | diff read against AC1–AC4 | pass | 093692a | validator kind, routing, sections and rows reviewed |
 
 ## Plan
 
@@ -48,4 +50,4 @@ Out of scope: authoring/full validation modes (child 02), subagents and skills (
 
 ## Outcome
 
-Pending.
+Delivered `intent/1` support in the validator and backfilled `intents/2026-10-15-validator-ux-and-ai-native-sdlc.md`. Repository validation and the artifact history walk are green at `093692a`. Subagents, skills and authoring mode remain for children 02–05.
