@@ -6,5 +6,5 @@ repositories:
   - id: g-inga
     url: "file:///home/shibuka/Projetos/G-Inga"
     ref: "main"
-    sha: "66307e0913c3630f10d569bbaff8e36f381519f6"
+    sha: "fef34f386f9c0a999a86db83a5d71f91d0c0f099"
     path_scope: "."
