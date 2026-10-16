@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: verified
+verified_at: "94b4fe9"
 ---
 
 # Ship an OMP plugin hook for the G-Ingá startup warning
@@ -38,13 +39,13 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | `mise run validate` and `mise run test` before the first edit | not run | - | record the commit SHA you ran on |
-| AC1 | `bun test tools/gate/omp-session-start.test.ts` (warning case, notify) | not run | - | |
-| AC2 | `bun test tools/gate/omp-session-start.test.ts` (warning case, model context once) | not run | - | |
-| AC3 | `bun test tools/gate/omp-session-start.test.ts` (no-warning cases) | not run | - | |
-| AC4 | `bun test tools/gate/omp-session-start.test.ts` (networkReached false) | not run | - | |
-| AC5 | `mise run validate` and `mise run test` | not run | - | |
-| V1 | diff read against AC1–AC5 and the out-of-scope list | not run | - | |
+| B1 | `mise run validate` and `mise run test` before the first edit | pass | 4c7021b | Run 2 (quiet machine, serialized with `flock /tmp/g-inga-test.lock`): `mise run test` at 4c7021b: 332 pass, 0 fail, 1982 expect() calls, exit 0 (103.7 s). `mise run validate` at 4c7021b: Overall pass, exit 0 (77.8 s). History, Run 1 (commit f678867, 5 sibling workers contending for CPU): `mise run test` 331 pass, 1 fail; `tools/validate/validate.test.ts` > "this repository > every layer applies…" timed out at 120000 ms; `bun test` of that file alone timed out again (124.9 s). Run 1 was load-caused, not reproduced on Run 2. |
+| AC1 | `bun test tools/gate/omp-session-start.test.ts` (warning case, notify) | pass | 94b4fe9 | "AC1" test: `session_start` calls `notify` once with level `warning` and text containing `no Git pre-commit hook is installed`. 5 pass, 0 fail (34 ms). |
+| AC2 | `bun test tools/gate/omp-session-start.test.ts` (warning case, model context once) | pass | 94b4fe9 | "AC2" test: first `before_agent_start` returns `{ message: { customType: "g-inga.session-start", content, display: true } }` with the warning in `content`; second returns `undefined`. 5 pass, 0 fail. |
+| AC3 | `bun test tools/gate/omp-session-start.test.ts` (no-warning cases) | pass | 94b4fe9 | Two "AC3" tests: hook present, and no pre-commit mise task. `notify` never called; `before_agent_start` returns `undefined`. 5 pass, 0 fail. |
+| AC4 | `bun test tools/gate/omp-session-start.test.ts` (networkReached false) | pass | 94b4fe9 | "AC4" test: `ompStartupCheck(cwd).networkReached === false` with a missing `installedPluginsFile` and `pluginRoot: ""` (no installed SHA, so `resolveMarketplaceMain` is never called). 5 pass, 0 fail. |
+| AC5 | `mise run validate` and `mise run test` | pass | 94b4fe9 | Under `flock /tmp/g-inga-test.lock` on the same tree as 94b4fe9 (pre-commit then ran `mise run pre-commit` on the commit, Overall pass): `mise run validate` exit 0; `mise run test` exit 0, 337 pass, 0 fail, 1995 expect() calls (83.6 s). |
+| V1 | diff read against AC1–AC5 and the out-of-scope list | pass | 94b4fe9 | `git show --stat HEAD`: 3 files (`hooks/pre/g-inga-session-start.ts` new, `tools/gate/omp-session-start.test.ts` new, this record). `hooks/session-start.mjs` and `hooks/hooks.json` untouched; no `any` in the new files; the factory matches AC1–AC4 (warning once via notify, model context once, cleared after use, no-warning paths return `undefined`). |
 
 ## Constraints and budget
 
@@ -88,8 +89,20 @@ Out of scope:
 4. Run AC1–AC5, fill the table with the commit SHA, read the diff (V1), set `completed`, then `verified` with `verified_at` once every row passes.
 5. Update `## Checkpoint` and `## Outcome`.
 
+## Blockers
+
+- Resolved: the B1 timeout was CPU contention from parallel sibling workers, not a defect in the suite. Run 2 on a quiet machine passed both commands (see B1). Record kept as history.
+- Earlier blocker (history): `mise run test` timed out at 120 s in `tools/validate/validate.test.ts` at f678867 under contention. Two attempts (full run; file alone) were made before the owner's lift. The E3 stop was lifted by Main on new information.
+
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/omp-host-compat-tasks, head 47e8c69, task recorded, no edits
-- done: on OMP 18.11.2, `node hooks/session-start.mjs` runs standalone (exit 0, no warning on this checkout), and nothing triggers it. A probe confirmed that OMP loads plugin `hooks/pre/*.ts` factories at session start
-- next: step 1 of the plan
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-03-session-start-warnings, HEAD f148ed6 (implementation 94b4fe9)
+- done: B1 re-run on a quiet machine (4c7021b, `flock` serialized) passes; implementation in `hooks/pre/g-inga-session-start.ts` and `tools/gate/omp-session-start.test.ts` (94b4fe9); AC1–AC5 and V1 pass at 94b4fe9; record verified.
+- next: none; owner review and PR merge.
+
+## Outcome
+
+- Delivered: OMP plugin factory `hooks/pre/g-inga-session-start.ts` reusing `runSessionStartCheck`; `ompStartupCheck` skips the Claude plugin check and the network (`networkReached: false`); `session_start` notifies the missing pre-commit hook warning once, `before_agent_start` returns it once as `g-inga.session-start` model context. Five tests in `tools/gate/omp-session-start.test.ts`.
+- Deviation: the record's Constraints say to type the OMP API as `any`. A project rule (`ts-no-any`) forbids `any`, so the factory declares a minimal local `OmpExtensionApi` shape instead. No OMP package import, no new dependency.
+- Not delivered: none. `hooks/session-start.mjs`, `hooks/hooks.json`, and the stale-plugin check are untouched, as the record requires.
+- Follow-up (not in this task): the B1 timeout in `tools/validate/validate.test.ts` under parallel load (Run 1). Run 2 passed on a quiet machine.
