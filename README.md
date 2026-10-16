@@ -62,6 +62,17 @@ opencode plugin add github:EduardoShibukawa/G-Inga
 
 The command tracks the repository's default branch. The plugin is a personal convenience channel: the pinned bundle stays the distribution for target repositories and CI ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)). A local checkout works too by listing the package directory in the `plugin` array of `opencode.json`.
 
+## Install as an Antigravity Plugin
+
+This repository is also a Google Antigravity plugin ([`.antigravity-plugin/`](.antigravity-plugin/)). The `g-inga` plugin loads the skills under `.agents/skills/` (`work`, `drive`, `orchestrate`, `sharpen`):
+
+```sh
+agy plugin validate .
+agy plugin install .
+```
+
+Inside an interactive session, `/plugin` can also install from the local checkout directory (`+ Install from local directory...`). The plugin is a personal convenience channel: the pinned bundle stays the distribution for target repositories and CI ([ADR 0005](docs/decisions/0005-native-primitive-mapping.md)). The manifest sets no `version`, so updates follow the repository's commits.
+
 ## Repository Validation and Development Setup
 
 Install [mise](https://mise.jdx.dev/installing-mise.html) and Git, then from the repository root:
