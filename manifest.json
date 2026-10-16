@@ -1,6 +1,6 @@
 {
   "release": "1.0.0",
-  "commit": "f08763187359262e58c765d025c48aca0ddaca03",
+  "commit": "a1bb7eec152e82466c69783f5cb46e65da9a1d86",
   "files": {
     ".claude/skills/work/SKILL.md": "b415ecb28b789a2466508f597fb9715670cb781cf34af16e584769cf5874b0b9",
     ".claude/skills/work/heavy.md": "c9be18d67cdb9bfe09954d70f62a4df2d63aa03f69a33fff5542985fccb9889e",
@@ -23,7 +23,7 @@
     ".agents/skills/sharpen/SKILL.md": "047fd45d7baca075ea00c7ef2410761ccc8921986555bffbb7cddd71a8df85a6",
     ".mise/tasks/g-inga/validate": "c527f505d4dcefd72aa7e2f873173376dfd7f878160cf935511bee89b31e2601",
     "tools/validate/ci-template.yml": "cdb90cde7205718785511b60c872c38dcd2381b621ad576f9a17c65c1347578d",
-    "tools/validate/validate.js": "51537e6922ee2d4e87cf6967cf9add48e5c5742be74a1f8cb7dada619b6dc503",
+    "tools/validate/validate.js": "93b7f9c15b86cf4c9787347bf5bc2d00ad68a53048464e097aa96410be3b945a",
     "tools/validate/validate.ts": "ffc70337cf190adb1bd8d7701cbf69f9bec22df5ba3fa8aa2654843f3c1fccb6"
   }
 }
