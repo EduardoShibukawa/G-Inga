@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: verified
+status: accepted
 verified_at: "7eed4c6"
 depends_on:
   - 2026-10-16-omp-host-compat-05-skill-relative-paths
@@ -13,6 +13,7 @@ depends_on:
 ## Routing and approvals
 
 - tier: standard (S2 holds: one mechanical rewrite pattern repeated across call sites; S8 weighed: about 25 call sites in 9 files fit one session; S1, S3–S7 hold)
+- accepted: by owner (2026-10-17, G-D1, owner decision in session decision message)
 
 ## Objective
 

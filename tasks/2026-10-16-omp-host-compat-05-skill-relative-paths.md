@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: verified
+status: accepted
 verified_at: "77c7eb6"
 depends_on:
   - 2026-10-16-canonical-skills-root-layout
@@ -12,6 +12,7 @@ depends_on:
 ## Routing and approvals
 
 - tier: standard (S2 holds: one mechanical rewrite pattern; S8 weighed: about 40 references in 5 skills fit one session; S1, S3–S7 hold)
+- accepted: by owner (2026-10-17, G-D1, owner decision in session decision message)
 
 ## Objective
 

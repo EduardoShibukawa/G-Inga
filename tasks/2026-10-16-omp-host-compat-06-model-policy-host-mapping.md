@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: verified
+status: accepted
 verified_at: "ce66e82"
 depends_on:
   - 2026-10-16-omp-host-compat-01-plugin-channel
@@ -13,6 +13,7 @@ depends_on:
 ## Routing and approvals
 
 - tier: standard (S2 fails: the policy table gains a per-host dimension; S3 holds: one reference file plus keys in the OMP project config, and no consumed contract changes; S1, S4–S8 hold)
+- accepted: by owner (2026-10-17, G-D1, owner decision in session decision message)
 
 ## Objective
 
