@@ -46,10 +46,10 @@ Out of scope:
 | B2 | `mise run test` on `main` | pass | f33e945 | [CI run 219](https://github.com/EduardoShibukawa/G-Inga/actions/runs/38993843536); jobs `test` and `pre-commit` success; the "this repository" test took 36.9 s |
 | AC1 | `decided:` entries read against G-D1–G-D5 | not run | | G-D1, G-D2 (direction only) and G-D3 recorded; G-D4 and G-D5 still open |
 | AC2 | `mise run validate` after the `accepted:` entries | pass | 865d03f | exit 0 after tasks 01–08 (42.6 s) and again after task 09 (865d03f tree); all nine tasks `status: accepted` |
-| AC3 | G-D2 repo-contract tests plus `mise run test` and `mise run validate` | not run | | code and tests are on `work/2026-10-17-gd2-repo-contract`; awaiting CI evidence |
+| AC3 | G-D2 repo-contract tests plus full validation in CI | pass | `81afdf6` | PR [#99](https://github.com/EduardoShibukawa/G-Inga/pull/99), run [39078370274](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39078370274): `test` and `pre-commit` succeeded. G1/G2/G3 contract tests landed with merge `c842423`; full validator remained in required `pre-commit`. Target under 5 s is consistent with test-run success but individual test timing was not separately extracted. |
 | AC4 | PR #47 state and closing comment | pass | 7815059 | [PR #47](https://github.com/EduardoShibukawa/G-Inga/pull/47) closed 2026-10-17 without merge, branch kept. `git diff origin/main 741a3f2 -- docs/friction-log.md specs/2026-10-14-question-rounds-skill.md` empty; merge-tree conflicts only in the four `tasks/2026-10-14-question-rounds*` files. Comment links #49 (621cd44), #50 (7072181), #52 (6f2690c), #53 (e9aa41d), #63 (930fc3e), #65 (ae4fef9), #67 (31a5bfb), #74 (e1b407a) |
 | AC5 | branch list reviewed by the owner | not run | | |
-| AC6 | `mise run validate` and `mise run test` | not run | | |
+| AC6 | CI `test` and full validator `pre-commit` on the final PR head | pass | `81afdf6` | Run [39078370274](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39078370274), both jobs success before merge `c842423`. This records CI evidence on the exact PR head, not a local execution at merge SHA. |
 | V1 | diff read against AC1–AC6 and the out-of-scope list | not run | | |
 
 ## Owner decisions
@@ -125,14 +125,14 @@ The owner authorized option (d), tier `standard`, on 2026-10-17. This is a test-
 ## Plan
 
 1. Record each owner decision as `decided:`.
-2. G-D1 and G-D3 are already complete on `main`; validate the G-D2 implementation branch, preserve G1–G3, then update this record with CI evidence.
+2. G-D1, G-D3 and G-D2 are complete on `main`; G-D2 passed both CI jobs on PR head `81afdf6` and merged as `c842423`.
 3. Fetch, then build the G-D5 list.
-4. Run AC6 and V1, then open the PR.
+4. Refresh AC1/AC5/AC6 and V1 after G-D4/G-D5 decisions and branch inventory; no branch deletion without a separate approval.
 
 ## Checkpoint
 
 - as of: 2026-10-17, branch `work/2026-10-17-omp-closeout-decisions`, base `7815059`, worktree `/home/shibuka/Projetos/G-Inga-wt-closeout-decisions`
-- done: G-D1 (tasks 01–09 accepted, commits `6235c22`, `865d03f`); G-D3 (PR #47 closed); G-D2 scope authorized and implementation prepared on `work/2026-10-17-gd2-repo-contract`
-- next: collect CI evidence for G-D2 and validate AC3; owner answers G-D4 and G-D5; then AC5, AC6, V1
-- open: G-D4, G-D5, G-D2 verification, whether PR #89 added a regression test
+- done: G-D1 (tasks 01–09 accepted, commits `6235c22`, `865d03f`); G-D3 (PR #47 closed); G-D2 implemented on PR #99 and verified by CI `test` + `pre-commit` at `81afdf6`, merged as `c842423`
+- next: owner resolves G-D4/G-D5; create read-only AC5 branch inventory, then verify AC1/AC5/V1
+- open: G-D4, G-D5, AC5 branch inventory, V1, whether PR #89 added a regression test
 - revalidate: rerun `mise run validate` and `mise run test` if `main` moves
