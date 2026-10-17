@@ -51,7 +51,7 @@ Out of scope:
 | AC4 | PR #47 state and closing comment | pass | 7815059 | [PR #47](https://github.com/EduardoShibukawa/G-Inga/pull/47) closed 2026-10-17 without merge, branch kept. `git diff origin/main 741a3f2 -- docs/friction-log.md specs/2026-10-14-question-rounds-skill.md` empty; merge-tree conflicts only in the four `tasks/2026-10-14-question-rounds*` files. Comment links #49 (621cd44), #50 (7072181), #52 (6f2690c), #53 (e9aa41d), #63 (930fc3e), #65 (ae4fef9), #67 (31a5bfb), #74 (e1b407a) |
 | AC5 | branch list reviewed by the owner | not run | | |
 | AC6 | CI `test` and full validator `pre-commit` on the final PR head | pass | `81afdf6` | Run [39078370274](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39078370274), both jobs success before merge `c842423`. This records CI evidence on the exact PR head, not a local execution at merge SHA. |
-| AC3b | `pre-commit` job step fails on a dirty tree after `mise run validate` | not run | | local: validate exit 0, clean tree; step script exit 1 with a temp file, 0 after removal. CI pending |
+| AC3b | `pre-commit` job step fails on a dirty tree after `mise run validate` | pass | `33c71d7` | PR [#101](https://github.com/EduardoShibukawa/G-Inga/pull/101), run [39079071185](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39079071185): `test` and `pre-commit` success, so the clean-tree step passed on the real repository. Local: step script exit 0 clean, 1 with a temp file, 0 after removal |
 | V1 | diff read against AC1–AC6 and the out-of-scope list | not run | | |
 
 ## Owner decisions
@@ -135,7 +135,7 @@ The owner authorized option (d), tier `standard`, on 2026-10-17. This is a test-
 
 - as of: 2026-10-17, branch `work/2026-10-17-omp-closeout-decisions`, base `7815059`, worktree `/home/shibuka/Projetos/G-Inga-wt-closeout-decisions`
 - done: G-D1 (tasks 01–09 accepted, commits `6235c22`, `865d03f`); G-D3 (PR #47 closed); G-D2 implemented on PR #99 and verified by CI `test` + `pre-commit` at `81afdf6`, merged as `c842423`
-- done (G-D2 amendment): `pre-commit` clean-tree step added on branch `work/2026-10-17-gd2-g3-real-ci`; CI evidence pending (AC3b)
+- done (G-D2 amendment): `pre-commit` clean-tree step added on branch `work/2026-10-17-gd2-g3-real-ci`; verified by CI run 39079071185 at `33c71d7` (AC3b)
 - next: owner resolves G-D4/G-D5; create read-only AC5 branch inventory, then verify AC1/AC5/V1
 - open: G-D4, G-D5, AC5 branch inventory, V1, whether PR #89 added a regression test
 - revalidate: rerun `mise run validate` and `mise run test` if `main` moves
