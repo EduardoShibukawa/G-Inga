@@ -11,7 +11,7 @@ status: active
 - tier: standard (S2 fails: ordered actions across task records, a validator test and a PR; S1, S3, S4, S6–S8 hold because each outcome is checkable once the owner records the decision; S5 doesn't)
 - decided: G-D1, accept tasks 01–09 → accept 01–08, then 09; the task 08 B1 timeout (120 s under load, passes in isolation) is recorded as baseline under load, environmental by owner (owner, 2026-10-17 (session decision message))
 - decided: G-D3, PR #47 → close as superseded, no merge or rebase by owner (owner, 2026-10-17 (session decision message))
-- decided: G-D2, 120 s validator test timeout → option (d) is recommended and is to be planned; implementation is not authorized until the owner confirms criteria and scope by owner (owner, 2026-10-17 (session decision message))
+- decided: G-D2, implement option (d): remove full repository validation from `bun test`; G1 checks the seven required checks with `applies()`, G2 rejects check names matching decision IDs, G3 checks Git-tree stability in a fixture; record the 120 s timeout in `docs/friction-log.md`; `mise run test` no longer runs the full validator, which remains a required CI gate. Owner confirms S5 does not apply if coverage is preserved in the new tests and CI (owner, 2026-10-17, explicit decision in this session).
 
 ## Objective
 
@@ -35,8 +35,8 @@ Out of scope:
 - AC2: if G-D1 accepts, tasks 01–08 and then 09 carry `accepted: by owner (<date>, <ref>)` and `status: accepted`, and `mise run validate` passes.
 - AC3: G-D2 is carried out as decided:
   - (b) the timeout is raised and `mise run test` passes;
-  - (d) the repository self-validation leaves `bun test`, its two extra assertions move to a lightweight test, and `mise run validate` and `mise run test` pass;
-  - (a) a friction-log entry records the accepted risk.
+  - (d) the full repository validator is removed from `bun test`; `repo-contract.test.ts` covers G1 via `applies()`, G2 check names and G3 tree stability in a fixture; the full validator remains a required CI gate; `mise run validate` and `mise run test` pass;
+  - the timeout and its observed impact are recorded in `docs/friction-log.md` (F-003).
 - AC4: if G-D3 authorizes, PR #47 is closed with a comment that links the commits on `main` that carry its content.
 - AC5: G-D5 produces a list of remote branches. For each branch it gives the head, the commits ahead of `main`, and a proposal (delete / keep / ask). Nothing is deleted without approval.
 - AC6: `mise run validate` and `mise run test` pass at `verified_at`.
@@ -49,7 +49,7 @@ Out of scope:
 | B2 | `mise run test` on `main` | pass | f33e945 | [CI run 219](https://github.com/EduardoShibukawa/G-Inga/actions/runs/38993843536); jobs `test` and `pre-commit` success; the "this repository" test took 36.9 s |
 | AC1 | `decided:` entries read against G-D1–G-D5 | not run | | G-D1, G-D2 (direction only) and G-D3 recorded; G-D4 and G-D5 still open |
 | AC2 | `mise run validate` after the `accepted:` entries | pass | 865d03f | exit 0 after tasks 01–08 (42.6 s) and again after task 09 (865d03f tree); all nine tasks `status: accepted` |
-| AC3 | per G-D2 option | not run | | owner chose only to plan (d); implementation not authorized |
+| AC3 | G-D2 implementation and test suites | not run | | Implemented on this branch; CI/local verification pending |
 | AC4 | PR #47 state and closing comment | pass | 7815059 | [PR #47](https://github.com/EduardoShibukawa/G-Inga/pull/47) closed 2026-10-17 without merge, branch kept. `git diff origin/main 741a3f2 -- docs/friction-log.md specs/2026-10-14-question-rounds-skill.md` empty; merge-tree conflicts only in the four `tasks/2026-10-14-question-rounds*` files. Comment links #49 (621cd44), #50 (7072181), #52 (6f2690c), #53 (e9aa41d), #63 (930fc3e), #65 (ae4fef9), #67 (31a5bfb), #74 (e1b407a) |
 | AC5 | branch list reviewed by the owner | not run | | |
 | AC6 | `mise run validate` and `mise run test` | not run | | |
@@ -137,6 +137,6 @@ Evidence was gathered on 2026-10-17 at `f33e945`.
 
 - as of: 2026-10-17, branch `work/2026-10-17-omp-closeout-decisions`, base `7815059`, worktree `/home/shibuka/Projetos/G-Inga-wt-closeout-decisions`
 - done: G-D1 (tasks 01–09 accepted, commits `6235c22`, `865d03f`); G-D3 (PR #47 closed); G-D2 direction recorded
-- next: owner confirms G-D2 (d) criteria and scope; owner answers G-D4 and G-D5; then AC3, AC5, AC6, V1
-- open: G-D4, G-D5, G-D2 implementation, whether PR #89 added a regression test
+- next: verify G-D2 implementation and suites; owner answers G-D4 and G-D5; then AC5, AC6, V1
+- open: G-D4, G-D5, whether PR #89 added a regression test
 - revalidate: rerun `mise run validate` and `mise run test` if `main` moves
