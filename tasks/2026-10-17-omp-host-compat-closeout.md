@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: todo
+status: active
 ---
 
 # Close out OMP host compatibility: acceptance, validator timeout, stale PR and branch hygiene
@@ -9,6 +9,9 @@ status: todo
 ## Routing and approvals
 
 - tier: standard (S2 fails: ordered actions across task records, a validator test and a PR; S1, S3, S4, S6–S8 hold because each outcome is checkable once the owner records the decision; S5 doesn't)
+- decided: G-D1, accept tasks 01–09 → accept 01–08, then 09; the task 08 B1 timeout (120 s under load, passes in isolation) is recorded as baseline under load, environmental by owner (owner, 2026-10-17 (session decision message))
+- decided: G-D3, PR #47 → close as superseded, no merge or rebase by owner (owner, 2026-10-17 (session decision message))
+- decided: G-D2, 120 s validator test timeout → option (d) is recommended and is to be planned; implementation is not authorized until the owner confirms criteria and scope by owner (owner, 2026-10-17 (session decision message))
 
 ## Objective
 
@@ -44,10 +47,10 @@ Out of scope:
 |---|---|---|---|---|
 | B1 | `mise run validate` before the first edit | pass | f33e945 | worktree `work/2026-10-17-omp-host-compat-closeout`, Overall pass (49.3 s) |
 | B2 | `mise run test` on `main` | pass | f33e945 | [CI run 219](https://github.com/EduardoShibukawa/G-Inga/actions/runs/38993843536); jobs `test` and `pre-commit` success; the "this repository" test took 36.9 s |
-| AC1 | `decided:` entries read against G-D1–G-D5 | not run | | |
-| AC2 | `mise run validate` after the `accepted:` entries | not run | | |
-| AC3 | per G-D2 option | not run | | |
-| AC4 | PR #47 state and closing comment | not run | | |
+| AC1 | `decided:` entries read against G-D1–G-D5 | not run | | G-D1, G-D2 (direction only) and G-D3 recorded; G-D4 and G-D5 still open |
+| AC2 | `mise run validate` after the `accepted:` entries | pass | 865d03f | exit 0 after tasks 01–08 (42.6 s) and again after task 09 (865d03f tree); all nine tasks `status: accepted` |
+| AC3 | per G-D2 option | not run | | owner chose only to plan (d); implementation not authorized |
+| AC4 | PR #47 state and closing comment | pass | 7815059 | [PR #47](https://github.com/EduardoShibukawa/G-Inga/pull/47) closed 2026-10-17 without merge, branch kept. `git diff origin/main 741a3f2 -- docs/friction-log.md specs/2026-10-14-question-rounds-skill.md` empty; merge-tree conflicts only in the four `tasks/2026-10-14-question-rounds*` files. Comment links #49 (621cd44), #50 (7072181), #52 (6f2690c), #53 (e9aa41d), #63 (930fc3e), #65 (ae4fef9), #67 (31a5bfb), #74 (e1b407a) |
 | AC5 | branch list reviewed by the owner | not run | | |
 | AC6 | `mise run validate` and `mise run test` | not run | | |
 | V1 | diff read against AC1–AC6 and the out-of-scope list | not run | | |
@@ -132,8 +135,8 @@ Evidence was gathered on 2026-10-17 at `f33e945`.
 
 ## Checkpoint
 
-- as of: 2026-10-17, branch `work/2026-10-17-omp-host-compat-closeout`, head `f33e945`, worktree clean except this record
-- done: evidence gathered (see Owner decisions); B1 and B2 recorded
-- next: the owner answers G-D1–G-D5
-- open: whether PR #89 added a regression test for the history-walk fix
-- revalidate: B1 ran on `f33e945`; rerun if `main` moved
+- as of: 2026-10-17, branch `work/2026-10-17-omp-closeout-decisions`, base `7815059`, worktree `/home/shibuka/Projetos/G-Inga-wt-closeout-decisions`
+- done: G-D1 (tasks 01–09 accepted, commits `6235c22`, `865d03f`); G-D3 (PR #47 closed); G-D2 direction recorded
+- next: owner confirms G-D2 (d) criteria and scope; owner answers G-D4 and G-D5; then AC3, AC5, AC6, V1
+- open: G-D4, G-D5, G-D2 implementation, whether PR #89 added a regression test
+- revalidate: rerun `mise run validate` and `mise run test` if `main` moves
