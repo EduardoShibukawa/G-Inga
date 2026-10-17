@@ -1,0 +1,139 @@
+---
+schema: task/1
+tier: standard
+status: todo
+---
+
+# Close out OMP host compatibility: acceptance, validator timeout, stale PR and branch hygiene
+
+## Routing and approvals
+
+- tier: standard (S2 fails: ordered actions across task records, a validator test and a PR; S1, S3, S4, S6–S8 hold because each outcome is checkable once the owner records the decision; S5 doesn't)
+
+## Objective
+
+Collect the evidence the owner needs to close the OMP host-compatibility work. Then, after each decision, carry it out: record acceptance of tasks 01–09, fix or formally accept the validator timeout, close the superseded PR #47, and propose a branch cleanup list.
+
+In scope:
+
+- This record, the `accepted:` entries in `tasks/2026-10-16-omp-host-compat-0[1-9]-*.md` after the owner accepts, and the change chosen for `tools/validate/validate.test.ts` (G-D2).
+- Closing PR #47 with a comment, once authorized.
+- A proposed list of remote branches to delete. Deleting them needs a separate approval.
+
+Out of scope:
+
+- Any change to tasks 01–09 other than the `accepted:` entry and `status`.
+- Machine-local configuration outside the repository (`~/.omp`). It isn't versioned, and this record lists no values from it.
+- Deleting anything without an explicit owner approval.
+
+## Acceptance criteria
+
+- AC1: each owner decision G-D1–G-D5 is recorded as a `decided:` entry in this log, quoting the owner.
+- AC2: if G-D1 accepts, tasks 01–08 and then 09 carry `accepted: by owner (<date>, <ref>)` and `status: accepted`, and `mise run validate` passes.
+- AC3: G-D2 is carried out as decided:
+  - (b) the timeout is raised and `mise run test` passes;
+  - (d) the repository self-validation leaves `bun test`, its two extra assertions move to a lightweight test, and `mise run validate` and `mise run test` pass;
+  - (a) a friction-log entry records the accepted risk.
+- AC4: if G-D3 authorizes, PR #47 is closed with a comment that links the commits on `main` that carry its content.
+- AC5: G-D5 produces a list of remote branches. For each branch it gives the head, the commits ahead of `main`, and a proposal (delete / keep / ask). Nothing is deleted without approval.
+- AC6: `mise run validate` and `mise run test` pass at `verified_at`.
+
+## Verification
+
+| ID | Check | Result | Ref | Note |
+|---|---|---|---|---|
+| B1 | `mise run validate` before the first edit | pass | f33e945 | worktree `work/2026-10-17-omp-host-compat-closeout`, Overall pass (49.3 s) |
+| B2 | `mise run test` on `main` | pass | f33e945 | [CI run 219](https://github.com/EduardoShibukawa/G-Inga/actions/runs/38993843536); jobs `test` and `pre-commit` success; the "this repository" test took 36.9 s |
+| AC1 | `decided:` entries read against G-D1–G-D5 | not run | | |
+| AC2 | `mise run validate` after the `accepted:` entries | not run | | |
+| AC3 | per G-D2 option | not run | | |
+| AC4 | PR #47 state and closing comment | not run | | |
+| AC5 | branch list reviewed by the owner | not run | | |
+| AC6 | `mise run validate` and `mise run test` | not run | | |
+| V1 | diff read against AC1–AC6 and the out-of-scope list | not run | | |
+
+## Owner decisions
+
+Evidence was gathered on 2026-10-17 at `f33e945`.
+
+### G-D1: accept tasks 01–09?
+
+| Task | `verified_at` | Baseline note |
+|---|---|---|
+| 01 plugin-channel | `d24dc6c` | B1 pass (rerun on a quiet machine) |
+| 02 commit-bypass-guard | `ec6da30` | B1 pass (rerun under `flock`) |
+| 03 session-start-warnings | `94b4fe9` | B1 pass on run 2; run 1 hit the 120 s timeout under contention |
+| 04 plugin-agents | `50eb9be` | B1 pass; first test run 331 pass / 1 fail (120 s timeout, load 17) |
+| 05 skill-relative-paths | `77c7eb6` | B1 pass |
+| 06 model-policy-host-mapping | `ce66e82` | B1 pass |
+| 07 skill-dispatch-host-neutral | `7eed4c6` | B1 pass |
+| 08 usage-telemetry-omp-host | `97404df` | **B1 fail**: 120 s timeout under contention, passes alone. AC1–AC7 and V1 pass at `97404df` |
+| 09 docs-and-integration | `97574d2` | B1 pass; `depends_on` 01–08 |
+
+- There is no parent record for 01–09.
+- A `B` row records the starting state and may be `fail` (`docs/artifact-contracts.md` §3.4). The 08 baseline failure is environmental, not a defect of the task.
+- **Proposal:** accept 01–08, then 09, noting the 08 baseline in the `accepted:` entry.
+
+### G-D2: the 120 s timeout in `tools/validate/validate.test.ts:170`
+
+- The test "this repository > every layer applies, no check is named after a decision ID, and git status is unchanged" runs the full validator over the repository.
+- The 120 s limit came in with `38c2225` (2026-10-10).
+- Measured durations:
+  - CI: 36.9 s (run 219) and 62.6 s (run 201).
+  - Local runs exceed 120 s under parallel load (records 03, 04 and 08).
+- Validator cost grows with the history walk (inferred).
+- Options:
+  - (a) accept the risk and record it in `docs/friction-log.md`;
+  - (b) raise the limit to 300 s;
+  - (c) make the limit configurable and serialize this test;
+  - (d) drop the self-validation from `bun test`, because the `pre-commit` CI job already runs the validator, and keep the "git status unchanged" and "no check named after a decision ID" assertions in a lightweight test.
+- **Proposal:** (d). The cheapest option is (b).
+
+### G-D3: PR #47
+
+- PR #47 (`741a3f2`, base `ed82275`, 232 commits behind) is open and `CONFLICTING`. Its only check-run, `validate`, passed.
+- Its six paths are already on `main`:
+  - `specs/2026-10-14-question-rounds-skill.md` and the parent plus children 01–03, with child 04 added later;
+  - the parent is `accepted`;
+  - the friction entries F-001 and F-002 are in `docs/friction-log.md`;
+  - the implementation landed through PR #49 (`621cd44`).
+- A rebase would add nothing.
+- **Proposal:** close it as superseded.
+
+### G-D4: machine-local OMP configuration
+
+- The keys reported earlier (Antigravity, `secrets.enabled`, `showTokenUsage`) live in the owner's user configuration, not in this repository.
+- The versioned `.omp/config.yml` holds only:
+  - the skill-folder switches;
+  - `disabledProviders`;
+  - the agent model overrides.
+- **Proposal:** keep machine-local configuration out of the repository. Document only the key names the workflow assumes, if any.
+
+### G-D5: branch hygiene
+
+- Every local branch is merged into `origin/main`.
+- Thirty-seven remote branches have commits that aren't on `main`, according to local refs that weren't fetched: `agy/*`, `archive/*`, `claude/*`, `gemini/*`, `task-claims/*`, `feat/*` and `task/*`.
+- **Proposal:** fetch with `--prune`, then produce the AC5 list for approval.
+
+### Already settled (no decision needed)
+
+- **CI failures after #84–#88** (runs 201–205):
+  - Cause: `artifact-records` failed with "verified → todo is not reachable" for omp-host-compat-01. A history-walk bug read the wrong state when a merge brought in an older creation.
+  - Fix: PR #89 (`75d2f05`). Every later run on `main` passed.
+  - Not settled: whether #89 added a regression test.
+- **ADR 0007:** `accepted (2026-10-13)`, set by the owner in `36034be`.
+
+## Plan
+
+1. Record each owner decision as `decided:`.
+2. Carry out G-D1, G-D2 and G-D3 in that order, on this branch.
+3. Fetch, then build the G-D5 list.
+4. Run AC6 and V1, then open the PR.
+
+## Checkpoint
+
+- as of: 2026-10-17, branch `work/2026-10-17-omp-host-compat-closeout`, head `f33e945`, worktree clean except this record
+- done: evidence gathered (see Owner decisions); B1 and B2 recorded
+- next: the owner answers G-D1–G-D5
+- open: whether PR #89 added a regression test for the history-walk fix
+- revalidate: B1 ran on `f33e945`; rerun if `main` moved
