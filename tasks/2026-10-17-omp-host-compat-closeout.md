@@ -10,6 +10,7 @@ status: active
 
 - tier: standard (S2 fails: ordered actions across task records, a validator test and a PR; S1, S3, S4, S6–S8 hold because each outcome is checkable once the owner records the decision; S5 doesn't)
 - decided: G-D1, accept tasks 01–09 → accept 01–08, then 09; the task 08 B1 timeout (120 s under load, passes in isolation) is recorded as baseline under load, environmental by owner (owner, 2026-10-17 (session decision message))
+- decided: G-D4, machine-local OMP configuration → keep it out of the repository; no machine-local key needs documenting, because the workflow assumes none (owner, 2026-10-17 (session decision message: "Resolver formalmente G-D4, mantendo configuração machine-local fora do repositório"))
 - decided: G-D3, PR #47 → close as superseded, no merge or rebase by owner (owner, 2026-10-17 (session decision message))
 - decided: G-D2, validator self-test timeout → option (d), tier standard, authorized by owner (2026-10-17): remove the expensive full-repository validation from `bun test`; preserve G1 (seven required checks remain applicable in full mode), G2 (check names do not use decision-ID prefixes) and G3 (validator leaves a committed Git fixture unchanged) in lightweight contract tests. Keep full validation mandatory in CI via `mise run validate` / `pre-commit`; document that local `mise run test` no longer runs the full repository validator.
 
@@ -44,7 +45,7 @@ Out of scope:
 |---|---|---|---|---|
 | B1 | `mise run validate` before the first edit | pass | f33e945 | worktree `work/2026-10-17-omp-host-compat-closeout`, Overall pass (49.3 s) |
 | B2 | `mise run test` on `main` | pass | f33e945 | [CI run 219](https://github.com/EduardoShibukawa/G-Inga/actions/runs/38993843536); jobs `test` and `pre-commit` success; the "this repository" test took 36.9 s |
-| AC1 | `decided:` entries read against G-D1–G-D5 | not run | | G-D1, G-D2 (direction only) and G-D3 recorded; G-D4 and G-D5 still open |
+| AC1 | `decided:` entries read against G-D1–G-D5 | not run | | G-D1, G-D2 (direction only), G-D3 and G-D4 recorded; G-D5 still open |
 | AC2 | `mise run validate` after the `accepted:` entries | pass | 865d03f | exit 0 after tasks 01–08 (42.6 s) and again after task 09 (865d03f tree); all nine tasks `status: accepted` |
 | AC3 | G-D2 repo-contract tests plus full validation in CI | pass | `81afdf6` | PR [#99](https://github.com/EduardoShibukawa/G-Inga/pull/99), run [39078370274](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39078370274): `test` and `pre-commit` succeeded. G1/G2/G3 contract tests landed with merge `c842423`; full validator remained in required `pre-commit`. Target under 5 s is consistent with test-run success but individual test timing was not separately extracted. |
 | AC4 | PR #47 state and closing comment | pass | 7815059 | [PR #47](https://github.com/EduardoShibukawa/G-Inga/pull/47) closed 2026-10-17 without merge, branch kept. `git diff origin/main 741a3f2 -- docs/friction-log.md specs/2026-10-14-question-rounds-skill.md` empty; merge-tree conflicts only in the four `tasks/2026-10-14-question-rounds*` files. Comment links #49 (621cd44), #50 (7072181), #52 (6f2690c), #53 (e9aa41d), #63 (930fc3e), #65 (ae4fef9), #67 (31a5bfb), #74 (e1b407a) |
@@ -107,6 +108,8 @@ The owner authorized option (d), tier `standard`, on 2026-10-17. This is a test-
   - `disabledProviders`;
   - the agent model overrides.
 - **Proposal:** keep machine-local configuration out of the repository. Document only the key names the workflow assumes, if any.
+- **Outcome (owner, 2026-10-17):** adopted. Keep machine-local configuration out of the repository.
+- **Finding:** the workflow assumes no machine-local key. `secrets.enabled` and `showTokenUsage` occur nowhere in `hooks/`, `tools/`, `skills/`, `agents/`, `docs/` or `.claude-plugin/`. The only user-level reference is `skills/work/references/model-policy.md:23`, which names `task.agentModelOverrides` as an alternative to G-Ingá's versioned `.omp/config.yml` for other repositories. That key is already documented there, so no new documentation is added.
 
 ### G-D5: branch hygiene
 
