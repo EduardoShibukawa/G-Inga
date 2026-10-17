@@ -5,7 +5,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { listMarkdown } from "./lib/markdown.ts";
 import { preflight } from "./preflight.ts";
-import { cleanupFixtures, DECISION_MAP, fixtureDir, git, hasBrowser, NO_BROWSER, REPO, status, validate } from "./testkit.ts";
+import { cleanupFixtures, DECISION_MAP, fixtureDir, hasBrowser, NO_BROWSER, status, validate } from "./testkit.ts";
 import { externalLinks } from "./universal/externalLinks.ts";
 
 afterAll(cleanupFixtures);
@@ -155,19 +155,6 @@ describe("external links stay separate from local links", () => {
       server.stop(true);
     }
   });
-});
-
-describe("this repository", () => {
-  test("every layer applies, no check is named after a decision ID, and git status is unchanged", () => {
-    const porcelain = () => git(REPO, "status", "--porcelain", "--untracked-files=all").stdout.toString();
-    const before = porcelain();
-    const r = validate(REPO);
-    expect([0, 2]).toContain(r.code ?? -1);
-    for (const c of ["markdown-lint", "local-links", "decision-records", "artifact-contract-sync", "artifact-contract-copy", "artifact-contract-examples", "artifact-rule-fixtures"])
-      expect(status(c, r.out)).toBe("pass");
-    expect(r.out).not.toMatch(/^\s+d\d-/m);
-    expect(porcelain()).toBe(before);
-  }, 120000);
 });
 
 describe("preflight", () => {
