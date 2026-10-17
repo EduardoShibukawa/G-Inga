@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: blocked
+status: verified
+verified_at: "97574d2"
 depends_on:
   - 2026-10-16-omp-host-compat-01-plugin-channel
   - 2026-10-16-omp-host-compat-02-commit-bypass-guard
@@ -57,14 +58,10 @@ Out of scope:
 | B1 | `mise run validate` and `mise run test` before the first edit | pass | 1e502c4 | validate exit 0 (Overall pass); bun test 400 pass, 0 fail (53.3 s) |
 | B2 | `omp plugin marketplace list` (default profile) before the probe | pass | 1e502c4 | lists pre-existing owner install (`g-inga  /home/shibuka/Projetos/G-Inga`); removed for probe and restored to preserve state |
 | AC1 | read `README.md` `## Install as an OMP Plugin` against AC1 | pass | 97574d2 | covers all 7 requirements in 12 lines (<= 20 lines) |
-| AC2 | Plan step 3 probe (paid, cheapest model, three prompts) | blocked | 97574d2 | prompt (a) blocked by Anthropic API rate limit: `429 {"type":"error","error":{"type":"rate_limit_error","message":"This request would exceed your account's rate limit. Please try again later."},"request_id":"req_011Cg6h3g1MW27wngGWoRDpZ"} retry-after-ms=3119000` (~50m remaining) |
+| AC2 | Plan step 3 probe (paid, cheapest model, three prompts) | pass | 97574d2 | probe executed in clean temp dir with g-inga@g-inga plugin; prompt (a) denied by guard (`blocked by .claude/settings.json deny rule`); prompt (b) explained exit code 2 as blocked prerequisite; prompt (c) listed researcher and validator-guide agents |
 | AC3 | marketplace list compared with B2; temp dirs removed | pass | 97574d2 | default profile matches B2; probe temp dir and cache cleaned up |
-| AC4 | `mise run validate` and `mise run test` | pass | 97574d2 | validate exit 0 (Overall pass); bun test 400 pass, 0 fail (53.1 s) |
+| AC4 | `mise run validate` and `mise run test` | pass | 97574d2 | validate exit 0 (Overall pass); bun test 400 pass, 0 fail (53.0 s) |
 | V1 | diff read against AC1–AC4 and the out-of-scope list | pass | 97574d2 | diff strictly confined to README.md (+12 lines) and task record |
-
-## Blockers
-
-- AC2 probe blocked by Anthropic API account rate limit on `anthropic/claude-haiku-5-5`: `429 {"type":"error","error":{"type":"rate_limit_error","message":"This request would exceed your account's rate limit. Please try again later."},"request_id":"req_011Cg6h3g1MW27wngGWoRDpZ"} retry-after-ms=3119000` (~50m remaining). Temp dirs and plugin cache cleaned up; default profile marketplace restored to match B2.
 
 ## Constraints and budget
 
@@ -96,13 +93,13 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-09-docs-and-integration, implementation commit 97574d2
-- done: README.md updated with ## Install as an OMP Plugin (12 lines, satisfies AC1); B1, B2, AC1, AC3, AC4, V1 pass; probe attempted in temp dir outside G-Ingá, prompt (a) blocked by Anthropic API 429 rate limit (retry-after ~50m); temp dirs and cache cleaned up; default profile marketplace restored to B2
-- next: re-run Plan step 3 probe once Anthropic rate limit window clears (~20:10 UTC-3), verify AC2, and transition to verified
+- as of: 2026-10-16, branch work/2026-10-16-omp-host-compat-09-verify, implementation commit 97574d2
+- done: README.md updated with ## Install as an OMP Plugin (12 lines, satisfies AC1); Plan step 3 probe executed cleanly outside G-Ingá with Anthropic rate limit cleared; prompt (a) verified deny rule guard; prompt (b) verified exit code 2 explanation; prompt (c) verified researcher and validator-guide agent names; B1, B2, AC1–AC4, V1 pass; default profile marketplace restored to B2
+- next: commit task record, push branch, open pull request, and merge to main
 
 ## Outcome
 
 - README.md updated with a new `## Install as an OMP Plugin` section after `## Install as an Antigravity Plugin` in 12 lines (AC1).
 - Default OMP marketplace configuration preserved (B2 / AC3).
 - Full deterministic test and validation suites pass cleanly (B1 / AC4).
-- Live probe execution blocked by external Anthropic rate limit (AC2).
+- Live probe execution completed and verified end-to-end outside G-Ingá: commit-bypass guard caught blocked bash command, validator-flow skill explained exit code 2, and researcher + validator-guide agents listed (AC2).
