@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: verified
+status: accepted
 verified_at: "97404df176fbe0faeaa1f8f4ef84a1a3b58b558d"
 ---
 
@@ -10,6 +10,7 @@ verified_at: "97404df176fbe0faeaa1f8f4ef84a1a3b58b558d"
 ## Routing and approvals
 
 - tier: standard (S2 holds: a fourth parser beside the existing three, same `UsageObservation` shape; S3 weighed: widens the `host` union additively, no consumed field changes; S1, S4–S8 hold)
+- accepted: by owner (2026-10-17, G-D1, owner decision in session decision message); the B1 timeout (120 s under load, passes in isolation) is recorded as baseline under load, environmental, not a defect of the task
 
 ## Objective
 

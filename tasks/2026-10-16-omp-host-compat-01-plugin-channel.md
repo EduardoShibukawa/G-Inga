@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: verified
+status: accepted
 verified_at: "d24dc6c"
 ---
 
@@ -10,6 +10,7 @@ verified_at: "d24dc6c"
 ## Routing and approvals
 
 - tier: standard (S2 fails: first OMP project config in the repository; S1, S3–S8 hold)
+- accepted: by owner (2026-10-17, G-D1, owner decision in session decision message)
 
 ## Objective
 

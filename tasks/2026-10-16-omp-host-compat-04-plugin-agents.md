@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: verified
+status: accepted
 verified_at: "50eb9be"
 ---
 
@@ -10,6 +10,7 @@ verified_at: "50eb9be"
 ## Routing and approvals
 
 - tier: standard (S2 holds: same symlink pattern as the canonical skills root layout, ADR 0014; S1, S3–S8 hold)
+- accepted: by owner (2026-10-17, G-D1, owner decision in session decision message)
 
 ## Objective
 
