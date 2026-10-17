@@ -13,6 +13,7 @@ status: active
 - decided: G-D4, machine-local OMP configuration → keep it out of the repository; no machine-local key needs documenting, because the workflow assumes none (owner, 2026-10-17 (session decision message: "Resolver formalmente G-D4, mantendo configuração machine-local fora do repositório"))
 - decided: G-D3, PR #47 → close as superseded, no merge or rebase by owner (owner, 2026-10-17 (session decision message))
 - decided: G-D2, validator self-test timeout → option (d), tier standard, authorized by owner (2026-10-17): remove the expensive full-repository validation from `bun test`; preserve G1 (seven required checks remain applicable in full mode), G2 (check names do not use decision-ID prefixes) and G3 (validator leaves a committed Git fixture unchanged) in lightweight contract tests. Keep full validation mandatory in CI via `mise run validate` / `pre-commit`; document that local `mise run test` no longer runs the full repository validator.
+- decided: G-D2 amendment, G3 on the real repository → besides the committed-fixture contract test, the required `pre-commit` CI job fails if `mise run validate` leaves the Git working tree changed (`git status --porcelain --untracked-files=all` must be empty) (owner, 2026-10-17, answer "Plano + G3 real no CI")
 
 ## Objective
 
@@ -34,7 +35,7 @@ Out of scope:
 
 - AC1: each owner decision G-D1–G-D5 is recorded as a `decided:` entry in this log, quoting the owner.
 - AC2: if G-D1 accepts, tasks 01–08 and then 09 carry `accepted: by owner (<date>, <ref>)` and `status: accepted`, and `mise run validate` passes.
-- AC3: G-D2 option (d) is carried out without reducing gate coverage: `validate.test.ts` no longer recursively validates the canonical repository; `repo-contract.test.ts` covers G1 with `applies()`, G2 with a decision-ID-name mutation, and G3 using a committed Git fixture and before/after porcelain state. `mise run test` and `mise run validate` pass; full validation remains a required CI check; F-003 records measured cost and the timeout.
+- AC3: G-D2 option (d) is carried out without reducing gate coverage: `validate.test.ts` no longer recursively validates the canonical repository; `repo-contract.test.ts` covers G1 with `applies()`, G2 with a decision-ID-name mutation, and G3 using a committed Git fixture and before/after porcelain state. `mise run test` and `mise run validate` pass; full validation remains a required CI check, and the `pre-commit` job asserts a clean working tree after `mise run validate` (G3 on the real repository, G-D2 amendment); F-003 records measured cost and the timeout.
 - AC4: if G-D3 authorizes, PR #47 is closed with a comment that links the commits on `main` that carry its content.
 - AC5: G-D5 produces a list of remote branches. For each branch it gives the head, the commits ahead of `main`, and a proposal (delete / keep / ask). Nothing is deleted without approval.
 - AC6: `mise run validate` and `mise run test` pass at `verified_at`.
@@ -51,6 +52,7 @@ Out of scope:
 | AC4 | PR #47 state and closing comment | pass | 7815059 | [PR #47](https://github.com/EduardoShibukawa/G-Inga/pull/47) closed 2026-10-17 without merge, branch kept. `git diff origin/main 741a3f2 -- docs/friction-log.md specs/2026-10-14-question-rounds-skill.md` empty; merge-tree conflicts only in the four `tasks/2026-10-14-question-rounds*` files. Comment links #49 (621cd44), #50 (7072181), #52 (6f2690c), #53 (e9aa41d), #63 (930fc3e), #65 (ae4fef9), #67 (31a5bfb), #74 (e1b407a) |
 | AC5 | branch list reviewed by the owner | not run | | |
 | AC6 | CI `test` and full validator `pre-commit` on the final PR head | pass | `81afdf6` | Run [39078370274](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39078370274), both jobs success before merge `c842423`. This records CI evidence on the exact PR head, not a local execution at merge SHA. |
+| AC3b | `pre-commit` job step fails on a dirty tree after `mise run validate` | pass | `33c71d7` | PR [#101](https://github.com/EduardoShibukawa/G-Inga/pull/101), run [39079071185](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39079071185): `test` and `pre-commit` success, so the clean-tree step passed on the real repository. Local: step script exit 0 clean, 1 with a temp file, 0 after removal |
 | V1 | diff read against AC1–AC6 and the out-of-scope list | not run | | |
 
 ## Owner decisions
@@ -136,6 +138,7 @@ The owner authorized option (d), tier `standard`, on 2026-10-17. This is a test-
 
 - as of: 2026-10-17, branch `work/2026-10-17-omp-closeout-decisions`, base `7815059`, worktree `/home/shibuka/Projetos/G-Inga-wt-closeout-decisions`
 - done: G-D1 (tasks 01–09 accepted, commits `6235c22`, `865d03f`); G-D3 (PR #47 closed); G-D2 implemented on PR #99 and verified by CI `test` + `pre-commit` at `81afdf6`, merged as `c842423`
+- done (G-D2 amendment): `pre-commit` clean-tree step added on branch `work/2026-10-17-gd2-g3-real-ci`; verified by CI run 39079071185 at `33c71d7` (AC3b)
 - next: owner resolves G-D4/G-D5; create read-only AC5 branch inventory, then verify AC1/AC5/V1
 - open: G-D4, G-D5, AC5 branch inventory, V1, whether PR #89 added a regression test
 - revalidate: rerun `mise run validate` and `mise run test` if `main` moves
