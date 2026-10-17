@@ -1,7 +1,7 @@
 /**
  * Lightweight contracts for the repository's full validation gate.
  *
- * The full validator still runs in CI through `mise run pre-commit`; these tests
+ * The required CI `pre-commit` job still runs the full validator through `mise run validate`; these tests
  * protect applicability, check naming and read-only behavior without recursively
  * running the repository's whole history walk inside `bun test`.
  */
