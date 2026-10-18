@@ -4,6 +4,7 @@
 **Status:** proposed; not an approved specification or architectural decision  
 **Reviewed:** 2026-10-18  
 **Evidence baseline:**
+
 - G-Ingá `main`: `860792469bf0c7b56d37d98c8dc07079ce816928`
 - Gira-G `main`: `22d12ee75a9af87cc44e837492b547dc5f0932e7`
 
@@ -53,6 +54,7 @@ The exact runtime error strings and public error-code shape remain implementatio
 | CLI attempt fails | CLI attempt fails, then fallback sees an unsupported schema | Fallback must also reject; CLI failure must not turn an unsupported map into success |
 
 Recommended test grouping:
+
 - Unit tests for a pure schema/structure validation helper.
 - `queryGiragSlice` tests using temporary fixtures for the success and failure matrix.
 - A regression test proving schema 2 with otherwise valid `nodes` is rejected until compatibility is deliberately added.
