@@ -16,11 +16,13 @@ status: blocked
 Make the direct-index fallback in `tools/eval/evaluate_girag_slicing.ts` accept only a schema version and Macro Map structure that the evaluator has explicitly verified it can consume. Preserve current `schema_version: "1.0.0"` behavior when valid, reject unsupported or malformed input rather than treating it as a usable graph, and apply the same validation when the CLI is unavailable or a CLI attempt fails.
 
 In scope:
+
 - `tools/eval/evaluate_girag_slicing.ts`
 - `tools/eval/evaluate_girag_slicing.test.ts`
 - Temporary fixtures and test helpers required by those tests, kept local to the existing evaluator test conventions.
 
 Out of scope:
+
 - Supporting integer `schema_version: 2` or changing Gira-G's schema/publication contract.
 - Editing Gira-G production code, the versioned-publication specification, ADRs, or its heavy parent task.
 - Reworking the evaluator's benchmark methodology, scenario data, metrics, or unrelated CLI behavior.
