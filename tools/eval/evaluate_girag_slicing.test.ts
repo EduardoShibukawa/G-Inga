@@ -5,8 +5,9 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { tmpdir } from "node:os";
 import {
   calculateTokenReduction,
   evaluateScenario,
@@ -17,6 +18,29 @@ import {
 } from "./evaluate_girag_slicing";
 
 const SCENARIO_PATH = resolve(process.cwd(), "docs/research/scenarios/girag-slicing-v1.json");
+
+function withIndexFixture(contents: string, callback: (indexPath: string, directory: string) => void): void {
+  const directory = mkdtempSync(join(tmpdir(), "girag-macro-map-"));
+  const indexPath = join(directory, "macro-map.json");
+  writeFileSync(indexPath, contents, "utf8");
+  try {
+    callback(indexPath, directory);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+function validMacroMap(overrides: Record<string, unknown> = {}): string {
+  return JSON.stringify({
+    schema_version: "1.0.0",
+    nodes: [
+      { id: "node-a", name: "A" },
+      { id: "node-b", name: "B" },
+    ],
+    relationships: [{ source_id: "node-a", target_id: "node-b", type: "depends_on" }],
+    ...overrides,
+  });
+}
 
 describe("Autoresearch EXP-07: Gira-G Slicing Benchmark", () => {
   test("Scenario dataset integrity and schema completeness", () => {
@@ -159,6 +183,95 @@ describe("Autoresearch EXP-07: Gira-G Slicing Benchmark", () => {
     // Latency overhead SLA
     expect(summary.max_overhead_ms).toBeLessThan(500);
     expect(summary.mean_overhead_ms).toBeLessThan(50);
+  });
+
+  test("Direct fallback accepts the supported Macro Map and traverses relationships", () => {
+    withIndexFixture(validMacroMap(), (indexPath) => {
+      const result = queryGiragSlice("node-a", { indexPath, binaryPath: null });
+      expect(result.success).toBe(true);
+      expect(result.strategy).toBe("index_traversal");
+      expect(result.output.focal_node.id).toBe("node-a");
+      expect(result.output.neighbors.map((node: { id: string }) => node.id)).toEqual(["node-b"]);
+      expect(result.output.relationships).toHaveLength(1);
+    });
+  });
+
+  test("Direct fallback rejects missing, malformed, unknown, and unsupported schema versions", () => {
+    const cases: Array<{ label: string; contents: string }> = [
+      { label: "missing", contents: JSON.stringify({ nodes: [], relationships: [] }) },
+      { label: "null", contents: validMacroMap({ schema_version: null }) },
+      { label: "empty", contents: validMacroMap({ schema_version: "" }) },
+      { label: "boolean", contents: validMacroMap({ schema_version: true }) },
+      { label: "object", contents: validMacroMap({ schema_version: { version: "1.0.0" } }) },
+      { label: "array", contents: validMacroMap({ schema_version: ["1.0.0"] }) },
+      { label: "integer schema 2", contents: validMacroMap({ schema_version: 2 }) },
+      { label: "unknown integer", contents: validMacroMap({ schema_version: 999 }) },
+      { label: "unknown string", contents: validMacroMap({ schema_version: "9.9.9" }) },
+      { label: "wrong representation", contents: validMacroMap({ schema_version: "2" }) },
+    ];
+
+    for (const fixture of cases) {
+      withIndexFixture(fixture.contents, (indexPath) => {
+        const result = queryGiragSlice("node-a", { indexPath, binaryPath: null });
+        expect(result.success, fixture.label).toBe(false);
+        expect(result.error, fixture.label).toContain("Unsupported Macro Map schema_version:");
+        expect(result.error, fixture.label).not.toContain("Node node-a not found");
+      });
+    }
+  });
+
+  test("Direct fallback distinguishes malformed JSON from invalid graph structure", () => {
+    withIndexFixture("{not valid JSON", (indexPath) => {
+      const result = queryGiragSlice("node-a", { indexPath, binaryPath: null });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Malformed Macro Map JSON:");
+    });
+
+    const invalidMaps = [
+      { label: "null top-level value", contents: "null" },
+      { label: "array top-level value", contents: "[]" },
+      { label: "missing nodes", contents: JSON.stringify({ schema_version: "1.0.0", relationships: [] }) },
+      { label: "nodes not array", contents: validMacroMap({ nodes: {} }) },
+      { label: "relationships not array", contents: validMacroMap({ relationships: null }) },
+      { label: "node is null", contents: validMacroMap({ nodes: [null] }) },
+      { label: "node id not string", contents: validMacroMap({ nodes: [{ id: 42 }] }) },
+      { label: "relationship target missing", contents: validMacroMap({ relationships: [{ source_id: "node-a" }] }) },
+    ];
+
+    for (const fixture of invalidMaps) {
+      withIndexFixture(fixture.contents, (indexPath) => {
+        const result = queryGiragSlice("node-a", { indexPath, binaryPath: null });
+        expect(result.success, fixture.label).toBe(false);
+        expect(result.error, fixture.label).toContain("Invalid Macro Map structure:");
+        expect(result.error, fixture.label).not.toContain("Node node-a not found");
+      });
+    }
+  });
+
+  test("A valid map with an absent node is distinct from schema and structure errors", () => {
+    withIndexFixture(validMacroMap(), (indexPath) => {
+      const result = queryGiragSlice("node-missing", { indexPath, binaryPath: null });
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Node node-missing not found in index");
+      expect(result.error).not.toContain("Unsupported Macro Map schema_version:");
+      expect(result.error).not.toContain("Invalid Macro Map structure:");
+    });
+  });
+
+  test("CLI unavailable and CLI failure both enforce the same fallback schema gate", () => {
+    withIndexFixture(validMacroMap({ schema_version: 2 }), (indexPath, directory) => {
+      const unavailable = queryGiragSlice("node-a", { indexPath, binaryPath: null });
+      const failingBinary = join(directory, "gira-fails");
+      writeFileSync(failingBinary, "#!/bin/sh\nexit 1\n", "utf8");
+      chmodSync(failingBinary, 0o755);
+
+      const afterCliFailure = queryGiragSlice("node-a", { indexPath, binaryPath: failingBinary });
+      expect(unavailable.success).toBe(false);
+      expect(afterCliFailure.success).toBe(false);
+      expect(unavailable.error).toContain("Unsupported Macro Map schema_version: 2");
+      expect(afterCliFailure.error).toBe(unavailable.error);
+      expect(afterCliFailure.strategy).toBe("index_traversal");
+    });
   });
 
   test("Live Gira-G query integration validates fast bounded slicing on canonical index", () => {
