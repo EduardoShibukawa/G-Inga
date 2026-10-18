@@ -75,7 +75,7 @@ Out of scope:
 
 - as of: 2026-10-18; implementation branch `work/2026-10-18-girag-fallback-implementation`, branched from task branch commit `ac2da0e086d9c72716ec34ff44852e329be4343a`
 - done: implementation explicitly authorized by owner; baseline CI passed before source edits; current source, tests, compatibility proposal, routing instructions, artifact contracts and cross-repository spec/task state reviewed remotely
-- next: review PR #108 and integrate PR #107 first; PR #108 is stacked on the task branch and must be retargeted to `main` after #107 is merged
+- next: review and integrate PR #108, which contains this task record and the implementation together; PR #107 is superseded by this consolidated PR
 - constraints: local shell checks were unavailable because GitHub DNS resolution failed in this environment; verification is from GitHub Actions on the exact source SHA. Schema 2 remains unsupported.
 
 ## Outcome
