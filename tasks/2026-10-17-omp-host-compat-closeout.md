@@ -46,7 +46,7 @@ Out of scope:
 |---|---|---|---|---|
 | B1 | `mise run validate` before the first edit | pass | f33e945 | worktree `work/2026-10-17-omp-host-compat-closeout`, Overall pass (49.3 s) |
 | B2 | `mise run test` on `main` | pass | f33e945 | [CI run 219](https://github.com/EduardoShibukawa/G-Inga/actions/runs/38993843536); jobs `test` and `pre-commit` success; the "this repository" test took 36.9 s |
-| AC1 | `decided:` entries read against G-D1–G-D5 | not run | | G-D1, G-D2 (direction only), G-D3 and G-D4 recorded; G-D5 still open |
+| AC1 | `decided:` entries read against G-D1–G-D5 | not run | | G-D1, G-D2, G-D3 and G-D4 recorded; G-D5 still open |
 | AC2 | `mise run validate` after the `accepted:` entries | pass | 865d03f | exit 0 after tasks 01–08 (42.6 s) and again after task 09 (865d03f tree); all nine tasks `status: accepted` |
 | AC3 | G-D2 repo-contract tests plus full validation in CI | pass | `81afdf6` | PR [#99](https://github.com/EduardoShibukawa/G-Inga/pull/99), run [39078370274](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39078370274): `test` and `pre-commit` succeeded. G1/G2/G3 contract tests landed with merge `c842423`; full validator remained in required `pre-commit`. Target under 5 s is consistent with test-run success but individual test timing was not separately extracted. |
 | AC4 | PR #47 state and closing comment | pass | 7815059 | [PR #47](https://github.com/EduardoShibukawa/G-Inga/pull/47) closed 2026-10-17 without merge, branch kept. `git diff origin/main 741a3f2 -- docs/friction-log.md specs/2026-10-14-question-rounds-skill.md` empty; merge-tree conflicts only in the four `tasks/2026-10-14-question-rounds*` files. Comment links #49 (621cd44), #50 (7072181), #52 (6f2690c), #53 (e9aa41d), #63 (930fc3e), #65 (ae4fef9), #67 (31a5bfb), #74 (e1b407a) |
@@ -136,9 +136,12 @@ The owner authorized option (d), tier `standard`, on 2026-10-17. This is a test-
 
 ## Checkpoint
 
-- as of: 2026-10-17, branch `work/2026-10-17-omp-closeout-decisions`, base `7815059`, worktree `/home/shibuka/Projetos/G-Inga-wt-closeout-decisions`
-- done: G-D1 (tasks 01–09 accepted, commits `6235c22`, `865d03f`); G-D3 (PR #47 closed); G-D2 implemented on PR #99 and verified by CI `test` + `pre-commit` at `81afdf6`, merged as `c842423`
-- done (G-D2 amendment): `pre-commit` clean-tree step added on branch `work/2026-10-17-gd2-g3-real-ci`; verified by CI run 39079071185 at `33c71d7` (AC3b)
-- next: owner resolves G-D4/G-D5; create read-only AC5 branch inventory, then verify AC1/AC5/V1
-- open: G-D4, G-D5, AC5 branch inventory, V1, whether PR #89 added a regression test
+- as of: 2026-10-17, branch `work/2026-10-17-omp-closeout-checkpoint`, base `fb2a417` (origin/main), worktree `/home/shibuka/Projetos/G-Inga-wt-checkpoint`
+- done: G-D1 (tasks 01–09 accepted, commits `6235c22`, `865d03f`); G-D3 (PR #47 closed); G-D2 implemented on PR #99 and verified by CI `test` + `pre-commit` at `81afdf6`, merged as `c842423`; PR #98 closed without merge (superseded by #99)
+- done (G-D2 amendment): `pre-commit` clean-tree step merged via PR #101 (merge `fb2a417`); verified by CI run 39079071185 at `33c71d7` (AC3b); post-merge `main` CI `validate` on `fb2a417` succeeded [CI]
+- done (G-D4): decided (line 13), merged via PR #102 (merge `de412b5`)
+- done (branch protection, 2026-10-17, orchestrator, owner instruction "fixe os pontos pendentes"): required status checks were `validate/pre-commit (pull_request)` and `validate/test (pull_request)`, which never matched the real check-run names, so every merge needed admin bypass (GraphQL `isRequired:false`); now `pre-commit` and `test` (GitHub Actions app 15368), strict=false; other protection settings untouched. The comment in `.github/workflows/validate.yml` about the `pre-commit` job name is now accurate
+- AC5 inventory: read-only list of 92 remote branches produced 2026-10-17 (53 merged incl. 2 archival-named, 2 superseded, 35 with content differing from main incl. 13 archival-named, 2 open PRs at the time); not reviewed by owner, deletion not authorized; per-branch review in progress, AC5 stays `not run`
+- next: owner G-D5 decision on branch deletion and AC5 review
+- open: G-D5, AC5, V1, whether PR #89 added a regression test
 - revalidate: rerun `mise run validate` and `mise run test` if `main` moves
