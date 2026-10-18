@@ -45,6 +45,7 @@ Navigation index for G-Ingá repository documentation, architectural decisions, 
 - [docs/research/d7-evaluation-protocol.md](research/d7-evaluation-protocol.md) (`accepted`): Evaluation protocol and exploratory pilot on real tasks.
 - [docs/research/autoresearch-program.md](research/autoresearch-program.md) (`proposed`): Bounded, reproducible experimental loop for prompts, routing, and workflows.
 - [docs/research/artifact-contract-validator-findings.md](research/artifact-contract-validator-findings.md): Known validator findings (F1–F14) and contract review cases.
+- [docs/research/girag-schema-fallback-compatibility.md](research/girag-schema-fallback-compatibility.md) (`proposed`): Evidence and regression matrix for strict schema validation in G-Ingá's Gira-G slicing fallback.
 
 ## 6. Repository Development Tooling
 
