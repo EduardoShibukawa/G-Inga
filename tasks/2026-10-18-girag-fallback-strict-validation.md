@@ -1,7 +1,7 @@
 ---
 schema: task/1
 tier: standard
-status: blocked
+status: active
 ---
 
 # Strict Gira-G Macro Map validation in the slicing evaluator fallback
@@ -9,7 +9,7 @@ status: blocked
 ## Routing and approvals
 
 - tier: standard (S1 holds: the observable compatibility rules can be expressed as a bounded acceptance matrix; S2 fails: inspect both CLI-error handling and direct JSON traversal before choosing the smallest safe change; S3 holds: source and tests are confined to the Gira-G slicing evaluator; S4 holds: the change is reversible and does not publish artifacts)
-- approved: standard planning record by owner (2026-10-17, this task-preparation request)
+- approved: standard implementation by owner (2026-10-18, explicit request to fix and proceed in this conversation)
 
 ## Objective
 
@@ -29,11 +29,11 @@ Out of scope:
 - Running tests, builds, validators, or other project commands as part of this task record's creation.
 - Merging a PR or changing any protected repository settings.
 
-## Blockers
+## Execution boundaries
 
-- This record does not itself authorize implementation. The owner must start the task explicitly through the repository workflow before source edits begin.
-- Keep integer schema `2` unsupported unless and until the Gira-G producer contract is approved and implemented, and a separately reviewed consumer change explicitly adds and verifies support. The current Gira-G publication spec is `draft`; do not infer approval from its documented decisions or open PRs.
-- If inspection shows that existing evaluator result/error types cannot represent malformed JSON, unsupported schema, invalid structure, and absent node distinctly without a consequential public-contract choice, stop and request owner direction rather than silently inventing a new public API.
+- Implementation is authorized by the owner's explicit instruction on 2026-10-18. This authorizes only the scope and acceptance criteria in this task.
+- Keep integer schema `2` unsupported while the Gira-G producer contract remains `draft`; do not infer support from familiar fields or open PRs.
+- Preserve the existing public result shape (`success`, `durationMs`, `output`, `error`, `strategy`); use distinct diagnostic prefixes rather than introducing a new public error-code contract.
 
 ## Acceptance criteria
 
@@ -58,8 +58,8 @@ Out of scope:
 
 | ID | Check | Result | Ref | Note |
 |---|---|---|---|---|
-| B1 | Relevant evaluator test baseline before edits | not run | | Executor records exact command, SHA, exit status and output before the first edit |
-| B2 | Canonical G-Ingá validation baseline before edits | not run | | Executor confirms the current command in `docs/development.md`; do not use results from another SHA |
+| B1 | Relevant evaluator test baseline before edits (`mise run test`, includes `tools/eval`) | pass | `ac2da0e086d9c72716ec34ff44852e329be4343a` | GitHub Actions run [39088664113](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39088664113): test job passed, 402 tests across 26 files, 0 failures; before source edits |
+| B2 | Canonical G-Ingá validation baseline before edits (`mise run validate`) | pass | `ac2da0e086d9c72716ec34ff44852e329be4343a` | Same Actions run: `pre-commit` / `mise run validate` passed; overall validator result `pass`; before source edits |
 | AC1 | Valid supported-schema fixture traverses focal node and relationships | not run | | Map to AC1 after implementation |
 | AC2 | Schema-version rejection table, including integer schema 2 | not run | | Assert rejection category, not only nonzero exit |
 | AC3 | Malformed JSON / invalid shape / unsupported schema / absent node distinctions | not run | | Assert the evaluator outcome and do not conflate categories |
@@ -71,7 +71,7 @@ Out of scope:
 
 ## Checkpoint
 
-- as of: 2026-10-17 local date; planning artifact prepared against remote G-Ingá `main` SHA `887f25adfe9c55ccd1d1b80082ac86ecd53d846d`
-- done: current source, test, compatibility proposal, routing instructions, artifact contracts and cross-repository spec/task state reviewed remotely
-- next: owner starts this task through `/work` in a local checkout; executor revalidates `main`, task contract and all referenced SHAs before any edit
-- blockers: owner execution authorization is required; Gira-G schema 2 is explicitly not supported by this task
+- as of: 2026-10-18; implementation branch `work/2026-10-18-girag-fallback-implementation`, branched from task branch commit `ac2da0e086d9c72716ec34ff44852e329be4343a`
+- done: implementation explicitly authorized by owner; baseline CI passed before source edits; current source, tests, compatibility proposal, routing instructions, artifact contracts and cross-repository spec/task state reviewed remotely
+- next: implement strict schema/structure validation and deterministic fallback regression tests; run CI on the resulting commit and update all AC/R/V rows with exact evidence
+- constraints: this environment cannot clone GitHub because DNS/network access is unavailable; edits are being made through the GitHub connector, so local shell checks are not claimed. Schema 2 remains unsupported.
