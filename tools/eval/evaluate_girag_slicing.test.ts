@@ -228,6 +228,8 @@ describe("Autoresearch EXP-07: Gira-G Slicing Benchmark", () => {
     });
 
     const invalidMaps = [
+      { label: "null top-level value", contents: "null" },
+      { label: "array top-level value", contents: "[]" },
       { label: "missing nodes", contents: JSON.stringify({ schema_version: "1.0.0", relationships: [] }) },
       { label: "nodes not array", contents: validMacroMap({ nodes: {} }) },
       { label: "relationships not array", contents: validMacroMap({ relationships: null }) },
