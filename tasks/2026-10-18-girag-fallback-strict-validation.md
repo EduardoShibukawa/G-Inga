@@ -1,7 +1,8 @@
 ---
 schema: task/1
 tier: standard
-status: active
+status: verified
+verified_at: "31f0655845cc84db83a7b3bb91187fcebc2df36b"
 ---
 
 # Strict Gira-G Macro Map validation in the slicing evaluator fallback
@@ -60,18 +61,24 @@ Out of scope:
 |---|---|---|---|---|
 | B1 | Relevant evaluator test baseline before edits (`mise run test`, includes `tools/eval`) | pass | `ac2da0e086d9c72716ec34ff44852e329be4343a` | GitHub Actions run [39088664113](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39088664113): test job passed, 402 tests across 26 files, 0 failures; before source edits |
 | B2 | Canonical G-Ingá validation baseline before edits (`mise run validate`) | pass | `ac2da0e086d9c72716ec34ff44852e329be4343a` | Same Actions run: `pre-commit` / `mise run validate` passed; overall validator result `pass`; before source edits |
-| AC1 | Valid supported-schema fixture traverses focal node and relationships | not run | | Map to AC1 after implementation |
-| AC2 | Schema-version rejection table, including integer schema 2 | not run | | Assert rejection category, not only nonzero exit |
-| AC3 | Malformed JSON / invalid shape / unsupported schema / absent node distinctions | not run | | Assert the evaluator outcome and do not conflate categories |
-| AC4 | CLI unavailable and CLI attempt failing both reach the same fallback schema gate | not run | | Stub/inject CLI availability/failure deterministically |
-| AC5 | Unit regression matrix runs with temporary fixtures without external Gira-G binary | not run | | Keep real CLI integration separate |
-| R1 | Canonical evaluator test suite | not run | | Exact command, exit code and logs to be recorded by executor |
-| R2 | Canonical repository validation | not run | | Confirm command in current instructions; record exact SHA and result |
-| V1 | Read complete diff against AC1–AC6 and check no unrelated files/spec changes | not run | | Record reviewed commit SHA |
+| AC1 | Valid supported-schema fixture traverses focal node and relationships | pass | `31f0655845cc84db83a7b3bb91187fcebc2df36b` | CI test suite passed on this exact SHA |
+| AC2 | Schema-version rejection table, including integer schema 2 | pass | `31f0655845cc84db83a7b3bb91187fcebc2df36b` | Missing/null/empty/wrong type/unknown/wrong representation and integer 2 are rejected without coercion |
+| AC3 | Malformed JSON / invalid shape / unsupported schema / absent node distinctions | pass | `31f0655845cc84db83a7b3bb91187fcebc2df36b` | Regression tests assert distinct diagnostics for all four categories |
+| AC4 | CLI unavailable and CLI attempt failing both reach the same fallback schema gate | pass | `31f0655845cc84db83a7b3bb91187fcebc2df36b` | Deterministic null binary and failing temporary executable return the same schema rejection |
+| AC5 | Unit regression matrix runs with temporary fixtures without external Gira-G binary | pass | `31f0655845cc84db83a7b3bb91187fcebc2df36b` | Temporary JSON fixtures and fake failing CLI; existing live integration test remains separate |
+| R1 | Canonical evaluator test suite via `mise run test` | pass | `31f0655845cc84db83a7b3bb91187fcebc2df36b` | [CI run 39088808151](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39088808151): 407 tests across 26 files, 0 failures |
+| R2 | Canonical repository validation via `mise run validate` | pass | `31f0655845cc84db83a7b3bb91187fcebc2df36b` | Same CI run, `pre-commit` job passed; validator reported overall `pass` and clean working tree |
+| V1 | Read complete diff against AC1–AC6 and check no unrelated files/spec changes | pass | `31f0655845cc84db83a7b3bb91187fcebc2df36b` | Reviewed PR #108 patch; only task, evaluator, and evaluator test files changed |
 
 ## Checkpoint
 
 - as of: 2026-10-18; implementation branch `work/2026-10-18-girag-fallback-implementation`, branched from task branch commit `ac2da0e086d9c72716ec34ff44852e329be4343a`
 - done: implementation explicitly authorized by owner; baseline CI passed before source edits; current source, tests, compatibility proposal, routing instructions, artifact contracts and cross-repository spec/task state reviewed remotely
-- next: implement strict schema/structure validation and deterministic fallback regression tests; run CI on the resulting commit and update all AC/R/V rows with exact evidence
-- constraints: this environment cannot clone GitHub because DNS/network access is unavailable; edits are being made through the GitHub connector, so local shell checks are not claimed. Schema 2 remains unsupported.
+- next: review PR #108 and integrate PR #107 first; PR #108 is stacked on the task branch and must be retargeted to `main` after #107 is merged
+- constraints: local shell checks were unavailable because GitHub DNS resolution failed in this environment; verification is from GitHub Actions on the exact source SHA. Schema 2 remains unsupported.
+
+## Outcome
+
+- Delivered: strict schema and graph-structure validation for the direct-index fallback, explicit diagnostics for malformed JSON / unsupported schema / invalid structure / absent node, deterministic tests for CLI-unavailable and CLI-failure paths, and preserved existing benchmark coverage.
+- Not delivered: schema 2 support, changes to the Gira-G producer, changes to benchmark data/metrics, or a merge.
+- Evidence: GitHub Actions run [39088808151](https://github.com/EduardoShibukawa/G-Inga/actions/runs/39088808151) passed both `mise run test` and `mise run validate` at `31f0655845cc84db83a7b3bb91187fcebc2df36b`.
