@@ -263,9 +263,70 @@ export function resolveGiragBinary(): string | null {
  * Executes a slice query via the Gira-G CLI harness or falls back to direct macro-map index lookup.
  * Returns measured execution duration and extracted slice.
  */
+interface SupportedMacroMap {
+  schema_version: "1.0.0";
+  nodes: Array<Record<string, any> & { id: string }>;
+  relationships: Array<Record<string, any> & { source_id: string; target_id: string }>;
+}
+
+function describeSchemaVersion(data: Record<string, any>): string {
+  if (!Object.prototype.hasOwnProperty.call(data, "schema_version")) return "<missing>";
+  const value = JSON.stringify(data.schema_version);
+  return value === undefined ? String(data.schema_version) : value;
+}
+
+/**
+ * Parses and validates only the Macro Map contract this evaluator has verified.
+ * Keep schema 2 unsupported until the producer contract and consumer support are approved.
+ */
+function parseSupportedMacroMap(contents: string): SupportedMacroMap {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(contents);
+  } catch (err: any) {
+    throw new Error(`Malformed Macro Map JSON: ${String(err?.message || err)}`);
+  }
+
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Invalid Macro Map structure: top-level value must be an object");
+  }
+
+  const data = parsed as Record<string, any>;
+  if (data.schema_version !== "1.0.0") {
+    throw new Error(`Unsupported Macro Map schema_version: ${describeSchemaVersion(data)}`);
+  }
+  if (!Array.isArray(data.nodes)) {
+    throw new Error("Invalid Macro Map structure: nodes must be an array");
+  }
+  if (!Array.isArray(data.relationships)) {
+    throw new Error("Invalid Macro Map structure: relationships must be an array");
+  }
+
+  for (const [index, node] of data.nodes.entries()) {
+    if (node === null || typeof node !== "object" || Array.isArray(node) || typeof node.id !== "string") {
+      throw new Error(`Invalid Macro Map structure: nodes[${index}].id must be a string`);
+    }
+  }
+  for (const [index, relationship] of data.relationships.entries()) {
+    if (
+      relationship === null ||
+      typeof relationship !== "object" ||
+      Array.isArray(relationship) ||
+      typeof relationship.source_id !== "string" ||
+      typeof relationship.target_id !== "string"
+    ) {
+      throw new Error(
+        `Invalid Macro Map structure: relationships[${index}] must have string source_id and target_id`
+      );
+    }
+  }
+
+  return data as SupportedMacroMap;
+}
+
 export function queryGiragSlice(
   nodeId: string,
-  options?: { tier?: string; view?: string; indexPath?: string }
+  options?: { tier?: string; view?: string; indexPath?: string; binaryPath?: string | null }
 ): {
   success: boolean;
   durationMs: number;
@@ -276,7 +337,7 @@ export function queryGiragSlice(
   const indexPath = options?.indexPath || resolve(process.cwd(), "docs/architecture/macro-map.json");
   const tier = options?.tier || "summary";
   const view = options?.view || "full";
-  const bin = resolveGiragBinary();
+  const bin = options?.binaryPath !== undefined ? options.binaryPath : resolveGiragBinary();
 
   if (bin && existsSync(bin) && existsSync(indexPath)) {
     const start = performance.now();
@@ -295,8 +356,8 @@ export function queryGiragSlice(
   if (existsSync(indexPath)) {
     const start = performance.now();
     try {
-      const data = JSON.parse(readFileSync(indexPath, "utf8"));
-      const focal = (data.nodes || []).find((n: any) => n.id === nodeId);
+      const data = parseSupportedMacroMap(readFileSync(indexPath, "utf8"));
+      const focal = data.nodes.find((n: any) => n.id === nodeId);
       if (!focal) {
         const durationMs = Number((performance.now() - start).toFixed(2));
         return {
@@ -306,11 +367,11 @@ export function queryGiragSlice(
           strategy: "index_traversal",
         };
       }
-      const rels = (data.relationships || []).filter(
+      const rels = data.relationships.filter(
         (r: any) => r.source_id === nodeId || r.target_id === nodeId
       );
       const neighborIds = new Set(rels.flatMap((r: any) => [r.source_id, r.target_id]).filter((id: string) => id !== nodeId));
-      const neighbors = (data.nodes || []).filter((n: any) => neighborIds.has(n.id));
+      const neighbors = data.nodes.filter((n: any) => neighborIds.has(n.id));
       const durationMs = Number((performance.now() - start).toFixed(2));
 
       return {
